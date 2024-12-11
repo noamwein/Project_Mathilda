@@ -2,12 +2,12 @@ import cv2
 import face_recognition
 
 # Load the reference image and compute its face encoding
-reference_image_path = "images\\ben.jpg"  # Replace with the path to your reference image
+reference_image_path = "images\\Noam_Weingarten.jpg"  # Replace with the path to your reference image
 reference_image = face_recognition.load_image_file(reference_image_path)
 reference_encoding = face_recognition.face_encodings(reference_image)[0]
 
 # Initialize video capture from the video file
-video_path = "images\\ben_vid1.mp4"  # Replace with your video file path
+video_path = "images\\Noam_Video.mp4"  # Replace with your video file path
 video_capture = cv2.VideoCapture(video_path)
 
 # Skip frames to process only every nth frame
