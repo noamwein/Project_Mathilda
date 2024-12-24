@@ -13,7 +13,7 @@
 During this section, make sure you run all the referenced scripts directly from the `Rogatka` folder.  
 In order to run a `.sh` file, first run the command `chmod +x <filename.sh>`, and then execute the file using `./<filename.sh>`.
 ### Installation & Configuration
-1. Run the `simulation_installation.sh` file. It can take up to an hour to run.
+1. Run the `simulation_installation.sh` file. You might be required to enter your sudo password and confirm with a `Y` in the beginning of the installation. After that it can take up to an hour to run, and you can leave it in the background.
 2. Restart the WSL:
     1. Close the WSL.
     2. Open windows powershell.
