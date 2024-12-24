@@ -11,6 +11,7 @@
 
 ## Simulation
 During this section, make sure you run all the referenced scripts directly from the `Rogatka` folder.  
+In order to run a `.sh` file, first run the command `chmod +x <filename.sh>`, and then execute the file using `./<filename.sh>`.
 ### Installation & Configuration
 1. Run the `simulation_installation.sh` file. It can take up to an hour to run.
 2. Restart the WSL:
