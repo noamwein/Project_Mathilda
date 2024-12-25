@@ -1,9 +1,16 @@
 from interfaces import DroneClient
+
+import collections
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
+
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
+
 import time
 from typing import Tuple
 import math
+import logging
 
 import enum
 
@@ -19,18 +26,22 @@ class State(enum.Enum):
 
 
 class BasicClient(DroneClient):
-    def __init__(self, connection_string: str, initial_altitude: float, max_altitude: float, min_battery_percent: float):
+    def __init__(self, connection_string: str, initial_altitude: float, max_altitude: float, min_battery_percent: float, logger: logging.Logger):
         self.connection_string = connection_string
         self.initial_altitude = initial_altitude
         self.max_altitude = max_altitude
         self.min_battery_percent = min_battery_percent
         self.vehicle = None
         self.state = -1
+        self.logger = logger
     
     def connect(self):
-        self.vehicle = connect(self.connection_string, wait_ready=True) 
+        print('Connecting...')
+        self.vehicle = connect(self.connection_string, wait_ready=True)
+        print('Connected!')
     
     def takeoff(self):
+        print("Taking off...")
         self.state = State.TAKEOFF
         self.vehicle.mode = VehicleMode("GUIDED")
         self.vehicle.armed = True
@@ -45,6 +56,8 @@ class BasicClient(DroneClient):
             if altitude >= 0.95*self.initial_altitude:
                 break
             time.sleep(1)
+        
+        print("In the air!!")
     
     def rotate(self, angle, speed_factor=0.8):
         """
@@ -57,20 +70,26 @@ class BasicClient(DroneClient):
         """
         # Get the maximum yaw rate from the drone's parameters (default 200°/s if unknown)
         max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
+        print(f"max turn rate: {max_yaw_rate}")
         yaw_rate = max_yaw_rate * speed_factor
+
+        current_heading = self.vehicle.heading
+
+        new_heading = (current_heading + angle) % 360
+
 
         # MAVLink command to rotate the drone
         msg = self.vehicle.message_factory.command_long_encode(
             0, 0,               # target system, target component
             mavutil.mavlink.MAV_CMD_CONDITION_YAW,  # command
             0,                  # confirmation
-            angle,          # param 1: Yaw angle
+            new_heading,          # param 1: Yaw angle
             yaw_rate,           # param 2: Yaw rate
-            1,                  # param 3: Relative to current heading
+            0,                  # param 3: Absolute heading
             0, 0, 0, 0          # param 4-7: Not used
         )
         self.vehicle.send_mavlink(msg)
-        self.vehicle.commands.upload()
+        self.vehicle.flush()
     
     def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
@@ -95,14 +114,16 @@ class BasicClient(DroneClient):
         self.vehicle.commands.upload()
     
     def goto_target(self, target_position):
-        if self.state == State.TAKEOFF:
+        if self.state == State.TAKEOFF: #acctually finished takeoff
+            print("Starting rotation")
             self.face_target(target_position)
             self.state = State.ROTATION
-        elif self.state == State.ROTATION:
+        elif self.state == State.ROTATION: #do nothing if not aligned, else start moving
             if is_aligned(target_position):
+                print("Aligned!")
                 self.set_speed(1, 0, 0)
                 self.state = State.MOVEMENT
-        elif self.state == State.MOVEMENT:
+        elif self.state == State.MOVEMENT: # if not aligned than rotate again, else fix speed if needed, othwise do nothing
             if not is_aligned(target_position):
                 self.set_speed(0, 0, 0)
                 self.face_target(target_position)
@@ -110,8 +131,11 @@ class BasicClient(DroneClient):
             else:
                 current_speed = self.vehicle.groundspeed
                 if abs(current_speed - 1) > 0.1:
+                    print(f"speed is {current_speed}, fixing!")
                     self.set_speed(1, 0, 0)
-        elif self.state == State.ON_TARGET: #oops
+                    time.sleep(0.1)
+        elif self.state == State.ON_TARGET: #oops... means we are not on target and need to fix - start the process over
+            print("starting position fix")
             self.face_target(target_position)
             self.state = State.ROTATION
 
@@ -123,12 +147,13 @@ class BasicClient(DroneClient):
         self.set_speed(0, 0, 0)
         self.state = State.ON_TARGET
 
-    def is_on_target(self, target_position, error_tolerence=0.1):
-        return abs(target_position) < error_tolerence
+    def is_on_target(self, target_position: Tuple[int, int], error_tolerence=0.1):
+        return math.sqrt(target_position[0] ** 2 + target_position[1] ** 2) < error_tolerence
             
     
     def face_target(self, target_position):
             direction = calculate_direction(target_position)
+            print("facing direction:", direction, "deg")
             self.rotate(direction)
 
         
@@ -156,7 +181,7 @@ def calculate_direction(target_position: Tuple[int, int]):
     # Normalize to the range [-π, π]
     yaw_angle = (yaw_angle + math.pi) % (2 * math.pi) - math.pi
 
-    return yaw_angle
+    return (yaw_angle * 360) / (2 * math.pi)
 
 def is_aligned(target_position: Tuple[int, int], error_tolerence=5) -> bool:
     return (abs(target_position[0]) < error_tolerence) and (target_position[1] >= 0)
