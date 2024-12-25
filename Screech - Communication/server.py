@@ -1,9 +1,8 @@
 import socket
 import cv2
-import struct
-import pickle
+import numpy as np
 import argparse
-from config import SERVER_PORT
+from config import SERVER_PORT, MAX_PACKET_SIZE
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Server for receiving webcam video over WiFi.")
@@ -13,41 +12,20 @@ args = parser.parse_args()
 HOST = '0.0.0.0'  # Listen on all interfaces
 PORT = args.port
 
-# Create a socket connection
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Create a UDP socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 server_socket.bind((HOST, PORT))
-server_socket.listen(5)
 
 print(f"Server listening on {HOST}:{PORT}")
 
-conn, addr = server_socket.accept()
-print(f"Connection from {addr}")
-
-data = b''
-payload_size = struct.calcsize("Q")
-
 try:
     while True:
-        # Receive message size first
-        while len(data) < payload_size:
-            packet = conn.recv(4096)
-            if not packet:
-                break
-            data += packet
+        # Receive the data from the client
+        packet, addr = server_socket.recvfrom(MAX_PACKET_SIZE)
 
-        packed_msg_size = data[:payload_size]
-        data = data[payload_size:]
-        msg_size = struct.unpack("Q", packed_msg_size)[0]
-
-        # Receive the actual frame data
-        while len(data) < msg_size:
-            data += conn.recv(4096)
-
-        frame_data = data[:msg_size]
-        data = data[msg_size:]
-
-        # Deserialize the frame
-        frame = pickle.loads(frame_data)
+        # Decode the JPEG frame
+        np_data = np.frombuffer(packet, dtype=np.uint8)
+        frame = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
 
         # Display the frame
         cv2.imshow('Server Webcam', frame)
@@ -58,6 +36,5 @@ except Exception as e:
     print(f"Error: {e}")
 
 finally:
-    conn.close()
     server_socket.close()
     cv2.destroyAllWindows()
