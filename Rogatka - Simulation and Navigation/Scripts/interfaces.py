@@ -27,6 +27,22 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
+    def goto_target(self, target_position: Tuple[int, int]):
+        pass
+
+    @abstractmethod
+    def has_stopped(self):
+        pass
+
+    @abstractmethod
+    def stop_movement(self):
+        pass
+
+    @abstractmethod
+    def is_on_target(self, target_position: Tuple[int, int]):
+        pass
+
+    @abstractmethod
     def return_to_launch(self):
         pass
 
