@@ -1,3 +1,19 @@
+import socket
+import cv2
+import struct
+import pickle
+import argparse
+from config import SERVER_PORT
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Server for receiving webcam video over WiFi.")
+parser.add_argument('--port', type=int, default=SERVER_PORT, help="Port number to listen on. Default is defined in config.py.")
+args = parser.parse_args()
+
+HOST = '0.0.0.0'  # Listen on all interfaces
+PORT = args.port
+
+# Create a socket connection
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(5)

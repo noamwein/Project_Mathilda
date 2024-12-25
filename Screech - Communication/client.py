@@ -2,10 +2,17 @@ import cv2
 import socket
 import struct
 import pickle
+import argparse
+from config import SERVER_IP, SERVER_PORT
 
-# Define the server address and port
-SERVER_IP = '192.168.1.100'  # Replace with your server's IP
-SERVER_PORT = 9999
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description="Client for streaming webcam video over WiFi.")
+parser.add_argument('--server_ip', type=str, default=SERVER_IP, help="IP address of the server. Default is defined in config.py.")
+parser.add_argument('--server_port', type=int, default=SERVER_PORT, help="Port number of the server. Default is defined in config.py.")
+args = parser.parse_args()
+
+SERVER_IP = args.server_ip
+SERVER_PORT = args.server_port
 
 # Create a socket connection
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
