@@ -1,63 +1,36 @@
+from abc import ABC, abstractmethod
 from typing import Tuple
 
-
-class Source:
+class Source(ABC):
+    @abstractmethod
     def get_current_frame(self):
         pass
 
 
-class ImageDetection:
-    def find_target(self, frame) -> Tuple[int, int]:
+class ImageDetection(ABC):
+    @abstractmethod
+    def detect_target(self, frame) -> bool:
+        pass
+
+    @abstractmethod
+    def locate_traget(self, frame) -> Tuple[int, int]:
         pass
 
 
-class DroneClient:
+class DroneClient(ABC):
+    @abstractmethod
     def connect(self):
         pass
 
+    @abstractmethod
     def takeoff(self):
         pass
 
+    @abstractmethod
     def return_to_launch(self):
         pass
 
+    @abstractmethod
     def disconnect(self):
         pass
-
-
-class DroneAlgorithm:
-    def __init__(self, img_detection: ImageDetection, source: Source,
-                 drone_client: DroneClient):
-        self.source = source
-        self.img_detection = img_detection
-        self.drone_client = drone_client
-    
-    def mission_completed(self):
-        pass
-
-    def goto_target(self, target_position: Tuple[int, int]):
-        pass
-
-    def is_on_target(self, target_position: Tuple[int, int]):
-        pass
-
-    def assassinate(self):
-        pass
-
-    def main(self):
-        self.drone_client.connect()
-        self.drone_client.takeoff()
-        
-        while not self.mission_completed():
-            frame = self.source.get_current_frame()
-            target_position = self.img_detection.find_target(frame=frame)
-
-            if self.is_on_target(target_position):
-                self.assassinate()
-            else:
-                self.goto_target(target_position)
-
-        
-        self.drone_client.return_to_launch()
-        self.drone_client.disconnect()
     
