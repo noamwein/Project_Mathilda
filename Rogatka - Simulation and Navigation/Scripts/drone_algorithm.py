@@ -21,15 +21,15 @@ class DroneAlgorithm:
         
         while not self.mission_completed():
             frame = self.source.get_current_frame()
-            target_position = self.img_detection.locate_traget(frame=frame)
-
-            if self.drone_client.is_on_target(target_position):
-                if self.drone_client.has_stopped():
-                    self.assassinate()
+            target_position = self.img_detection.locate_target(frame=frame)
+            if target_position != (None, None):
+                if self.drone_client.is_on_target(target_position):
+                    if self.drone_client.has_stopped():
+                        self.assassinate()
+                    else:
+                        self.drone_client.stop_movement()
                 else:
-                    self.drone_client.stop_movement()
-            else:
-                self.drone_client.goto_target(target_position)
+                    self.drone_client.goto_target(target_position)
 
         
         self.drone_client.return_to_launch()

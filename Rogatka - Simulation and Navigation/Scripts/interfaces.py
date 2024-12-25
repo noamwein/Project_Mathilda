@@ -13,7 +13,7 @@ class ImageDetection(ABC):
         pass
 
     @abstractmethod
-    def locate_traget(self, frame) -> Tuple[int, int]:
+    def locate_target(self, frame) -> Tuple[int, int]:
         pass
 
 
