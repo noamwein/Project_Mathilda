@@ -1,9 +1,8 @@
 import cv2
 import socket
-import struct
 import pickle
 import argparse
-from config import SERVER_IP, SERVER_PORT
+from config import SERVER_IP, SERVER_PORT, MAX_PACKET_SIZE
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Client for streaming webcam video over WiFi.")
@@ -16,9 +15,8 @@ SERVER_IP = args.server_ip
 SERVER_PORT = args.server_port
 DISPLAY_MODE = args.display
 
-# Create a socket connection
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((SERVER_IP, SERVER_PORT))
+# Create a UDP socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # Initialize webcam capture
 camera = cv2.VideoCapture(0)
@@ -29,10 +27,18 @@ try:
         if not ret:
             break
 
-        # Serialize the frame
-        data = pickle.dumps(frame)
-        # Send frame size first, followed by the actual frame data
-        client_socket.sendall(struct.pack("Q", len(data)) + data)
+        # Compress the frame using JPEG to fit within the max packet size
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]  # Adjust quality as needed
+        _, compressed_frame = cv2.imencode('.jpg', frame, encode_param)
+        data = compressed_frame.tobytes()
+
+        # Ensure the data fits within the MAX_PACKET_SIZE
+        if len(data) > MAX_PACKET_SIZE:
+            print("Warning: Frame size exceeds MAX_PACKET_SIZE. Dropping frame.")
+            continue
+
+        # Send the compressed frame to the server
+        client_socket.sendto(data, (SERVER_IP, SERVER_PORT))
 
         # Display the frame locally if in display mode
         if DISPLAY_MODE:
