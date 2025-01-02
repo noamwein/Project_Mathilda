@@ -3,3 +3,11 @@ opencv-python
 numpy
 dronekit
 pymavlink
+click
+dlib
+face-recognition
+future
+lxml
+monotonic
+numpy
+pillow

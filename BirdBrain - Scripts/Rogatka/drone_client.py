@@ -131,7 +131,7 @@ class BasicClient(DroneClient):
                 self.state = State.ROTATION
             else:
                 current_speed = self.vehicle.groundspeed
-                if abs(current_speed - 1) > 0.1:
+                if abs(current_speed - 1) > 0.05:
                     print(f"Speed is {current_speed}, fixing!")
                     self.set_speed(1, 0, 0)
                     time.sleep(0.1)
