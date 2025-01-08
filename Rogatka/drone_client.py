@@ -14,6 +14,7 @@ import logging
 
 import enum
 
+MAXIMUM_DISTANCE = 12
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -34,6 +35,7 @@ class BasicClient(DroneClient):
         self.vehicle = None
         self.state = -1
         self.logger = logger
+        self.terminated = False
 
     def connect(self):
         print('Connecting...')
@@ -44,6 +46,10 @@ class BasicClient(DroneClient):
         print("Taking off...")
         self.state = State.TAKEOFF
         self.vehicle.mode = VehicleMode("GUIDED")
+        # Download the vehicle waypoints (commands). Wait until download is complete.
+        cmds = self.vehicle.commands
+        cmds.download()
+        cmds.wait_ready()
         self.vehicle.armed = True
 
         while not self.vehicle.armed:
@@ -146,7 +152,12 @@ class BasicClient(DroneClient):
                 self.set_speed(1, 0, 0)
                 self.state = State.MOVEMENT
         elif self.state == State.MOVEMENT:  # if not aligned than rotate again, else fix speed if needed, othwise do nothing
-            if not is_aligned(target_position):
+            if self.distance_from_home() > MAXIMUM_DISTANCE:
+                print("Stafty termination because the drone went too far...")
+                self.set_speed(0, 0, 0)
+                self.state = State.LANDING
+                self.terminated = True
+            elif not is_aligned(target_position):
                 print("Fixing alignement...")
                 self.set_speed(0, 0, 0)
                 self.face_target(target_position)
@@ -178,10 +189,23 @@ class BasicClient(DroneClient):
         self.rotate(direction)
 
     def return_to_launch(self):
+        print("Returning home!")
         self.vehicle.mode = VehicleMode("RTL")
+        time.sleep(1)
+
+    def distance_from_home(self):
+        # Get the home location
+        home_location = self.vehicle.home_location
+        current_location = self.vehicle.location.global_relative_frame
+        dist = get_distance_meters(home_location, current_location)
+        return dist
 
     def disconnect(self):
+        print("Disconnecting.")
         self.vehicle.close()
+    
+    def mission_terminated(self):
+        return self.terminated
 
 
 def calculate_direction(target_position: Tuple[int, int]):

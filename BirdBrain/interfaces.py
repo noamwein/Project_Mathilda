@@ -58,3 +58,7 @@ class DroneClient(ABC):
     @abstractmethod
     def rotate(self, angle):
         pass
+
+    @abstractmethod
+    def mission_terminated(self) -> bool:
+        pass

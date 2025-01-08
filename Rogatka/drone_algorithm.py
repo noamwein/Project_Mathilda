@@ -19,7 +19,7 @@ class DroneAlgorithm:
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        while not self.mission_completed():
+        while not self.mission_completed() and not self.drone_client.mission_terminated():
             frame = self.source.get_current_frame()
             target_position = self.img_detection.locate_target(frame=frame)
             if target_position != (None, None):
