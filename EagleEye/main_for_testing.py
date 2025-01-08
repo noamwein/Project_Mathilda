@@ -1,11 +1,11 @@
-from VideoSource import VideoSource
-from ImageDetectionModel import ImageDetectionModel
-from ImageProcessingConstants import *
+from EagleEye.ImageDetectionModel import ImageDetectionModel
+from EagleEye.ImageProcessingConstants import *
+from EagleEye.VideoSource import VideoSource
 
 
 def main():
     video_source = VideoSource(VIDEO_PATH, START_FROM_SECONDS)
-    image_detection_model = ImageDetectionModel(REFERENCE_IMAGE_PATH,video_source)
+    image_detection_model = ImageDetectionModel(REFERENCE_IMAGE_PATH, video_source)
     done = False
     while not done:
         target_position = image_detection_model.process_next_frame()

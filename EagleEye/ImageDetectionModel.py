@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
-from interfaces import ImageDetection, Source
-from ImageProcessingConstants import *
-import FindBecker
 import face_recognition
-import cv2
 import numpy as np
+
+import EagleEye.FindBecker as FindBecker
+from EagleEye.ImageProcessingConstants import *
+from BirdBrain.interfaces import ImageDetection, Source
 
 
 class ImageDetectionModel(ImageDetection):
@@ -34,14 +33,14 @@ class ImageDetectionModel(ImageDetection):
     def detect_target(self, frame) -> bool:
         return bool(FindBecker.find_face_in_frame(frame, self.reference_encoding))
 
-    def locate_target(self, frame) -> tuple[int, int]:
+    def recognize_person(self, frame) -> tuple[int, int]:
         face_center = FindBecker.find_face_in_frame(frame, self.reference_encoding, scale=0.5,
                                                     tolerance=0.6)
         if not face_center:
             raise ValueError("Target not found in the frame.")
         return face_center
 
-    def process_next_frame(self):
+    def locate_target(self, frame):
         try:
             frame = self.source.get_current_frame()
         except ValueError:
@@ -53,7 +52,7 @@ class ImageDetectionModel(ImageDetection):
 
         if not self.face_found and self.frame_counter % PROCESS_EVERY_FRAMES == 0:
             try:
-                x, y = self.locate_target(frame)
+                x, y = self.recognize_person(frame)
                 self.face_found = True
                 self.bbox = (max(0, int(x - self.initial_bbox_size)), max(0, int(y - self.initial_bbox_size)),
                              min(frame.shape[1], int(x + self.initial_bbox_size)),

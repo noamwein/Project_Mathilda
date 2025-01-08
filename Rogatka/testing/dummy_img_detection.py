@@ -1,4 +1,4 @@
-from Rogatka.interfaces import ImageDetection
+from BirdBrain.interfaces import ImageDetection
 
 class Dummy_detector(ImageDetection):
     def detect_target(self, frame):

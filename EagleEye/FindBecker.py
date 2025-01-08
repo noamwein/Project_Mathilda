@@ -1,6 +1,7 @@
 import cv2
 import face_recognition
 
+
 def find_face_in_frame(frame, reference_encoding, frame_skip=3, scale=0.5, tolerance=0.9):
     # Resize frame to speed up processing (adjust scale for balance)
     small_frame = cv2.resize(frame, (0, 0), fx=scale, fy=scale)

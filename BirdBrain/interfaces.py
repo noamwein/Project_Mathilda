@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 
+
 class Source(ABC):
     @abstractmethod
     def get_current_frame(self):
@@ -49,4 +50,3 @@ class DroneClient(ABC):
     @abstractmethod
     def disconnect(self):
         pass
-    

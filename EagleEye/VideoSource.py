@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
-from Rogatka.interfaces import Source
-from EagleEye.ImageProcessingConstants import *
 import cv2
+
+from BirdBrain.interfaces import Source
 
 
 class VideoSource(Source):

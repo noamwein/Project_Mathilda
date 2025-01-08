@@ -1,5 +1,5 @@
-from interfaces import Source, ImageDetection, DroneClient
-from typing import Tuple
+from BirdBrain.interfaces import Source, ImageDetection, DroneClient
+
 
 class DroneAlgorithm:
     def __init__(self, img_detection: ImageDetection, source: Source,
@@ -8,7 +8,7 @@ class DroneAlgorithm:
         self.img_detection = img_detection
         self.drone_client = drone_client
         self.done = False
-    
+
     def mission_completed(self):
         return self.done
 
@@ -18,7 +18,7 @@ class DroneAlgorithm:
     def main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
+
         while not self.mission_completed():
             frame = self.source.get_current_frame()
             target_position = self.img_detection.locate_target(frame=frame)
@@ -31,6 +31,5 @@ class DroneAlgorithm:
                 else:
                     self.drone_client.goto_target(target_position)
 
-        
         self.drone_client.return_to_launch()
         self.drone_client.disconnect()
