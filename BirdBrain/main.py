@@ -15,7 +15,7 @@ from Rogatka.drone_client import BasicClient
 def main(video_path, image_path, display):
     video_source = VideoSource(video_path, START_FROM_SECONDS)
     main_alg = DroneAlgorithm(
-        ImageDetectionModel(image_path, video_source, display=display),
+        ImageDetectionModel(reference_image_path=image_path, display=display),
         video_source,
         BasicClient(
             'tcp:127.0.0.1:5763',

@@ -7,38 +7,22 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 from EagleEye.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
 from EagleEye.VideoSource import VideoSource
+from Screech.config import SERVER_IP, SERVER_PORT
+from Screech.image_detection_client import RemoteImageDetection
 
 
-def main(video_path, image_path, display, always_recognize_person):
-    video_source = VideoSource(video_path, START_FROM_SECONDS)
-    image_detection_model = ImageDetectionModel(image_path, video_source, display=display,
-                                                always_recognize_person=always_recognize_person)
-    done = False
-    while not done:
-        target_position = image_detection_model.locate_target(video_source.get_current_frame())
-        print(target_position)
-        # Uncomment and implement drone client logic if needed
-        # if self.drone_client.is_on_target(target_position):
-        #     if self.drone_client.has_stopped():
-        #         self.assassinate()
-        #     else:
-        #         self.drone_client.stop_movement()
-        # else:
-        #     self.drone_client.goto_target(target_position)
-
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Image Detection Script")
     parser.add_argument(
         '--video-path',
         type=str,
-        default=None,
+        default=VIDEO_PATH,
         help="Path to the video file."
     )
     parser.add_argument(
         '--image-path',
         type=str,
-        default=None,
+        default=REFERENCE_IMAGE_PATH,
         help="Path to the reference image."
     )
     parser.add_argument(
@@ -51,7 +35,38 @@ if __name__ == "__main__":
         action='store_true',
         help="Always try to recognize the person in the frame (for testing face recognition)."
     )
+    parser.add_argument(
+        '--remote',
+        action='store_true',
+        help="Run the computation on a remote server."
+    )
+    parser.add_argument('--server-ip', type=str, default=SERVER_IP,
+                        help="IP address of the server. Default is defined in config.py.")
+    parser.add_argument('--server-port', type=int, default=SERVER_PORT,
+                        help="Port number of the server. Default is defined in config.py.")
 
     args = parser.parse_args()
-    main(video_path=args.video_path, image_path=args.image_path, display=not args.disable_display,
-         always_recognize_person=args.recognize)
+
+    model = ImageDetectionModel(reference_image_path=args.image_path, display=not args.disable_display,
+                                always_recognize_person=args.recognize)
+    if args.remote:
+        model = RemoteImageDetection(image_detection_model=model, server_host=args.server_ip,
+                                     server_port=args.server_port)
+    video_source = VideoSource(args.video_path, START_FROM_SECONDS)
+
+    done = False
+    while not done:
+        target_position = model.locate_target(video_source.get_current_frame())
+        print(target_position)
+        # Uncomment and implement drone client logic if needed
+        # if self.drone_client.is_on_target(target_position):
+        #     if self.drone_client.has_stopped():
+        #         self.assassinate()
+        #     else:
+        #         self.drone_client.stop_movement()
+        # else:
+        #     self.drone_client.goto_target(target_position)
+
+
+if __name__ == '__main__':
+    main()

@@ -9,10 +9,9 @@ from EagleEye.ImageProcessingConstants import *
 
 
 class ImageDetectionModel(ImageDetection):
-    def __init__(self, reference_image_path: str, source: Source, display: bool = True,
+    def __init__(self, reference_image_path: str, display: bool = True,
                  always_recognize_person: bool = False):
         self.reference_encoding = self.load_reference_encoding(reference_image_path)
-        self.source = source
         self.face_found = False
         self.frame_counter = 0
         self.old_gray = None
@@ -46,12 +45,6 @@ class ImageDetectionModel(ImageDetection):
         return face_center
 
     def locate_target(self, frame):
-        try:
-            frame = self.source.get_current_frame()
-        except ValueError:
-            print("No more frames to process. Exiting...")
-            return False
-
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         self.frame_counter += 1
 
@@ -142,7 +135,3 @@ class ImageDetectionModel(ImageDetection):
         center_x = ORIGINAL_CAM_WIDTH // 2
         center_y = ORIGINAL_CAM_HEIGHT // 2
         return x - center_x, y - center_y
-
-    def done(self):
-        self.source.release()
-        cv2.destroyAllWindows()
