@@ -31,13 +31,13 @@ def main(video_path, image_path, display):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Drone Algorithm Script")
     parser.add_argument(
-        '--video_path',
+        '--video-path',
         type=str,
         default=VIDEO_PATH,
         help="Path to the video file."
     )
     parser.add_argument(
-        '--image_path',
+        '--image-path',
         type=str,
         default=REFERENCE_IMAGE_PATH,
         help="Path to the reference image."
