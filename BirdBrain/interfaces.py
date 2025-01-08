@@ -50,3 +50,11 @@ class DroneClient(ABC):
     @abstractmethod
     def disconnect(self):
         pass
+
+    @abstractmethod
+    def move_forward(self, distance):
+        pass
+
+    @abstractmethod
+    def rotate(self, angle):
+        pass
