@@ -4,7 +4,7 @@ from BirdBrain.interfaces import DroneClient
 
 collections.MutableMapping = collections.abc.MutableMapping
 
-from dronekit import connect, VehicleMode
+from dronekit import connect, VehicleMode, LocationGlobalRelative
 from pymavlink import mavutil
 
 import time
@@ -58,6 +58,29 @@ class BasicClient(DroneClient):
             time.sleep(1)
 
         print("In the air!!")
+    
+    def move_forward(self, distance):
+        """
+        Moves the drone forward in the direction of its current heading.
+        """
+        print(f"Moving forward {distance} meters")
+
+        current_location = self.vehicle.location.global_relative_frame
+        heading = self.vehicle.heading  # Current heading in degrees (0-360)
+
+        # Calculate the target location based on heading
+        target_location = calculate_target_location(current_location, heading, distance)
+        self.vehicle.simple_goto(target_location)
+
+        while True:
+            current_location = self.vehicle.location.global_relative_frame
+            distance_to_target = get_distance_meters(current_location, target_location)
+
+            if distance_to_target <= 0.5:  # Consider 1 meter as the acceptable threshold
+                print("Reached target location")
+                break
+
+            time.sleep(1)
 
     def rotate(self, angle, speed_factor=0.8):
         """
@@ -181,6 +204,39 @@ def calculate_direction(target_position: Tuple[int, int]):
 
     return (yaw_angle * 360) / (2 * math.pi)
 
-
 def is_aligned(target_position: Tuple[int, int], error_tolerence=5) -> bool:
     return (abs(target_position[0]) < error_tolerence) and (target_position[1] >= 0)
+
+def get_distance_meters(location1, location2):
+    """
+    Returns the ground distance in meters between two LocationGlobalRelative objects.
+    """
+    lat_diff = location2.lat - location1.lat
+    lon_diff = location2.lon - location1.lon
+    return math.sqrt((lat_diff * 111320.0) ** 2 + (lon_diff * 111320.0) ** 2)
+
+def calculate_target_location(current_location, heading, distance):
+    """
+    Calculates the target location based on the current location, heading, and distance.
+    """
+    earth_radius = 6378137.0  # Earth's radius in meters
+
+    # Convert heading and distance to radians
+    heading_rad = math.radians(heading)
+    distance_rad = distance / earth_radius
+
+    # Current latitude and longitude in radians
+    lat1 = math.radians(current_location.lat)
+    lon1 = math.radians(current_location.lon)
+
+    # Calculate target latitude and longitude
+    lat2 = math.asin(math.sin(lat1) * math.cos(distance_rad) +
+                     math.cos(lat1) * math.sin(distance_rad) * math.cos(heading_rad))
+    lon2 = lon1 + math.atan2(math.sin(heading_rad) * math.sin(distance_rad) * math.cos(lat1),
+                             math.cos(distance_rad) - math.sin(lat1) * math.sin(lat2))
+
+    # Convert back to degrees
+    target_lat = math.degrees(lat2)
+    target_lon = math.degrees(lon2)
+
+    return LocationGlobalRelative(target_lat, target_lon, current_location.alt)
