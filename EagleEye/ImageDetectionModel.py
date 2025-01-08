@@ -1,13 +1,15 @@
+import typing
+
 import face_recognition
 import numpy as np
 
 import EagleEye.FindBecker as FindBecker
-from EagleEye.ImageProcessingConstants import *
 from BirdBrain.interfaces import ImageDetection, Source
+from EagleEye.ImageProcessingConstants import *
 
 
 class ImageDetectionModel(ImageDetection):
-    def __init__(self, reference_image_path: str, source: Source):
+    def __init__(self, reference_image_path: str, source: Source, display: bool = True):
         self.reference_encoding = self.load_reference_encoding(reference_image_path)
         self.source = source
         self.face_found = False
@@ -22,6 +24,7 @@ class ImageDetectionModel(ImageDetection):
         self.distance_threshold = DISTANCE_THRESHOLD
         self.initial_bbox_size = INITIAL_BBOX_SIZE
         self.position = None, None
+        self.display = display
 
     def load_reference_encoding(self, reference_image_path):
         reference_image = face_recognition.load_image_file(reference_image_path)
@@ -33,7 +36,7 @@ class ImageDetectionModel(ImageDetection):
     def detect_target(self, frame) -> bool:
         return bool(FindBecker.find_face_in_frame(frame, self.reference_encoding))
 
-    def recognize_person(self, frame) -> tuple[int, int]:
+    def recognize_person(self, frame) -> typing.Tuple[int, int]:
         face_center = FindBecker.find_face_in_frame(frame, self.reference_encoding, scale=0.5,
                                                     tolerance=0.6)
         if not face_center:
@@ -79,7 +82,8 @@ class ImageDetectionModel(ImageDetection):
                 self.face_found = False
 
         frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
-        cv2.imshow('Video', frame)
+        if self.display:
+            cv2.imshow('Video', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             return "over"
