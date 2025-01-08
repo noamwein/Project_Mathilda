@@ -9,7 +9,8 @@ from EagleEye.ImageProcessingConstants import *
 
 
 class ImageDetectionModel(ImageDetection):
-    def __init__(self, reference_image_path: str, source: Source, display: bool = True):
+    def __init__(self, reference_image_path: str, source: Source, display: bool = True,
+                 always_recognize_person: bool = False):
         self.reference_encoding = self.load_reference_encoding(reference_image_path)
         self.source = source
         self.face_found = False
@@ -25,6 +26,7 @@ class ImageDetectionModel(ImageDetection):
         self.initial_bbox_size = INITIAL_BBOX_SIZE
         self.position = None, None
         self.display = display
+        self.always_recognize_person = always_recognize_person
 
     def load_reference_encoding(self, reference_image_path):
         reference_image = face_recognition.load_image_file(reference_image_path)
@@ -53,7 +55,7 @@ class ImageDetectionModel(ImageDetection):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         self.frame_counter += 1
 
-        if not self.face_found and self.frame_counter % PROCESS_EVERY_FRAMES == 0:
+        if (self.always_recognize_person or not self.face_found) and self.frame_counter % PROCESS_EVERY_FRAMES == 0:
             try:
                 x, y = self.recognize_person(frame)
                 self.face_found = True

@@ -9,9 +9,10 @@ from EagleEye.ImageProcessingConstants import *
 from EagleEye.VideoSource import VideoSource
 
 
-def main(video_path, image_path, display):
+def main(video_path, image_path, display, always_recognize_person):
     video_source = VideoSource(video_path, START_FROM_SECONDS)
-    image_detection_model = ImageDetectionModel(image_path, video_source, display=display)
+    image_detection_model = ImageDetectionModel(image_path, video_source, display=display,
+                                                always_recognize_person=always_recognize_person)
     done = False
     while not done:
         target_position = image_detection_model.locate_target(video_source.get_current_frame())
@@ -45,6 +46,12 @@ if __name__ == "__main__":
         action='store_true',
         help="Disable to display the video feed."
     )
+    parser.add_argument(
+        '--recognize',
+        action='store_true',
+        help="Always try to recognize the person in the frame (for testing face recognition)."
+    )
 
     args = parser.parse_args()
-    main(video_path=args.video_path, image_path=args.image_path, display=not args.disable_display)
+    main(video_path=args.video_path, image_path=args.image_path, display=not args.disable_display,
+         always_recognize_person=args.recognize)
