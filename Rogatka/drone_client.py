@@ -8,11 +8,15 @@ from dronekit import connect, VehicleMode, LocationGlobalRelative
 from pymavlink import mavutil
 
 import time
+from datetime import datetime
+
 from typing import Tuple
 import math
 import logging
 
 import enum
+
+import os
 
 MAXIMUM_DISTANCE = 12
 
@@ -37,13 +41,30 @@ class BasicClient(DroneClient):
         self.logger = logger
         self.terminated = False
 
+        # Set up logging to file
+        log_folder = "../Flight Logs"
+        os.makedirs(log_folder, exist_ok=True)
+        start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        log_filename = os.path.join(log_folder, f"flight-{start_time}.log")
+
+        logging.basicConfig(
+            filename=log_filename,
+            level=logging.INFO,
+            format='%(asctime)s - %(message)s',
+            datefmt='%H:%M:%S'
+        )
+    
+    def log_and_print(self, message: str):
+        print(message)
+        logging.info(message)
+
     def connect(self):
-        print('Connecting...')
+        self.log_and_print('Connecting...')
         self.vehicle = connect(self.connection_string, wait_ready=True)
-        print('Connected!')
+        self.log_and_print('Connected!')
 
     def takeoff(self):
-        print("Taking off...")
+        self.log_and_print("Taking off...")
         self.state = State.TAKEOFF
         self.vehicle.mode = VehicleMode("GUIDED")
         # Download the vehicle waypoints (commands). Wait until download is complete.
@@ -63,13 +84,13 @@ class BasicClient(DroneClient):
                 break
             time.sleep(1)
 
-        print("In the air!!")
+        self.log_and_print("In the air!!")
     
     def move_forward(self, distance):
         """
         Moves the drone forward in the direction of its current heading.
         """
-        print(f"Moving forward {distance} meters")
+        self.log_and_print(f"Moving forward {distance} meters")
 
         current_location = self.vehicle.location.global_relative_frame
         heading = self.vehicle.heading  # Current heading in degrees (0-360)
@@ -83,7 +104,7 @@ class BasicClient(DroneClient):
             distance_to_target = get_distance_meters(current_location, target_location)
 
             if distance_to_target <= 0.5:  # Consider 1 meter as the acceptable threshold
-                print("Reached target location")
+                self.log_and_print("Reached target location")
                 break
 
             time.sleep(1)
@@ -99,7 +120,7 @@ class BasicClient(DroneClient):
         """
         # Get the maximum yaw rate from the drone's parameters (default 200°/s if unknown)
         max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
-        print(f"max turn rate: {max_yaw_rate}")
+        self.log_and_print(f"max turn rate: {max_yaw_rate}")
         yaw_rate = max_yaw_rate * speed_factor
 
         current_heading = self.vehicle.heading
@@ -143,33 +164,33 @@ class BasicClient(DroneClient):
 
     def goto_target(self, target_position):
         if self.state == State.TAKEOFF:  # acctually finished takeoff
-            print("Starting rotation")
+            self.log_and_print("Starting rotation")
             self.face_target(target_position)
             self.state = State.ROTATION
         elif self.state == State.ROTATION:  # do nothing if not aligned, else start moving
             if is_aligned(target_position):
-                print("Aligned!")
+                self.log_and_print("Aligned!")
                 self.set_speed(1, 0, 0)
                 self.state = State.MOVEMENT
         elif self.state == State.MOVEMENT:  # if not aligned than rotate again, else fix speed if needed, othwise do nothing
             if self.distance_from_home() > MAXIMUM_DISTANCE:
-                print("Stafty termination because the drone went too far...")
+                self.log_and_print("Stafty termination because the drone went too far...")
                 self.set_speed(0, 0, 0)
                 self.state = State.LANDING
                 self.terminated = True
             elif not is_aligned(target_position):
-                print("Fixing alignement...")
+                self.log_and_print("Fixing alignement...")
                 self.set_speed(0, 0, 0)
                 self.face_target(target_position)
                 self.state = State.ROTATION
             else:
                 current_speed = self.vehicle.groundspeed
                 if abs(current_speed - 1) > 0.05:
-                    print(f"Speed is {current_speed}, fixing!")
+                    self.log_and_print(f"Speed is {current_speed}, fixing!")
                     self.set_speed(1, 0, 0)
                     time.sleep(0.1)
         elif self.state == State.ON_TARGET:  # oops... means we are not on target and need to fix - start the process over
-            print("Starting position fix")
+            self.log_and_print("Starting position fix")
             self.face_target(target_position)
             self.state = State.ROTATION
 
@@ -185,11 +206,11 @@ class BasicClient(DroneClient):
 
     def face_target(self, target_position):
         direction = calculate_direction(target_position)
-        print("Rotating", direction, "degrees...")
+        self.log_and_print(f"Rotating {direction} degrees...")
         self.rotate(direction)
 
     def return_to_launch(self):
-        print("Returning home!")
+        self.log_and_print("Returning home!")
         self.vehicle.mode = VehicleMode("RTL")
         time.sleep(1)
 
@@ -201,7 +222,7 @@ class BasicClient(DroneClient):
         return dist
 
     def disconnect(self):
-        print("Disconnecting.")
+        self.log_and_print("Disconnecting.")
         self.vehicle.close()
     
     def mission_terminated(self):
