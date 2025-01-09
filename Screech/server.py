@@ -6,7 +6,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from Screech.request_handler import RequestHandler
+from Screech.request_handler import RequestHandler, send_data, receive_data
 from Screech.config import SERVER_PORT
 from Screech.image_detection_client import ImageDetectionRequestHandler
 from EagleEye.ImageDetectionModel import ImageDetectionModel
@@ -40,16 +40,14 @@ class Server:
     def _handle_client(self, client_socket):
         with client_socket:
             try:
-                data = client_socket.recv(1024)
-                if not data:
-                    return
+                data = receive_data(client_socket)
 
                 decoded_request = self.request_handler.decode_input(data)
                 print(f"Received request: {decoded_request}")
 
                 response = self.request_handler.handle_request(decoded_request)
                 encoded_response = self.request_handler.encode_output(response)
-                client_socket.sendall(encoded_response)
+                send_data(client_socket, encoded_response)
                 print(f"Sent response: {response}")
 
             except Exception as e:
