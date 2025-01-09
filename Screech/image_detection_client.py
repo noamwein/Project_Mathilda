@@ -1,5 +1,5 @@
-import argparse
 import enum
+import traceback
 from typing import Tuple
 
 from BirdBrain.interfaces import ImageDetection
@@ -37,9 +37,12 @@ class RemoteImageDetection(ImageDetection):
             print('waiting for server to detect target')
             request = (Actions.DETECT, frame)
             response = self.client.send_request(request)
-            print('received response: {}'.format(response))
-            return response
+            if response is not None:
+                print('received response: {}'.format(response))
+                return response
+            return self.image_detection_model.detect_target(frame)
         except Exception:
+            print('exception: {}'.format(traceback.format_exc()))
             print('running locally')
             return self.image_detection_model.detect_target(frame)
 
@@ -48,8 +51,11 @@ class RemoteImageDetection(ImageDetection):
             print('waiting for server to locate target')
             request = (Actions.LOCATE, frame)
             response = self.client.send_request(request)
-            print('received response: {}'.format(response))
-            return response
+            if response is not None:
+                print('received response: {}'.format(response))
+                return response
+            return self.image_detection_model.locate_target(frame)
         except Exception:
+            print('exception: {}'.format(traceback.format_exc()))
             print('running locally')
             return self.image_detection_model.locate_target(frame)
