@@ -76,13 +76,7 @@ class BasicClient(DroneClient):
         while not self.vehicle.armed:
             time.sleep(1)
 
-        self.vehicle.simple_takeoff(self.initial_altitude)
-
-        while True:
-            altitude = self.vehicle.location.global_relative_frame.alt
-            if altitude >= 0.95 * self.initial_altitude:
-                break
-            time.sleep(1)
+        self.vehicle.wait_simple_takeoff(self.initial_altitude)
 
         self.log_and_print("In the air!!")
     
