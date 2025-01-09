@@ -6,7 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 
 from EagleEye.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
-from EagleEye.VideoSource import VideoSource
+from EagleEye.video_source import VideoSource
+from EagleEye.camera_source import CameraSource
 from Screech.config import SERVER_IP, SERVER_PORT
 from Screech.image_detection_client import RemoteImageDetection
 
@@ -40,6 +41,11 @@ def main():
         action='store_true',
         help="Run the computation on a remote server."
     )
+    parser.add_argument(
+        '--camera-source',
+        action='store_true',
+        help="Use the camera as the source."
+    )
     parser.add_argument('--server-ip', type=str, default=SERVER_IP,
                         help="IP address of the server. Default is defined in config.py.")
     parser.add_argument('--server-port', type=int, default=SERVER_PORT,
@@ -52,7 +58,10 @@ def main():
     if args.remote:
         model = RemoteImageDetection(image_detection_model=model, server_host=args.server_ip,
                                      server_port=args.server_port)
-    video_source = VideoSource(args.video_path, START_FROM_SECONDS)
+    if args.camera_source:
+        video_source = CameraSource()
+    else:
+        video_source = VideoSource(args.video_path, START_FROM_SECONDS)
 
     done = False
     while not done:
