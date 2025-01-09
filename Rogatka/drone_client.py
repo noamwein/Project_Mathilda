@@ -80,6 +80,10 @@ class BasicClient(DroneClient):
 
         self.log_and_print("In the air!!")
     
+    def get_altitude(self):
+        altitude = self.vehicle.location.global_relative_frame.alt
+        return altitude
+
     def move_forward(self, distance):
         """
         Moves the drone forward in the direction of its current heading.
@@ -210,6 +214,8 @@ class BasicClient(DroneClient):
 
     def distance_from_home(self):
         # Get the home location
+        if self.vehicle.gps_0.eph is None:
+            return 0
         home_location = self.vehicle.home_location
         current_location = self.vehicle.location.global_relative_frame
         dist = get_distance_meters(home_location, current_location)

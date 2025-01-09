@@ -28,6 +28,10 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
+    def get_altitude(self):
+        pass
+
+    @abstractmethod
     def goto_target(self, target_position: Tuple[int, int]):
         pass
 
@@ -41,6 +45,10 @@ class DroneClient(ABC):
 
     @abstractmethod
     def is_on_target(self, target_position: Tuple[int, int]):
+        pass
+
+    @abstractmethod
+    def distance_from_home(self) -> float:
         pass
 
     @abstractmethod
