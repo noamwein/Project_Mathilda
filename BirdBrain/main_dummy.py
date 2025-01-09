@@ -1,13 +1,13 @@
 import logging
 
-from Rogatka.drone_algorithm import DroneAlgorithm
+from Rogatka.drone_algorithm import MainDroneAlgorithm
 from Rogatka.drone_client import BasicClient
 from Rogatka.testing.dummy_img_detection import Dummy_detector
 from Rogatka.testing.dummy_source import Dummy_source
 
 
 def main():
-    main_alg = DroneAlgorithm(
+    main_alg = MainDroneAlgorithm(
         Dummy_detector(),
         Dummy_source(),
         BasicClient(

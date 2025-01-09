@@ -1,7 +1,7 @@
-from BirdBrain.interfaces import Source, ImageDetection, DroneClient
+from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm
 
 
-class DroneAlgorithm:
+class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
                  drone_client: DroneClient):
         self.source = source
