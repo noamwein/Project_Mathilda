@@ -18,10 +18,10 @@ def main(video_path, image_path, display):
         ImageDetectionModel(reference_image_path=image_path, display=display),
         video_source,
         BasicClient(
-            'tcp:127.0.0.1:5763',
-            3,
-            10,
-            20,
+            connection_string='tcp:127.0.0.1:5763',
+            initial_altitude=5,
+            max_altitude=10,
+            min_battery_percent=20,
             logger=logging.getLogger(__name__))
     )
 
