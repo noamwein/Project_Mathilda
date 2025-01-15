@@ -4,18 +4,14 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from Rogatka.drone_algorithm import MainDroneAlgorithm
+from Rogatka.testing.test_algorithms import TestAlgorithm1
 from Rogatka.drone_client import BasicClient
-from Rogatka.testing.dummy_img_detection import Dummy_detector
-from Rogatka.testing.dummy_source import Dummy_source
 
 
 def main():
-    main_alg = MainDroneAlgorithm(
-        Dummy_detector(),
-        Dummy_source(),
+    main_alg = TestAlgorithm1(
         BasicClient(
-            'tcp:127.0.0.1:5763',
+            '/dev/ttyACM0',
             3,
             10,
             20,
