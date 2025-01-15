@@ -21,8 +21,8 @@ class TestAlgorithm2(DroneAlgorithm):
     def main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-
-        self.drone_client.return_to_launch()
+        time.sleep(1)
+        self.drone_client.land()
         self.drone_client.disconnect()
 
 
@@ -42,7 +42,7 @@ class TestAlgorithm3(DroneAlgorithm):
 
         time.sleep(1)
         
-        self.drone_client.return_to_launch()
+        self.drone_client.land()
         self.drone_client.disconnect()
 
 
@@ -58,7 +58,7 @@ class TestAlgorithm4(DroneAlgorithm):
 
         time.sleep(1)
         
-        self.drone_client.return_to_launch()
+        self.drone_client.land()
         self.drone_client.disconnect()
 
 
@@ -78,5 +78,5 @@ class TestAlgorithm5(DroneAlgorithm):
 
         time.sleep(2)
         
-        self.drone_client.return_to_launch()
+        self.drone_client.land()
         self.drone_client.disconnect()

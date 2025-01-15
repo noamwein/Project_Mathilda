@@ -56,6 +56,10 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
+    def land(self):
+        pass
+
+    @abstractmethod
     def disconnect(self):
         pass
 

@@ -212,6 +212,11 @@ class BasicClient(DroneClient):
         self.vehicle.mode = VehicleMode("RTL")
         time.sleep(1)
 
+    def land(self):
+        self.log_and_print("Landing!")
+        self.vehicle.mode = VehicleMode("LAND")
+        time.sleep(1)
+
     def distance_from_home(self):
         # Get the home location
         if self.vehicle.gps_0.eph is None:
