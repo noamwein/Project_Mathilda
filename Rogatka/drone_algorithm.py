@@ -14,14 +14,17 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def assassinate(self):
         self.done = True
+    
+    @property
+    def frame(self):
+        return self.source.get_current_frame()
 
     def main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
         while not self.mission_completed() and not self.drone_client.mission_terminated():
-            frame = self.source.get_current_frame()
-            target_position = self.img_detection.locate_target(frame=frame)
+            target_position = self.img_detection.locate_target(self.frame)
             if target_position != (None, None):
                 if self.drone_client.is_on_target(target_position):
                     if self.drone_client.has_stopped():

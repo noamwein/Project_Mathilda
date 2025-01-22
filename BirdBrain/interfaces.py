@@ -24,6 +24,10 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
+    def is_armed(self):
+        pass
+
+    @abstractmethod
     def takeoff(self):
         pass
 
@@ -33,6 +37,10 @@ class DroneClient(ABC):
 
     @abstractmethod
     def goto_target(self, target_position: Tuple[int, int]):
+        pass
+
+    @abstractmethod
+    def goto_fast(self, target_position):
         pass
 
     @abstractmethod
