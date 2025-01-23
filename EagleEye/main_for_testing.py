@@ -8,6 +8,7 @@ from EagleEye.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
 from EagleEye.video_source import VideoSource
 from EagleEye.camera_source import CameraSource
+from EagleEye.picamera_source import PiCameraSource
 from Screech.config import SERVER_IP, SERVER_PORT
 from Screech.image_detection_client import RemoteImageDetection
 
@@ -59,7 +60,7 @@ def main():
         model = RemoteImageDetection(image_detection_model=model, server_host=args.server_ip,
                                      server_port=args.server_port)
     if args.camera_source:
-        video_source = CameraSource()
+        video_source = PiCameraSource()
     else:
         video_source = VideoSource(args.video_path, START_FROM_SECONDS)
 

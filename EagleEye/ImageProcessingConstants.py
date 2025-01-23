@@ -13,7 +13,7 @@ FRAME_WIDTH = 800  # Display frame width (resizing it to a small window)
 FRAME_HEIGHT = 450  # Display frame height (resizing it to a small window)
 
 # Paths
-PATH = r"C:\Users\TLP-001\OneDrive - click\Documents\GitHub\Project_Mathilda\media"
+PATH = '../'
 VIDEO_PATH = PATH + r"/beker_from_drone.MP4"
 REFERENCE_IMAGE_PATH = PATH + r"/b6.png"
 
