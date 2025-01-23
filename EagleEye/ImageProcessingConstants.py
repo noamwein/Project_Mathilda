@@ -2,7 +2,7 @@ import cv2
 
 # CONSTANTS
 START_FROM_SECONDS = 0  # Video start time in seconds
-PROCESS_EVERY_FRAMES = 5  # Process face recognition every X frames
+PROCESS_EVERY_FRAMES = 100  # Process face recognition every X frames
 MIN_TRACKING_POINTS = 4
 DISTANCE_THRESHOLD = 150
 PADDING_PIXELS = 0

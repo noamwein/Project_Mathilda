@@ -58,6 +58,9 @@ class BasicClient(DroneClient):
         print(message)
         logging.info(message)
 
+    def is_armed(self):
+        return self.self.vehicle.armed
+
     def connect(self):
         self.log_and_print('Connecting...')
         self.vehicle = connect(self.connection_string, wait_ready=True)
@@ -203,6 +206,33 @@ class BasicClient(DroneClient):
             self.face_target(target_position)
             self.state = State.ROTATION
 
+    def goto_fast(self, target_position, speed=1.0):
+        """
+        Moves the drone towards the target position at a constant speed.
+
+        Parameters:
+            target_position (tuple): Target (x, y) position in Cartesian coordinates.
+            speed (float): Absolute speed in the XY plane (default is 1 m/s).
+        """
+        target_x, target_y = target_position
+
+        # Calculate the distance to the target
+        distance = math.sqrt(target_x**2 + target_y**2)
+        if distance == 0:
+            self.log_and_print("Already at the target position!")
+            return
+
+        # Calculate the unit direction vector
+        direction_x = target_x / distance
+        direction_y = target_y / distance
+
+        # Scale by the desired speed
+        velocity_x = direction_x * speed
+        velocity_y = direction_y * speed
+
+        # Set the velocity in the XY plane, keeping Z velocity 0
+        self.set_speed(velocity_x, velocity_y, 0.0)
+
     def has_stopped(self, error_tolerence=0.05):
         return abs(self.vehicle.groundspeed) < error_tolerence
 
@@ -220,6 +250,11 @@ class BasicClient(DroneClient):
 
     def return_to_launch(self):
         self.log_and_print("Returning home!")
+        self.vehicle.mode = VehicleMode("LAND")
+        time.sleep(1)
+
+    def land(self):
+        self.log_and_print("Landing!")
         self.vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
 
