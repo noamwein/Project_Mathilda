@@ -107,7 +107,7 @@ class ImageDetectionModel(ImageDetection):
             bbox_width = self.bbox[1] - self.bbox[0]
             bbox_height = self.bbox[3] - self.bbox[2]
 
-            if bbox_width >  (4 * self.og_face_size[0]) and bbox_height > (4 * self.og_face_size[1]):
+            if bbox_width >  (5 * self.og_face_size[0]) and bbox_height > (5 * self.og_face_size[1]):
                 print("Face lost due to excessive bounding box size.")
                 self.face_found = False
 
@@ -169,8 +169,8 @@ class ImageDetectionModel(ImageDetection):
 
     def draw_tracking(self, frame, points, avg_x, avg_y):
         for point in points:
-            cv2.circle(frame, (int(point[0][0]), int(point[0][1])), 2, (0, 0, 255), -1)
-        cv2.circle(frame, (int(avg_x), int(avg_y)), 5, (255, 0, 0), -1)
+            cv2.circle(frame, (int(point[0][0]), int(point[0][1])), 5, (0, 0, 255), -1)
+        cv2.circle(frame, (int(avg_x), int(avg_y)), 25, (255, 0, 0), -1)
 
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
@@ -188,7 +188,7 @@ class ImageDetectionModel(ImageDetection):
         height_ratio = bbox_height / frame_height
 
         # Determine buffer size based on the ratio (smaller ratio -> larger buffer)
-        buffer_factor = max(1.0, 1.0 / (10 * (width_ratio + height_ratio)))
+        buffer_factor = max(1.0, 1.0 / (20 * (width_ratio + height_ratio)))
         bbox_width = min(bbox_width, int(2.5 * self.og_face_size[0]))
         bbox_height = min(bbox_height, int(2.5 * self.og_face_size[1]))
         buffer_x = int(bbox_width * buffer_factor)
