@@ -21,8 +21,10 @@ class TestAlgorithm2(DroneAlgorithm):
     def main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-
+        print("Waiting 5 seconds...")
+        time.sleep(5)
         self.drone_client.return_to_launch()
+        time.sleep(5)
         self.drone_client.disconnect()
 
 

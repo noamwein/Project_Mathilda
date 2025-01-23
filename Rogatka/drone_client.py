@@ -66,7 +66,7 @@ class BasicClient(DroneClient):
     def takeoff(self):
         self.log_and_print("Taking off...")
         self.state = State.TAKEOFF
-        self.vehicle.mode = VehicleMode("GUIDED")
+        self.vehicle.mode = VehicleMode("STABILIZE")
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = self.vehicle.commands
         cmds.download()
@@ -75,8 +75,19 @@ class BasicClient(DroneClient):
 
         while not self.vehicle.armed:
             time.sleep(1)
+        print("armed?")
+        self.log_and_print("Armed!")
+        
+        self.vehicle.simple_takeoff(self.initial_altitude)
 
-        self.vehicle.wait_simple_takeoff(self.initial_altitude)
+        while True:
+            altitude = self.vehicle.location.global_relative_frame.alt
+            self.log_and_print(f"Alt is: {altitude}")
+            if altitude >= 0.95 * self.initial_altitude:
+                break
+            time.sleep(1)
+
+        """self.vehicle.wait_simple_takeoff(self.initial_altitude)"""
 
         self.log_and_print("In the air!!")
     
@@ -209,7 +220,7 @@ class BasicClient(DroneClient):
 
     def return_to_launch(self):
         self.log_and_print("Returning home!")
-        self.vehicle.mode = VehicleMode("RTL")
+        self.vehicle.mode = VehicleMode("LAND")
         time.sleep(1)
 
     def distance_from_home(self):
