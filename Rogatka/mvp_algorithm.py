@@ -2,7 +2,7 @@ from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgor
 import time
 
 
-class MainDroneAlgorithm(DroneAlgorithm):
+class MVPDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
                  drone_client: DroneClient):
         self.source = source

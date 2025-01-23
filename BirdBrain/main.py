@@ -8,13 +8,13 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 from EagleEye.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
 from EagleEye.VideoSource import VideoSource
-from Rogatka.drone_algorithm import MainDroneAlgorithm
+from Rogatka.mvp_algorithm import MVPDroneAlgorithm
 from Rogatka.drone_client import BasicClient
 
 
 def main(video_path, image_path, display):
     video_source = VideoSource(video_path, START_FROM_SECONDS)
-    main_alg = MainDroneAlgorithm(
+    main_alg = MVPDroneAlgorithm(
         ImageDetectionModel(reference_image_path=image_path, display=display),
         video_source,
         BasicClient(
