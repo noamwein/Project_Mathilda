@@ -66,7 +66,7 @@ def main():
     done = False
     while not done:
         target_position = model.locate_target(video_source.get_current_frame())
-        print(target_position)
+        #print(target_position)
         # Uncomment and implement drone client logic if needed
         # if self.drone_client.is_on_target(target_position):
         #     if self.drone_client.has_stopped():
