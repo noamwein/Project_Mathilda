@@ -19,6 +19,9 @@ import enum
 import os
 
 MAXIMUM_DISTANCE = 12
+KILL_SWITCH_CHANNEL = '8'
+KILL_SWITCH_MODE = 'ALTHOLD'
+
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -53,23 +56,58 @@ class BasicClient(DroneClient):
             format='%(asctime)s - %(message)s',
             datefmt='%H:%M:%S'
         )
-    
+
     def log_and_print(self, message: str):
         print(message)
         logging.info(message)
 
     def is_armed(self):
-        return self.self.vehicle.armed
+        self.vehicle.flush()
+        return self.vehicle.armed
 
     def connect(self):
+        def status_listener(self, name, message):
+            self.log_and_print(f"[STATUS]: {message.text}")
+
+        # Function to handle changes in the kill switch position
+        def kill_switch_listener(_self, attr_name, message):
+            self.log_and_print(f"Radio signal detected: {message.chan8_raw}")
+
+            if message.chan8_raw > 1500:
+                # Kill switch is ON: Enable manual control
+                self.vehicle.channels.overrides = {}  # Clear all overrides
+                self.vehicle.mode = VehicleMode(KILL_SWITCH_MODE)
+                self.log_and_print("Kill switch activated: Manual control enabled.")
+                exit(1)
+
+        def max_alt_listener(_self, attr_name, value):
+            current_altitude = value.global_relative_frame.alt
+            if current_altitude is not None and current_altitude >= self.max_altitude:
+                self.log_and_print(f"Altitude {current_altitude}m exceeds maximum limit of {self.max_altitude}m. Initiating landing.")
+                # exit(1)
+                # self.vehicle.mode = VehicleMode("LAND")
+
         self.log_and_print('Connecting...')
         self.vehicle = connect(self.connection_string, wait_ready=True)
+
+        # Add listeners
+        self.vehicle.add_attribute_listener('RC_CHANNELS_RAW', kill_switch_listener)
+        self.vehicle.add_attribute_listener('location', max_alt_listener)
+        self.vehicle.add_message_listener('STATUSTEXT', status_listener)
+
         self.log_and_print('Connected!')
 
     def takeoff(self):
         self.log_and_print("Taking off...")
         self.state = State.TAKEOFF
-        self.vehicle.mode = VehicleMode("STABILIZE")
+        mode = 'GUIDED'
+        self.vehicle.mode = VehicleMode(mode)
+
+        while not self.vehicle.mode == mode:
+            print('Waiting for mode to change...')
+            self.vehicle.flush()
+            time.sleep(0.1)
+
         # Download the vehicle waypoints (commands). Wait until download is complete.
         cmds = self.vehicle.commands
         cmds.download()
@@ -77,23 +115,25 @@ class BasicClient(DroneClient):
         self.vehicle.armed = True
 
         while not self.vehicle.armed:
+            print('Waiting for arm...')
+            self.vehicle.flush()
             time.sleep(1)
-        print("armed?")
+
         self.log_and_print("Armed!")
-        
-        self.vehicle.simple_takeoff(self.initial_altitude)
+
+        # self.vehicle.simple_takeoff(self.initial_altitude)
 
         while True:
             altitude = self.vehicle.location.global_relative_frame.alt
             self.log_and_print(f"Alt is: {altitude}")
             if altitude >= 0.95 * self.initial_altitude:
                 break
-            time.sleep(1)
+            time.sleep(0.1)
 
         """self.vehicle.wait_simple_takeoff(self.initial_altitude)"""
 
         self.log_and_print("In the air!!")
-    
+
     def get_altitude(self):
         altitude = self.vehicle.location.global_relative_frame.alt
         return altitude
@@ -217,7 +257,7 @@ class BasicClient(DroneClient):
         target_x, target_y = target_position
 
         # Calculate the distance to the target
-        distance = math.sqrt(target_x**2 + target_y**2)
+        distance = math.sqrt(target_x ** 2 + target_y ** 2)
         if distance == 0:
             self.log_and_print("Already at the target position!")
             return
@@ -270,7 +310,7 @@ class BasicClient(DroneClient):
     def disconnect(self):
         self.log_and_print("Disconnecting.")
         self.vehicle.close()
-    
+
     def mission_terminated(self):
         return self.terminated
 
@@ -295,8 +335,10 @@ def calculate_direction(target_position: Tuple[int, int]):
 
     return (yaw_angle * 360) / (2 * math.pi)
 
+
 def is_aligned(target_position: Tuple[int, int], error_tolerence=5) -> bool:
     return (abs(target_position[0]) < error_tolerence) and (target_position[1] >= 0)
+
 
 def get_distance_meters(location1, location2):
     """
@@ -305,6 +347,7 @@ def get_distance_meters(location1, location2):
     lat_diff = location2.lat - location1.lat
     lon_diff = location2.lon - location1.lon
     return math.sqrt((lat_diff * 111320.0) ** 2 + (lon_diff * 111320.0) ** 2)
+
 
 def calculate_target_location(current_location, heading, distance):
     """
