@@ -85,9 +85,9 @@ class DroneClient(ABC):
     def disconnect(self):
         pass
 
-    # @abstractmethod
-    # def move_forward(self, distance):
-    #     pass
+    @abstractmethod
+    def move_forward(self, distance):
+        pass
 
     @abstractmethod
     def rotate(self, angle):
@@ -96,6 +96,11 @@ class DroneClient(ABC):
     @abstractmethod
     def mission_terminated(self) -> bool:
         pass
+
+    @abstractmethod
+    def change_altitude(self, delta):
+        pass
+
 
 
 class DroneAlgorithm(ABC):

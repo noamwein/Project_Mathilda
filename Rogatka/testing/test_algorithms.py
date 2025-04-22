@@ -8,7 +8,7 @@ class TestAlgorithm1(DroneAlgorithm):
 
     def main(self):
         self.drone_client.connect()
-        for _ in range(20):
+        for _ in range(10):
             print(self.drone_client.get_altitude())
             time.sleep(1)
         self.drone_client.disconnect()
@@ -56,9 +56,11 @@ class TestAlgorithm4(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        self.drone_client.goto_target((1,1))
-
         time.sleep(1)
+
+        self.drone_client.move_forward(1.5)
+
+        time.sleep(2)
         
         self.drone_client.land()
         self.drone_client.disconnect()
@@ -72,13 +74,39 @@ class TestAlgorithm5(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        self.drone_client.goto_target((1,1))
+        time.sleep(1)
 
-        time.sleep(2)
+        for i in range(4):
 
-        self.drone_client.goto_target((0,1))
+            self.drone_client.move_forward(1.5)
 
-        time.sleep(2)
+            time.sleep(2)
+
+            self.drone_client.rotate(-90)
+
+            time.sleep(2)
+        
+        self.drone_client.land()
+        self.drone_client.disconnect()
+
+
+class TestAlgorithm6(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        self.drone_client = drone_client
+
+    def main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+
+        time.sleep(3)
+
+        self.drone_client.change_altitude(0.5)
+
+        time.sleep(3)
+
+        self.drone_client.change_altitude(-0.5)
+
+        time.sleep(3)
         
         self.drone_client.land()
         self.drone_client.disconnect()
