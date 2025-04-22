@@ -83,7 +83,8 @@ class DroneClient(ABC):
     def mission_terminated(self) -> bool:
         pass
 
+
 class DroneAlgorithm(ABC):
     @abstractmethod
-    def main():
+    def main(self):
         pass
