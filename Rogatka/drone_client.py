@@ -99,6 +99,14 @@ class BasicClient(DroneClient):
         self.vehicle.add_attribute_listener('location', max_alt_listener)
         self.vehicle.add_message_listener('STATUSTEXT', status_listener)
 
+        # wait until battery info arrives
+        while self.vehicle.battery.voltage is None:
+            print("Waiting for battery data…")
+            time.sleep(0.5)
+
+        # read and print voltage
+        self.log_and_print(f"Battery voltage: {self.vehicle.battery.voltage:.2f} V")
+
         self.log_and_print('Connected!')
 
     @require_guided
@@ -152,11 +160,35 @@ class BasicClient(DroneClient):
             current_location = self.vehicle.location.global_relative_frame
             distance_to_target = get_distance_meters(current_location, target_location)
 
-            if distance_to_target <= 0.5:  # Consider 1 meter as the acceptable threshold
+            if distance_to_target <= 0.2:  # Consider 1 meter as the acceptable threshold
                 self.log_and_print("Reached target location")
                 break
 
             time.sleep(1)
+    
+    @require_guided
+    def change_altitude(self, delta: float):
+        """
+        Change altitude by `delta` meters (positive → ascend, negative → descend).
+        """
+        self.log_and_print("Changing altitude...")
+        # 1. Read current altitude
+        lat = self.vehicle.location.global_relative_frame.lat
+        lon = self.vehicle.location.global_relative_frame.lon
+        current_alt = self.vehicle.location.global_relative_frame.alt
+
+        # 2. Compute new target, clamp ≥ 0 and ≤ max_altitude
+        target_alt = max(0.0, min(current_alt + delta, self.max_altitude))
+
+        # 3. Command the vehicle to fly to the new altitude at current lat/lon
+        self.vehicle.simple_goto(LocationGlobalRelative(lat, lon, target_alt))
+
+        # 4. Wait until we’re within `tolerance` meters of target
+        while True:
+            cur = self.vehicle.location.global_relative_frame.alt
+            if abs(cur - target_alt) <= 0.2:
+                break
+            time.sleep(0.5)
 
     @require_guided
     def rotate(self, angle, speed_factor=0.8):
@@ -313,6 +345,13 @@ class BasicClient(DroneClient):
         return dist
 
     def disconnect(self):
+        # wait until battery info arrives
+        while self.vehicle.battery.voltage is None:
+            print("Waiting for battery data…")
+            time.sleep(0.5)
+
+        # read and print voltage
+        self.log_and_print(f"Battery voltage: {self.vehicle.battery.voltage:.2f} V")
         self.log_and_print("Disconnecting.")
         self.vehicle.close()
 
@@ -354,28 +393,58 @@ def get_distance_meters(location1, location2):
     return math.sqrt((lat_diff * 111320.0) ** 2 + (lon_diff * 111320.0) ** 2)
 
 
+# def calculate_target_location(current_location, heading, distance):
+#     """
+#     Calculates the target location based on the current location, heading, and distance.
+#     """
+#     earth_radius = 6378137.0  # Earth's radius in meters
+
+#     # Convert heading and distance to radians
+#     heading_rad = math.radians(heading)
+#     distance_rad = distance / earth_radius
+
+#     # Current latitude and longitude in radians
+#     lat1 = math.radians(current_location.lat)
+#     lon1 = math.radians(current_location.lon)
+
+#     # Calculate target latitude and longitude
+#     lat2 = math.asin(math.sin(lat1) * math.cos(distance_rad) +
+#                      math.cos(lat1) * math.sin(distance_rad) * math.cos(heading_rad))
+#     lon2 = lon1 + math.atan2(math.sin(heading_rad) * math.sin(distance_rad) * math.cos(lat1),
+#                              math.cos(distance_rad) - math.sin(lat1) * math.sin(lat2))
+
+#     # Convert back to degrees
+#     target_lat = math.degrees(lat2)
+#     target_lon = math.degrees(lon2)
+
+    # return LocationGlobalRelative(target_lat, target_lon, current_location.alt)
+
+
 def calculate_target_location(current_location, heading, distance):
     """
-    Calculates the target location based on the current location, heading, and distance.
+    Approximate target location for small distances (<100 m) using flat-Earth projection.
     """
-    earth_radius = 6378137.0  # Earth's radius in meters
+    # Constants
+    METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
 
-    # Convert heading and distance to radians
+    # Heading to radians
     heading_rad = math.radians(heading)
-    distance_rad = distance / earth_radius
 
-    # Current latitude and longitude in radians
-    lat1 = math.radians(current_location.lat)
-    lon1 = math.radians(current_location.lon)
+    # Compute local offsets in meters (dx east, dy north)
+    dx = distance * math.sin(heading_rad)
+    dy = distance * math.cos(heading_rad)
 
-    # Calculate target latitude and longitude
-    lat2 = math.asin(math.sin(lat1) * math.cos(distance_rad) +
-                     math.cos(lat1) * math.sin(distance_rad) * math.cos(heading_rad))
-    lon2 = lon1 + math.atan2(math.sin(heading_rad) * math.sin(distance_rad) * math.cos(lat1),
-                             math.cos(distance_rad) - math.sin(lat1) * math.sin(lat2))
+    # Current position in degrees
+    lat = current_location.lat
+    lon = current_location.lon
 
-    # Convert back to degrees
-    target_lat = math.degrees(lat2)
-    target_lon = math.degrees(lon2)
+    # Convert meter offsets to degree offsets
+    delta_lat = dy / METERS_PER_DEGREE
+    # Longitude scales with cos(lat)
+    delta_lon = dx / (METERS_PER_DEGREE * math.cos(math.radians(lat)))
 
-    return LocationGlobalRelative(target_lat, target_lon, current_location.alt)
+    # Apply offsets
+    target_lat = lat + delta_lat
+    target_lon = lon + delta_lon
+
+    return LocationGlobalRelative(target_lat, target_lon, current_location.alt)  # unchanged altitude
