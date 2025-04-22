@@ -1,6 +1,6 @@
 import collections.abc
 
-from BirdBrain.interfaces import DroneClient
+from BirdBrain.interfaces import DroneClient, require_guided
 
 collections.MutableMapping = collections.abc.MutableMapping
 
@@ -57,12 +57,16 @@ class BasicClient(DroneClient):
             datefmt='%H:%M:%S'
         )
 
+    def check_if_mode_guided(self) -> bool:
+        if self.vehicle is None:
+            return False
+        return self.vehicle.mode == 'GUIDED'
+
     def log_and_print(self, message: str):
         print(message)
         logging.info(message)
 
     def is_armed(self):
-        self.vehicle.flush()
         return self.vehicle.armed
 
     def connect(self):
@@ -97,31 +101,23 @@ class BasicClient(DroneClient):
 
         self.log_and_print('Connected!')
 
+    @require_guided
     def takeoff(self):
         self.log_and_print("Taking off...")
         self.state = State.TAKEOFF
-        mode = 'GUIDED'
-        self.vehicle.mode = VehicleMode(mode)
 
-        while not self.vehicle.mode == mode:
-            print('Waiting for mode to change...')
-            self.vehicle.flush()
-            time.sleep(0.1)
-
-        # Download the vehicle waypoints (commands). Wait until download is complete.
-        cmds = self.vehicle.commands
-        cmds.download()
-        cmds.wait_ready()
         self.vehicle.armed = True
+        self.vehicle.flush()
+        time.sleep(3)
+        input('Confirm armed [Enter]: ')
 
-        while not self.vehicle.armed:
-            print('Waiting for arm...')
-            self.vehicle.flush()
-            time.sleep(1)
+        # while not self.vehicle.armed:
+        #     print('Waiting for arm...')
+        #     time.sleep(1)
 
         self.log_and_print("Armed!")
 
-        # self.vehicle.simple_takeoff(self.initial_altitude)
+        self.vehicle.simple_takeoff(self.initial_altitude)
 
         while True:
             altitude = self.vehicle.location.global_relative_frame.alt
@@ -138,6 +134,7 @@ class BasicClient(DroneClient):
         altitude = self.vehicle.location.global_relative_frame.alt
         return altitude
 
+    @require_guided
     def move_forward(self, distance):
         """
         Moves the drone forward in the direction of its current heading.
@@ -161,6 +158,7 @@ class BasicClient(DroneClient):
 
             time.sleep(1)
 
+    @require_guided
     def rotate(self, angle, speed_factor=0.8):
         """
         Rotate the drone by a fixed yaw angle at a specified speed factor.
@@ -192,6 +190,7 @@ class BasicClient(DroneClient):
         self.vehicle.send_mavlink(msg)
         self.vehicle.flush()
 
+    @require_guided
     def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
         Move vehicle in direction based on specified velocity vectors.
@@ -214,6 +213,7 @@ class BasicClient(DroneClient):
         self.vehicle.send_mavlink(msg)
         self.vehicle.commands.upload()
 
+    @require_guided
     def goto_target(self, target_position):
         if self.state == State.TAKEOFF:  # acctually finished takeoff
             self.log_and_print("Starting rotation")
@@ -246,6 +246,7 @@ class BasicClient(DroneClient):
             self.face_target(target_position)
             self.state = State.ROTATION
 
+    @require_guided
     def goto_fast(self, target_position, speed=1.0):
         """
         Moves the drone towards the target position at a constant speed.
@@ -276,6 +277,7 @@ class BasicClient(DroneClient):
     def has_stopped(self, error_tolerence=0.05):
         return abs(self.vehicle.groundspeed) < error_tolerence
 
+    @require_guided
     def stop_movement(self):
         self.set_speed(0, 0, 0)
         self.state = State.ON_TARGET
@@ -283,16 +285,19 @@ class BasicClient(DroneClient):
     def is_on_target(self, target_position: Tuple[int, int], error_tolerence=0.1):
         return math.sqrt(target_position[0] ** 2 + target_position[1] ** 2) < error_tolerence
 
+    @require_guided
     def face_target(self, target_position):
         direction = calculate_direction(target_position)
         self.log_and_print(f"Rotating {direction} degrees...")
         self.rotate(direction)
 
+    @require_guided
     def return_to_launch(self):
         self.log_and_print("Returning home!")
-        self.vehicle.mode = VehicleMode("LAND")
+        self.vehicle.mode = VehicleMode("RTL")
         time.sleep(1)
 
+    @require_guided
     def land(self):
         self.log_and_print("Landing!")
         self.vehicle.mode = VehicleMode("LAND")

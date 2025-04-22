@@ -1,3 +1,4 @@
+import time
 from abc import ABC, abstractmethod
 from typing import Tuple
 
@@ -18,7 +19,20 @@ class ImageDetection(ABC):
         pass
 
 
+def require_guided(func):
+    def wrapper(self: DroneClient, *args, **kwargs):
+        while not self.check_if_mode_guided():
+            print('Waiting for guided...')
+            time.sleep(0.5)
+        func(self, *args, **kwargs)
+    return wrapper
+
+
 class DroneClient(ABC):
+    @abstractmethod
+    def check_if_mode_guided(self) -> bool:
+        pass
+
     @abstractmethod
     def connect(self):
         pass
@@ -34,26 +48,26 @@ class DroneClient(ABC):
     @abstractmethod
     def get_altitude(self):
         pass
+    #
+    # @abstractmethod
+    # def goto_target(self, target_position: Tuple[int, int]):
+    #     pass
 
-    @abstractmethod
-    def goto_target(self, target_position: Tuple[int, int]):
-        pass
-
-    @abstractmethod
-    def goto_fast(self, target_position):
-        pass
-
-    @abstractmethod
-    def has_stopped(self):
-        pass
-
-    @abstractmethod
-    def stop_movement(self):
-        pass
-
-    @abstractmethod
-    def is_on_target(self, target_position: Tuple[int, int]):
-        pass
+    # @abstractmethod
+    # def goto_fast(self, target_position):
+    #     pass
+    #
+    # @abstractmethod
+    # def has_stopped(self):
+    #     pass
+    #
+    # @abstractmethod
+    # def stop_movement(self):
+    #     pass
+    #
+    # @abstractmethod
+    # def is_on_target(self, target_position: Tuple[int, int]):
+    #     pass
 
     @abstractmethod
     def distance_from_home(self) -> float:
@@ -71,9 +85,9 @@ class DroneClient(ABC):
     def disconnect(self):
         pass
 
-    @abstractmethod
-    def move_forward(self, distance):
-        pass
+    # @abstractmethod
+    # def move_forward(self, distance):
+    #     pass
 
     @abstractmethod
     def rotate(self, angle):
