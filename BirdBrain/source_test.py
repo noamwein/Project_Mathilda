@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 
 import cv2
 
-from EagleEye.picamera_source import PiCameraSource
+from EagleEye.sources.picamera_source import PiCameraSource
 
 
 def main():

@@ -4,11 +4,10 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from EagleEye.ImageDetectionModel import ImageDetectionModel
+from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
-from EagleEye.video_source import VideoSource
-from EagleEye.camera_source import CameraSource
-from EagleEye.picamera_source import PiCameraSource
+from EagleEye.sources.video_source import VideoSource
+from EagleEye.sources.picamera_source import PiCameraSource
 from Screech.config import SERVER_IP, SERVER_PORT
 from Screech.image_detection_client import RemoteImageDetection
 

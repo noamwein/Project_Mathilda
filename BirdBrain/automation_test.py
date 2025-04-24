@@ -6,7 +6,7 @@ import argparse
 # allow importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from Rogatka.testing.test_algorithms import (
+from Rogatka.test_algorithms import (
     TestAlgorithm1,
     TestAlgorithm2,
     TestAlgorithm3,

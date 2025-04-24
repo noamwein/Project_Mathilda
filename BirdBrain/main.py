@@ -5,9 +5,9 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from EagleEye.ImageDetectionModel import ImageDetectionModel
+from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import *
-from EagleEye.VideoSource import VideoSource
+from EagleEye.sources.video_source import VideoSource
 from Rogatka.mvp_algorithm import MVPDroneAlgorithm
 from Rogatka.drone_client import BasicClient
 

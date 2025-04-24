@@ -3,7 +3,7 @@ import traceback
 from typing import Tuple
 
 from BirdBrain.interfaces import ImageDetection
-from EagleEye.ImageDetectionModel import ImageDetectionModel
+from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
 from Screech.client import Client
 from Screech.request_handler import RequestHandler
 

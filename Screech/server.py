@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 from Screech.request_handler import RequestHandler, send_data, receive_data
 from Screech.config import SERVER_PORT
 from Screech.image_detection_client import ImageDetectionRequestHandler
-from EagleEye.ImageDetectionModel import ImageDetectionModel
+from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
 from EagleEye.ImageProcessingConstants import REFERENCE_IMAGE_PATH
 
 

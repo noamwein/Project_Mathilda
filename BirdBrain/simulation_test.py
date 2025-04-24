@@ -6,8 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 
 from Rogatka.drone_algorithm import MainDroneAlgorithm
 from Rogatka.drone_client import BasicClient
-from Rogatka.testing.dummy_img_detection import Dummy_detector
-from Rogatka.testing.dummy_source import Dummy_source
+from EagleEye.image_detection_models.dummy_img_detection import Dummy_detector
+from EagleEye.sources.dummy_source import Dummy_source
 
 
 def main():
