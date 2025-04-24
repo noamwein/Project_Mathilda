@@ -22,8 +22,8 @@ class PiCameraSource(Source):
 
         # Apply camera controls
         self.picam2.set_controls({
-            "AfMode": 2,                      # Disable auto-focus
-            "LensPosition": 5.8,              # Infinite focus (if supported)
+            "AfMode": 2,                      # Continuous auto-focus
+            # "LensPosition": 5.8,              # Infinite focus (if supported)
             "AeEnable": False,                # Disable auto-exposure
             "ExposureTime": 1000,              # Minimum exposure in microseconds (may vary per sensor)
             "AnalogueGain": 20.0               # Minimum analog gain
