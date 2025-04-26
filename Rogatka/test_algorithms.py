@@ -110,3 +110,44 @@ class TestAlgorithm6(DroneAlgorithm):
         
         self.drone_client.land()
         self.drone_client.disconnect()
+
+
+
+class TestAlgorithm7(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        self.drone_client = drone_client
+        
+    def wait(self, seconds=3):
+        time.sleep(seconds)
+        
+    def main(self):
+        # Constants
+        LONG_FORWARD = 3  
+        SHORT_FORWARD = 1 
+        TURN_ANGLE = 90
+        STEPS = 3  # number of snake segments
+
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        self.wait()
+
+        for i in range(STEPS):
+            # Move long
+            self.drone_client.move_forward(LONG_FORWARD)
+            self.wait()
+
+            # Turn left (even i) or right (odd i)
+            turn = -TURN_ANGLE if i % 2 == 0 else TURN_ANGLE
+            self.drone_client.rotate(turn)
+            self.wait()
+
+            # Move short
+            self.drone_client.move_forward(SHORT_FORWARD)
+            self.wait()
+
+            # Turn left (even i) or right (odd i)
+            self.drone_client.rotate(turn)
+            self.wait()
+
+        self.drone_client.land()
+        self.drone_client.disconnect()
