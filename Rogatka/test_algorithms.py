@@ -1,5 +1,5 @@
 from BirdBrain.interfaces import DroneAlgorithm, DroneClient
-from drone_client import calculate_target_location
+from .drone_client import calculate_target_location, get_distance_meters
 import time
 from dronekit import LocationGlobalRelative
 
@@ -168,8 +168,8 @@ class TestAlgorithm8(DroneAlgorithm):
         TURN_ANGLE = 90
         STEPS = 1  # number of snake segments
 
-        # self.drone_client.connect()
-        # self.drone_client.takeoff()
+        self.drone_client.connect()
+        self.drone_client.takeoff()
         self.wait()
         
         # waypoints = [(self.drone_client.get_location(), self.drone_client.get_heading(), "movement")]
@@ -203,7 +203,36 @@ class TestAlgorithm8(DroneAlgorithm):
             
         print(waypoints)
         
-        # self.drone_client.follow_path(waypoints)
+        self.drone_client.follow_path(waypoints)
 
-        # self.drone_client.land()
-        # self.drone_client.disconnect()
+        self.drone_client.land()
+        self.drone_client.disconnect()
+        
+        
+        
+class TestAlgorithm9(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        self.drone_client = drone_client
+        
+    def wait(self, seconds=3):
+        time.sleep(seconds)
+        
+    def main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        self.wait()
+        
+        waypoints = [(LocationGlobalRelative(31.76950, 35.19828, self.drone_client.get_initial_altitude()), 90, "movement"),
+                     (LocationGlobalRelative(31.76950, 35.19828, self.drone_client.get_initial_altitude()), 90, "rotation"),]
+        #calc dist from my location to target location
+        print(get_distance_meters(
+            self.drone_client.get_current_location(), waypoints[0][0]
+        ))
+        input("Press Enter to continue...")
+        input("Press Enter to continue again...")
+        self.drone_client.follow_path(waypoints)
+        
+        self.drone_client.land()
+        self.drone_client.disconnect()
+
+        

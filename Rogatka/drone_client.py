@@ -357,6 +357,7 @@ class BasicClient(DroneClient):
                 self.log_and_print(f"Rotating to angle: {heading}")
                 self.rotate_to(heading)
                 time.sleep(1)  # Wait for rotation to complete
+            time.sleep(1)
 
     def has_stopped(self, error_tolerence=0.05):
         return abs(self.vehicle.groundspeed) < error_tolerence
