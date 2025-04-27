@@ -13,6 +13,8 @@ from Rogatka.test_algorithms import (
     TestAlgorithm4,
     TestAlgorithm5,
     TestAlgorithm6,
+    TestAlgorithm7,
+    TestAlgorithm8,
 )
 from Rogatka.drone_client import BasicClient
 
@@ -37,6 +39,9 @@ def main():
         4: TestAlgorithm4,
         5: TestAlgorithm5,
         6: TestAlgorithm6,
+        7: TestAlgorithm7,
+        8: TestAlgorithm8,
+        
     }
     selected_algo_cls = algo_map[args.algorithm]
 

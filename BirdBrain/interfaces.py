@@ -36,6 +36,10 @@ class DroneClient(ABC):
     @abstractmethod
     def connect(self):
         pass
+    
+    @abstractmethod
+    def get_current_location(self):
+        pass
 
     @abstractmethod
     def is_armed(self):
@@ -48,6 +52,19 @@ class DroneClient(ABC):
     @abstractmethod
     def get_altitude(self):
         pass
+    
+    @abstractmethod
+    def get_heading(self):
+        pass
+    
+    @abstractmethod
+    def follow_path(self, waypoints: list):
+        pass
+    
+    @abstractmethod
+    def get_initial_altitude(self):
+        pass
+    
     #
     # @abstractmethod
     # def goto_target(self, target_position: Tuple[int, int]):

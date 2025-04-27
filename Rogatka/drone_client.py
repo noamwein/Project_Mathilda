@@ -141,6 +141,15 @@ class BasicClient(DroneClient):
     def get_altitude(self):
         altitude = self.vehicle.location.global_relative_frame.alt
         return altitude
+    
+    def get_initial_altitude(self):
+        return self.initial_altitude
+    
+    def get_current_location(self):
+        return self.vehicle.location.global_relative_frame
+    
+    def get_heading(self):
+        return self.vehicle.heading
 
     @require_guided
     def move_forward(self, distance):
@@ -191,7 +200,7 @@ class BasicClient(DroneClient):
             time.sleep(0.5)
 
     @require_guided
-    def rotate(self, angle, speed_factor=0.8):
+    def rotate(self, angle):
         """
         Rotate the drone by a fixed yaw angle at a specified speed factor.
 
@@ -200,21 +209,36 @@ class BasicClient(DroneClient):
         :param speed_factor: Fraction of max yaw speed (0.0 to 1.0)
         :param relative: If True, yaw_angle is relative to current heading
         """
-        # Get the maximum yaw rate from the drone's parameters (default 200°/s if unknown)
-        max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
-        self.log_and_print(f"max turn rate: {max_yaw_rate}")
-        yaw_rate = max_yaw_rate * speed_factor
+        
 
         current_heading = self.vehicle.heading
 
         new_heading = (current_heading + angle) % 360
+        
+        self.log_and_print(f"Rotating to {new_heading} degrees...")
+        
+        self.rotate_to(new_heading)
 
+    
+    @require_guided
+    def rotate_to(self, angle, speed_factor=0.5):
+        """
+        Rotate the drone to a specific yaw angle.
+
+        :param vehicle: Vehicle object from DroneKit
+        :param yaw_angle: Desired yaw angle in degrees
+        """
+        # Get the maximum yaw rate from the drone's parameters (default 200°/s if unknown)
+        max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
+        self.log_and_print(f"max turn rate: {max_yaw_rate}")
+        yaw_rate = max_yaw_rate * speed_factor
+        
         # MAVLink command to rotate the drone
         msg = self.vehicle.message_factory.command_long_encode(
             0, 0,  # target system, target component
             mavutil.mavlink.MAV_CMD_CONDITION_YAW,  # command
             0,  # confirmation
-            new_heading,  # param 1: Yaw angle
+            angle,  # param 1: Yaw angle
             yaw_rate,  # param 2: Yaw rate
             0,  # param 3: Absolute heading
             0, 0, 0, 0  # param 4-7: Not used
@@ -305,6 +329,34 @@ class BasicClient(DroneClient):
 
         # Set the velocity in the XY plane, keeping Z velocity 0
         self.set_speed(velocity_x, velocity_y, 0.0)
+    
+    @require_guided
+    def follow_path(self, waypoints: list):
+        """
+        Follow a series of waypoints at a constant speed.
+
+        Parameters:
+            waypoints (list): List of tuples representing the waypoints (location, heading).
+            the vehicle is expected to be in the air and in the right heading at the start of the path
+        """
+        for waypoint, heading, type in waypoints:
+            if type == 'movement':
+                self.log_and_print(f"Moving to waypoint: {waypoint}")
+                self.vehicle.simple_goto(waypoint)
+            
+                while True:
+                    current_location = self.vehicle.location.global_relative_frame
+                    distance_to_target = get_distance_meters(current_location, waypoint)
+
+                    if distance_to_target <= 0.2:  # Consider 1 meter as the acceptable threshold
+                        self.log_and_print("Reached target location")
+                        break
+
+                    time.sleep(0.2)
+            elif type == 'rotation':
+                self.log_and_print(f"Rotating to angle: {heading}")
+                self.rotate_to(heading)
+                time.sleep(1)  # Wait for rotation to complete
 
     def has_stopped(self, error_tolerence=0.05):
         return abs(self.vehicle.groundspeed) < error_tolerence
