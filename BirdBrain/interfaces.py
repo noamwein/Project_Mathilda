@@ -1,12 +1,38 @@
 import time
 from abc import ABC, abstractmethod
 from typing import Tuple
+import cv2
 
 
 class Source(ABC):
+    def __init__(self, rotation=0):
+        """Initialize the source with a simple rotation setting: 0, 90, 180, or 270 degrees."""
+        self.rotation = rotation
+
     @abstractmethod
-    def get_current_frame(self):
+    def _get_current_frame(self):
+        """This method should be implemented by subclasses to get the frame."""
         pass
+
+    def get_current_frame(self):
+        """Get the current frame, rotate it based on the rotation setting, and return it."""
+        frame = self._get_current_frame()
+
+        if frame is not None:
+            # Apply the rotation
+            frame = self.apply_rotation(frame)
+
+        return frame
+
+    def apply_rotation(self, frame):
+        """Rotate the frame based on the specified rotation angle (only 90-degree increments)."""
+        if self.rotation == 90:
+            return cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+        elif self.rotation == 180:
+            return cv2.rotate(frame, cv2.ROTATE_180)
+        elif self.rotation == 270:
+            return cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return frame  # No rotation if 0 degrees
 
 
 class ImageDetection(ABC):

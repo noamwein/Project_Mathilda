@@ -4,12 +4,14 @@ from BirdBrain.interfaces import Source
 
 
 class CameraSource(Source):
-    def __init__(self, camera_index=0, retries=3):
+    def __init__(self, camera_index=0, retries=3, *args, **kwargs):
         """
         Initialize the camera source.
 
         :param camera_index: Index of the camera to use (default: 0 for the first camera).
         """
+        super().__init__(*args, **kwargs)
+
         self.camera = cv2.VideoCapture(camera_index)
         if not self.camera.isOpened():
             print('Failed to open camera. Retrying...')
@@ -21,7 +23,7 @@ class CameraSource(Source):
                     return
             raise Exception("Failed to open the camera after multiple attempts.")
 
-    def get_current_frame(self):
+    def _get_current_frame(self):
         """
         Capture the current frame from the camera.
 

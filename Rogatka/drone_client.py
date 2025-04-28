@@ -331,9 +331,9 @@ class BasicClient(DroneClient):
 
     @require_guided
     def land(self):
-        self.log_and_print("Landing!")
+        self.log_and_print("Landing! [DO NOT KILL THE SCRIPT!]")
         self.vehicle.mode = VehicleMode("LAND")
-        time.sleep(1)
+        time.sleep(10)
 
     def distance_from_home(self):
         # Get the home location
