@@ -34,7 +34,7 @@ class PiCameraSource(Source):
     def configure_camera(self):
         """Set up the camera and configure it with the correct resolution."""
         # Configure the camera with the correct resolution and exposure
-        config = self.picam2.create_still_configuration(main={"format": "RGB888", "size": (640, 480)})
+        config = self.picam2.create_still_configuration(main={"format": "RGB888", "size": self.resolution})
         self.picam2.configure(config)
 
         # Set initial exposure and gain
