@@ -163,7 +163,7 @@ class BasicClient(DroneClient):
 
         # Calculate the target location based on heading
         target_location = calculate_target_location(current_location, heading, distance)
-        self.vehicle.simple_goto(target_location)
+        self.vehicle.simple_goto(target_location, airspeed=0.8)
 
         while True:
             current_location = self.vehicle.location.global_relative_frame
@@ -228,7 +228,7 @@ class BasicClient(DroneClient):
         :param vehicle: Vehicle object from DroneKit
         :param yaw_angle: Desired yaw angle in degrees
         """
-        # Get the maximum yaw rate from the drone's parameters (default 200°/s if unknown)
+        # Get the maximum yaw rate from the drone's parameters (default 200/s if unknown)
         max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
         self.log_and_print(f"max turn rate: {max_yaw_rate}")
         yaw_rate = max_yaw_rate * speed_factor
@@ -342,7 +342,7 @@ class BasicClient(DroneClient):
         for waypoint, heading, type in waypoints:
             if type == 'movement':
                 self.log_and_print(f"Moving to waypoint: {waypoint}")
-                self.vehicle.simple_goto(waypoint)
+                self.vehicle.simple_goto(waypoint, airspeed=0.8)
             
                 while True:
                     current_location = self.vehicle.location.global_relative_frame

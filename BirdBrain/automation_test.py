@@ -51,7 +51,7 @@ def main():
     main_alg = selected_algo_cls(
         BasicClient(
             '/dev/ttyACM0',  # serial port
-            1,             # initial altitude
+            1.5,             # initial altitude
             10,              # max altitude
             20,              # min battery percent
             logger=logging.getLogger(__name__)
