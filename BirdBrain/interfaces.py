@@ -2,6 +2,20 @@ import time
 from abc import ABC, abstractmethod
 from typing import Tuple
 import cv2
+from dronekit import LocationGlobalRelative
+from dataclasses import dataclass
+from enum import Enum
+
+@dataclass
+class Waypoint:
+    position: LocationGlobalRelative
+    angle: float
+    action: str
+
+# Define a strong-typed action enum
+class MovementAction(Enum):
+    MOVEMENT = "movement"
+    ROTATION = "rotation"
 
 
 class Source(ABC):
@@ -100,17 +114,17 @@ class DroneClient(ABC):
     # def goto_fast(self, target_position):
     #     pass
     #
-    # @abstractmethod
-    # def has_stopped(self):
-    #     pass
-    #
-    # @abstractmethod
-    # def stop_movement(self):
-    #     pass
-    #
-    # @abstractmethod
-    # def is_on_target(self, target_position: Tuple[int, int]):
-    #     pass
+    @abstractmethod
+    def has_stopped(self):
+        pass
+    
+    @abstractmethod
+    def stop_movement(self):
+        pass
+    
+    @abstractmethod
+    def is_on_target(self, target_position: Tuple[int, int]):
+        pass
 
     @abstractmethod
     def distance_from_home(self) -> float:

@@ -1,6 +1,6 @@
 import collections.abc
 
-from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection
+from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, Waypoint, MovementAction
 
 from .utils import get_distance_meters, calculate_target_location
 
@@ -12,7 +12,7 @@ from pymavlink import mavutil
 import time
 from datetime import datetime
 
-from typing import Tuple
+from typing import Tuple, List
 import math
 import logging
 
@@ -72,7 +72,7 @@ class BasicClient(DroneClient):
         return self.vehicle.armed
 
     def connect(self):
-        def status_listener(self, name, message):
+        def status_listener(_self, name, message):
             self.log_and_print(f"[STATUS]: {message.text}")
 
         # Function to handle changes in the kill switch position
@@ -333,32 +333,34 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
     
     @require_guided
-    def follow_path(self, waypoints: list, detection_obj: ImageDetection): # TODO integrate target detection
+    def follow_path(self, waypoints: List[Waypoint], detection_obj: ImageDetection):  # TODO integrate target detection
         """
         Follow a series of waypoints at a constant speed.
 
         Parameters:
-            waypoints (list): List of tuples representing the waypoints (location, heading).
-            the vehicle is expected to be in the air and in the right heading at the start of the path
+            waypoints (List[Waypoint]): List of Waypoint instances.
+            detection_obj (ImageDetection): detection object to integrate into the flight loop.
         """
-        for waypoint, heading, type in waypoints:
-            if type == 'movement':
-                self.log_and_print(f"Moving to waypoint: {waypoint}")
-                self.vehicle.simple_goto(waypoint, airspeed=0.8)
-            
+        for wp in waypoints:
+            if wp.movement_action == MovementAction.MOVEMENT:
+                self.log_and_print(f"Moving to waypoint: {wp.position}")
+                self.vehicle.simple_goto(wp.position, airspeed=0.8)
+
                 while True:
                     current_location = self.vehicle.location.global_relative_frame
-                    distance_to_target = get_distance_meters(current_location, waypoint)
+                    distance_to_target = get_distance_meters(current_location, wp.position)
 
-                    if distance_to_target <= 0.2:  # Consider 1 meter as the acceptable threshold
+                    if distance_to_target <= 0.2:  # Consider 0.2m as acceptable threshold
                         self.log_and_print("Reached target location")
                         break
 
                     time.sleep(0.2)
-            elif type == 'rotation':
-                self.log_and_print(f"Rotating to angle: {heading}")
-                self.rotate_to(heading)
+
+            elif wp.movement_action == MovementAction.ROTATION:
+                self.log_and_print(f"Rotating to angle: {wp.angle}")
+                self.rotate_to(wp.angle)
                 time.sleep(1)  # Wait for rotation to complete
+
             time.sleep(1)
 
     def has_stopped(self, error_tolerence=0.05):

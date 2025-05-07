@@ -1,6 +1,7 @@
-from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm
+from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
 from .utils import get_distance_meters, calculate_target_location
 from dronekit import LocationGlobalRelative
+from typing import List
 
 # Southwest corner of the search area.
 START_LAT  = 31.76953
@@ -33,69 +34,63 @@ class MainDroneAlgorithm(DroneAlgorithm):
     def frame(self):
         return self.source.get_current_frame()
     
-    def generate_path(self):
-        # Starting Position and Heading
-        waypoints = [
-            (
-                LocationGlobalRelative(START_LAT, 
-                                       START_LON, 
-                                       self.drone_client.get_initial_altitude()), 
-                INITIAL_ANGLE, 
-                "movement"
+    def generate_path(self) -> List[Waypoint]:
+        initial_alt = self.drone_client.get_initial_altitude()
+        waypoints: List[Waypoint] = [
+            Waypoint(
+                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                angle=INITIAL_ANGLE,
+                movement_action=MovementAction.MOVEMENT
             ),
-            (
-               LocationGlobalRelative(START_LAT, 
-                                       START_LON, 
-                                       self.drone_client.get_initial_altitude()), 
-                INITIAL_ANGLE, 
-                "rotation" 
+            Waypoint(
+                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                angle=INITIAL_ANGLE,
+                movement_action=MovementAction.ROTATION
             )
         ]
 
         for i in range(STEPS):
-            # Move short
+            last = waypoints[-1]
+            # Move short segment
             waypoints.append(
-                (
-                    calculate_target_location(waypoints[-1][0], 
-                                              waypoints[-1][1], 
-                                              SHORT_SEGMENT
-                                             ),
-                    waypoints[-1][1], 
-                    "movement"
+                Waypoint(
+                    position=calculate_target_location(last.position, last.angle, SHORT_SEGMENT),
+                    angle=last.angle,
+                    movement_action=MovementAction.MOVEMENT
                 )
             )
 
-            # Turn right (even i) or left (odd i)
-            angle = RIGHT_ANGLE if i % 2 == 0 else LEFT_ANGLE
+            # Rotate: right on even i, left on odd i
+            turn_angle = RIGHT_ANGLE if i % 2 == 0 else LEFT_ANGLE
             waypoints.append(
-                (
-                    waypoints[-1][0], 
-                    angle, 
-                    "rotation"
+                Waypoint(
+                    position=waypoints[-1].position,
+                    angle=turn_angle,
+                    movement_action=MovementAction.ROTATION
                 )
             )
 
-            # Move long
+            # Move long segment
+            last = waypoints[-1]
             waypoints.append(
-                (
-                    calculate_target_location(waypoints[-1][0], 
-                                              waypoints[-1][1], 
-                                              LONG_SEGMENT
-                                             ), 
-                    waypoints[-1][1], 
-                    "movement"
+                Waypoint(
+                    position=calculate_target_location(last.position, last.angle, LONG_SEGMENT),
+                    angle=last.angle,
+                    movement_action=MovementAction.MOVEMENT
                 )
             )
 
-            # Face front
+            # Face initial direction
             waypoints.append(
-                (
-                    waypoints[-1][0], 
-                    INITIAL_ANGLE, 
-                    "rotation"))
-        
+                Waypoint(
+                    position=waypoints[-1].position,
+                    angle=INITIAL_ANGLE,
+                    movement_action=MovementAction.ROTATION
+                )
+            )
+
         return waypoints
-    
+
     def perform_search_pattern(self):
         waypoints = self.generate_path()
         self.drone_client.follow_path(waypoints, self.img_detection)
@@ -106,17 +101,16 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         self.perform_search_pattern()
 
-        # TODO implement assasination
         # while not self.mission_completed() and not self.drone_client.mission_terminated():
-        #     target_position = self.img_detection.locate_target(self.frame)
+        #     target_position = self.img_detection.locate_target(self.frame) # decide on interface
         #     if target_position != (None, None):
         #         if self.drone_client.is_on_target(target_position):
-        #             if self.drone_client.has_stopped():
-        #                 self.assassinate()
+        #             if self.drone_client.has_stopped(): #TODO implement
+        #                 self.assassinate()#TODO implement
         #             else:
-        #                 self.drone_client.stop_movement()
+        #                 self.drone_client.stop_movement()#TODO implement
         #         else:
-        #             self.drone_client.goto_target(target_position)
+        #             self.drone_client.goto_target(target_position)#TODO implement
 
         self.drone_client.land()
         self.drone_client.disconnect()
