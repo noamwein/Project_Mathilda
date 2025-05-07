@@ -11,7 +11,8 @@ ORIGINAL_CAM_WIDTH = 3840  # original frame width (camera properties)
 ORIGINAL_CAM_HEIGHT = 2160  # original frame height (camera properties)
 FRAME_WIDTH = 800  # Display frame width (resizing it to a small window)
 FRAME_HEIGHT = 450  # Display frame height (resizing it to a small window)
-
+CENTERED_X=0 #x's pixel of the dropped object
+CENTERED_Y=0 #y's pixel of the dropped object
 # Paths
 PATH = '../'
 VIDEO_PATH = PATH + r"/beker_from_drone.MP4"

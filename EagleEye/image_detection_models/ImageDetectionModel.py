@@ -209,6 +209,6 @@ class ImageDetectionModel(ImageDetection):
         return points
 
     def export_position(self, x, y):
-        center_x = ORIGINAL_CAM_WIDTH // 2
-        center_y = ORIGINAL_CAM_HEIGHT // 2
-        return x - center_x, y - center_y
+        # center_x = ORIGINAL_CAM_WIDTH // 2
+        # center_y = ORIGINAL_CAM_HEIGHT // 2
+        return x - CENTERED_X, y - CENTERED_Y
