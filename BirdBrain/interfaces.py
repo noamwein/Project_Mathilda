@@ -110,10 +110,10 @@ class DroneClient(ABC):
     # def goto_target(self, target_position: Tuple[int, int]):
     #     pass
 
-    # @abstractmethod
-    # def goto_fast(self, target_position):
-    #     pass
-    #
+    @abstractmethod
+    def pid(self, target_position):
+        pass
+    
     @abstractmethod
     def has_stopped(self):
         pass
@@ -151,11 +151,15 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
-    def mission_terminated(self) -> bool:
+    def change_altitude(self, delta):
         pass
 
     @abstractmethod
-    def change_altitude(self, delta):
+    def mission_completed(self):
+        pass
+
+    @abstractmethod
+    def assassinate(self):
         pass
 
 

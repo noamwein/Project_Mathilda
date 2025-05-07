@@ -44,7 +44,7 @@ class BasicClient(DroneClient):
         self.vehicle = None
         self.state = -1
         self.logger = logger
-        self.terminated = False
+        self.done = False
 
         # Set up logging to file
         log_folder = "../Flight Logs"
@@ -305,13 +305,13 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def goto_fast(self, target_position, speed=1.0):
+    def pid(self, target_position, speed=0.1):
         """
         Moves the drone towards the target position at a constant speed.
 
         Parameters:
             target_position (tuple): Target (x, y) position in Cartesian coordinates.
-            speed (float): Absolute speed in the XY plane (default is 1 m/s).
+            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
         """
         target_x, target_y = target_position
 
@@ -363,7 +363,7 @@ class BasicClient(DroneClient):
 
             time.sleep(1)
 
-    def has_stopped(self, error_tolerence=0.05):
+    def has_stopped(self, error_tolerence=0.1):
         return abs(self.vehicle.groundspeed) < error_tolerence
 
     @require_guided
@@ -400,6 +400,13 @@ class BasicClient(DroneClient):
         current_location = self.vehicle.location.global_relative_frame
         dist = get_distance_meters(home_location, current_location)
         return dist
+    
+    def mission_completed(self):
+        return self.done
+
+    @require_guided
+    def assassinate(self): # TODO implement servo operation
+        self.done = True
 
     def disconnect(self):
         # wait until battery info arrives
@@ -411,9 +418,6 @@ class BasicClient(DroneClient):
         self.log_and_print(f"Battery voltage: {self.vehicle.battery.voltage:.2f} V")
         self.log_and_print("Disconnecting.")
         self.vehicle.close()
-
-    def mission_terminated(self):
-        return self.terminated
 
 
 def calculate_direction(target_position: Tuple[int, int]):
