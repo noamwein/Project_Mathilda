@@ -9,7 +9,7 @@ from BirdBrain.interfaces import Source
 class PiCameraSource(Source):
     def __init__(self, resolution=(1280, 720), target_brightness=120, exposure_time=500, auto_gain_interval=0,
                  **kwargs):
-        super().__init__(rotation=90, **kwargs)
+        super().__init__(rotation=270, **kwargs)
 
         # Camera configuration
         self.resolution = resolution

@@ -5,8 +5,8 @@ from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, So
 from .utils import get_distance_meters, calculate_target_location
 
 collections.MutableMapping = collections.abc.MutableMapping
-
 from dronekit import connect, VehicleMode, LocationGlobalRelative
+
 from pymavlink import mavutil
 
 import time
@@ -89,7 +89,8 @@ class BasicClient(DroneClient):
         def max_alt_listener(_self, attr_name, value):
             current_altitude = value.global_relative_frame.alt
             if current_altitude is not None and current_altitude >= self.max_altitude:
-                self.log_and_print(f"Altitude {current_altitude}m exceeds maximum limit of {self.max_altitude}m. Initiating landing.")
+                self.log_and_print(
+                    f"Altitude {current_altitude}m exceeds maximum limit of {self.max_altitude}m. Initiating landing.")
                 # exit(1)
                 # self.vehicle.mode = VehicleMode("LAND")
 
@@ -143,13 +144,13 @@ class BasicClient(DroneClient):
     def get_altitude(self):
         altitude = self.vehicle.location.global_relative_frame.alt
         return altitude
-    
+
     def get_initial_altitude(self):
         return self.initial_altitude
-    
+
     def get_current_location(self):
         return self.vehicle.location.global_relative_frame
-    
+
     def get_heading(self):
         return self.vehicle.heading
 
@@ -176,7 +177,7 @@ class BasicClient(DroneClient):
                 break
 
             time.sleep(1)
-    
+
     @require_guided
     def change_altitude(self, delta: float):
         """
@@ -211,17 +212,15 @@ class BasicClient(DroneClient):
         :param speed_factor: Fraction of max yaw speed (0.0 to 1.0)
         :param relative: If True, yaw_angle is relative to current heading
         """
-        
 
         current_heading = self.vehicle.heading
 
         new_heading = (current_heading + angle) % 360
-        
+
         self.log_and_print(f"Rotating to {new_heading} degrees...")
-        
+
         self.rotate_to(new_heading)
 
-    
     @require_guided
     def rotate_to(self, angle, speed_factor=0.5):
         """
@@ -234,7 +233,7 @@ class BasicClient(DroneClient):
         max_yaw_rate = self.vehicle.parameters.get('ATC_RATE_Y_MAX', 20000) / 100.0  # Convert from centidegrees/sec
         self.log_and_print(f"max turn rate: {max_yaw_rate}")
         yaw_rate = max_yaw_rate * speed_factor
-        
+
         # MAVLink command to rotate the drone
         msg = self.vehicle.message_factory.command_long_encode(
             0, 0,  # target system, target component
@@ -331,7 +330,7 @@ class BasicClient(DroneClient):
 
         # Set the velocity in the XY plane, keeping Z velocity 0
         self.set_speed(velocity_x, velocity_y, 0.0)
-    
+
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):  # TODO integrate target detection
         """

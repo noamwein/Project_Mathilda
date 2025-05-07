@@ -1,5 +1,8 @@
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
 from .utils import get_distance_meters, calculate_target_location
+
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from typing import List
 

@@ -1,9 +1,12 @@
 from BirdBrain.interfaces import DroneAlgorithm, DroneClient
 from .drone_client import calculate_target_location, get_distance_meters
 import time
+
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 
-START_LAT  = 31.76953
+START_LAT = 31.76953
 START_LON = 35.19831
 
 

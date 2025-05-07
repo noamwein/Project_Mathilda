@@ -2,6 +2,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import Tuple, List
 import cv2
+
+
 from dronekit import LocationGlobalRelative
 from dataclasses import dataclass
 from enum import Enum
