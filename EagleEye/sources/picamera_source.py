@@ -7,7 +7,7 @@ from BirdBrain.interfaces import Source
 
 
 class PiCameraSource(Source):
-    def __init__(self, resolution=(1280, 720), target_brightness=120, exposure_time=500, auto_gain_interval=0,
+    def __init__(self, resolution=(1156, 668), target_brightness=120, exposure_time=500, auto_gain_interval=0,
                  **kwargs):
         super().__init__(rotation=270, **kwargs)
 
@@ -31,10 +31,13 @@ class PiCameraSource(Source):
             self.get_current_frame()
         self.auto_gain_interval = auto_gain_interval
 
-    def configure_camera(self):
-        """Set up the camera and configure it with the correct resolution."""
-        # Configure the camera with the correct resolution and exposure
-        config = self.picam2.create_still_configuration(main={"format": "RGB888", "size": self.resolution})
+    def set_camera_resolution_and_controls(self, resolution):
+        # config = self.picam2.create_still_configuration(
+        #     main={"format": "RGB888", "size": resolution})
+        config = self.picam2.create_video_configuration(
+            main={"format": "RGB888", "size": self.resolution},
+            raw={"size": resolution}  # Full sensor input for full FOV
+        )
         self.picam2.configure(config)
 
         # Set initial exposure and gain
@@ -47,12 +50,34 @@ class PiCameraSource(Source):
 
         # Ensure the camera is ready
         time.sleep(0.2)
-
-        # Start the camera
         self.picam2.start()
+
+        print(f"[Camera] Using capture resolution: {resolution}")
         time.sleep(2)  # Camera warm-up
 
+    def configure_camera(self):
+        """Set up the camera and configure it with the correct resolution."""
+        # Configure the camera with the correct resolution and exposure
+        resolutions = sorted(
+            {mode["size"] for mode in self.picam2.sensor_modes},
+            key=lambda s: s[0] * s[1],
+            reverse=True
+        )
+        print('Camera supported resolutions:')
+        for res in resolutions:
+            print('\t', res)
+
+        for res in resolutions:
+            try:
+                self.set_camera_resolution_and_controls(res)
+                break
+            except Exception as e:
+                print(f"[Camera] Failed to configure resolution {res}: {e}")
+        else:
+            raise RuntimeError("No valid resolution could be configured.")
+
         print('Exposure time configured:', self.exposure_time)
+        print('Resolution configured:', self.resolution)
 
     def _get_current_frame(self):
         """Get the current frame, adjust gain if necessary, and return the image."""
