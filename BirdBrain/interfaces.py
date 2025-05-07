@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Tuple, List
 import cv2
 
-
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from dataclasses import dataclass
 from enum import Enum
