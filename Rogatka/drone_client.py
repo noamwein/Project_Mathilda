@@ -347,6 +347,10 @@ class BasicClient(DroneClient):
                 self.vehicle.simple_goto(wp.position, airspeed=0.8)
 
                 while True:
+                    frame = source_obj.get_current_frame()
+                    if detection_obj.detect_target(frame):
+                        self.stop_movement()
+                        return True
                     current_location = self.vehicle.location.global_relative_frame
                     distance_to_target = get_distance_meters(current_location, wp.position)
 
@@ -361,7 +365,7 @@ class BasicClient(DroneClient):
                 self.rotate_to(wp.angle)
                 time.sleep(1)  # Wait for rotation to complete
                 start = time.time()
-                while time.time() - start < 1.0:
+                while time.time() - start < 0.5:
                     frame = source_obj.get_current_frame()
                     if detection_obj.detect_target(frame):
                         return True
