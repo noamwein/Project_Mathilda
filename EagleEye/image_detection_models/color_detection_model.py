@@ -48,7 +48,7 @@ class ImageDetectionModel(ImageDetection):
                 self.position = self.export_position(x + w // 2, y + h // 2)
                 self.draw_bounding_box(frame, self.bbox)
         else:
-            self.position = (-1, -1)
+            self.position = (None, None)
 
         # Resize and display
         frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
