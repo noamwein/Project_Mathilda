@@ -86,24 +86,26 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def perform_search_pattern(self):
         waypoints = self.generate_path()
-        self.drone_client.follow_path(waypoints, self.img_detection)
+        self.drone_client.follow_path(waypoints, self.source, self.img_detection)
 
     def main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        self.perform_search_pattern()
-
-        while not self.drone_client.mission_completed():
-            target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
-            if target_position != (None, None):
-                if self.drone_client.is_on_target(target_position):
-                    if self.drone_client.has_stopped():
-                        self.drone_client.assassinate()
+        if self.perform_search_pattern(): # If target was found
+            self.drone_client.log_and_print("Found target! Continuing mission...")
+            while not self.drone_client.mission_completed():
+                target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
+                if target_position != (None, None):
+                    if self.drone_client.is_on_target(target_position):
+                        if self.drone_client.has_stopped():
+                            self.drone_client.assassinate()
+                        else:
+                            self.drone_client.stop_movement()
                     else:
-                        self.drone_client.stop_movement()
-                else:
-                    self.drone_client.pid(target_position)
+                        self.drone_client.pid(target_position)
+        else:
+            self.drone_client.log_and_print("Failed to find target. Landing...")
 
         self.drone_client.land()
         self.drone_client.disconnect()

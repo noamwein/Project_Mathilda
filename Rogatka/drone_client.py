@@ -1,6 +1,6 @@
 import collections.abc
 
-from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, Waypoint, MovementAction
+from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, Source, Waypoint, MovementAction
 
 from .utils import get_distance_meters, calculate_target_location
 
@@ -333,7 +333,7 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
     
     @require_guided
-    def follow_path(self, waypoints: List[Waypoint], detection_obj: ImageDetection):  # TODO integrate target detection
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):  # TODO integrate target detection
         """
         Follow a series of waypoints at a constant speed.
 
@@ -360,8 +360,16 @@ class BasicClient(DroneClient):
                 self.log_and_print(f"Rotating to angle: {wp.angle}")
                 self.rotate_to(wp.angle)
                 time.sleep(1)  # Wait for rotation to complete
+                start = time.time()
+                while time.time() - start < 1.0:
+                    frame = source_obj.get_current_frame()
+                    if detection_obj.detect_target(frame):
+                        return True
+                    time.sleep(0.01)  # small pause
 
             time.sleep(1)
+        
+        return False
 
     def has_stopped(self, error_tolerence=0.1):
         return abs(self.vehicle.groundspeed) < error_tolerence

@@ -1,6 +1,6 @@
 import time
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, List
 import cv2
 from dronekit import LocationGlobalRelative
 from dataclasses import dataclass
@@ -98,7 +98,7 @@ class DroneClient(ABC):
         pass
     
     @abstractmethod
-    def follow_path(self, waypoints: list):
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
         pass
     
     @abstractmethod
@@ -144,6 +144,10 @@ class DroneClient(ABC):
 
     @abstractmethod
     def move_forward(self, distance):
+        pass
+
+    @abstractmethod
+    def log_and_print(self, message: str):
         pass
 
     @abstractmethod
