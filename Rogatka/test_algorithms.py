@@ -12,9 +12,9 @@ START_LON = 35.19831
 
 class TestAlgorithm1(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         for _ in range(10):
             print(self.drone_client.get_altitude())
@@ -24,9 +24,9 @@ class TestAlgorithm1(DroneAlgorithm):
 
 class TestAlgorithm2(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
         print("Waiting 5 seconds...")
@@ -38,9 +38,9 @@ class TestAlgorithm2(DroneAlgorithm):
 
 class TestAlgorithm3(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -58,9 +58,9 @@ class TestAlgorithm3(DroneAlgorithm):
 
 class TestAlgorithm4(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -76,9 +76,9 @@ class TestAlgorithm4(DroneAlgorithm):
 
 class TestAlgorithm5(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -100,9 +100,9 @@ class TestAlgorithm5(DroneAlgorithm):
 
 class TestAlgorithm6(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -123,12 +123,12 @@ class TestAlgorithm6(DroneAlgorithm):
 
 class TestAlgorithm7(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
         
     def wait(self, seconds=3):
         time.sleep(seconds)
         
-    def main(self):
+    def _main(self):
         # Constants
         LONG_FORWARD = 3  
         SHORT_FORWARD = 1 
@@ -162,12 +162,12 @@ class TestAlgorithm7(DroneAlgorithm):
         
 class TestAlgorithm8(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
         
     def wait(self, seconds=3):
         time.sleep(seconds)
         
-    def main(self):
+    def _main(self):
         # Constants
         LONG_FORWARD = 3
         SHORT_FORWARD = 2 
@@ -218,12 +218,12 @@ class TestAlgorithm8(DroneAlgorithm):
         
 class TestAlgorithm9(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
         
     def wait(self, seconds=3):
         time.sleep(seconds)
         
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         time.sleep(1)
         print("---------")
@@ -255,9 +255,9 @@ class TestAlgorithm9(DroneAlgorithm):
 
 class TestAlgorithm10(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
-        self.drone_client = drone_client
+        super().__init__(drone_client)
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
 

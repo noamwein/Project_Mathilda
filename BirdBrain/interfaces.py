@@ -176,6 +176,21 @@ class DroneClient(ABC):
 
 
 class DroneAlgorithm(ABC):
+    def __init__(self, drone_client: DroneClient):
+        self.drone_client = drone_client
+
     @abstractmethod
-    def main(self):
+    def _main(self):
         pass
+    
+    def main(self):
+        try:
+            self._main()
+        except Exception as e:
+            self.drone_client.log_and_print("The code has encountered an error:")
+            self.drone_client.log_and_print(e)
+            self.drone_client.log_and_print("Wating 5 seconds then landing:")
+            time.sleep(5)
+            self.drone_client.land()
+            self.drone_client.disconnect()
+
