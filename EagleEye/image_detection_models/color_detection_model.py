@@ -79,11 +79,19 @@ class ImageDetectionModel(ImageDetection):
         # Convert to HSV color space
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        # Define range for yellow color (very tolerant)
-        lower_yellow = np.array([15, 80, 80])
-        upper_yellow = np.array([40, 255, 255])
+        # # Define range for yellow color (very tolerant)
+        # lower_color = np.array([15, 80, 80])
+        # upper_color = np.array([40, 255, 255])
 
-        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        # # Pink (magenta) range — adjust if needed
+        # lower_color = np.array([140, 80, 80])
+        # upper_color = np.array([170, 255, 255])
+
+        # Rust color range (reddish-brown/orange-brown)
+        lower_color = np.array([5, 100, 50])
+        upper_color = np.array([20, 255, 200])
+        
+        mask = cv2.inRange(hsv, lower_color, upper_color)
 
         # Improve mask for blurred images
         kernel = np.ones((7, 7), np.uint8)
@@ -94,6 +102,7 @@ class ImageDetectionModel(ImageDetection):
         return mask
 
 def main():
+    global CENTERED_X, CENTERED_Y
     model = ImageDetectionModel(reference_image_path="", display=True)
 
     cap = cv2.VideoCapture(0)  # Open default webcam
@@ -112,7 +121,8 @@ def main():
             pos = model.locate_target(frame)
             print(f"Target located at (relative): {pos}")
         else:
-            print("No yellow detected.")
+            pos = model.locate_target(frame)
+            print("No color detected.")
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -120,5 +130,50 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
-if __name__ == "__main__":
-    main()
+
+
+# def main():
+#     global CENTERED_X, CENTERED_Y
+#     model = ImageDetectionModel(reference_image_path="", display=True)
+
+#     # Replace this with the path to your video file
+#     video_path = r"C:\Users\TLP-001\Desktop\TamirTalpi\שנה ב\מגדד\videos\vid1.mp4"
+#     cap = cv2.VideoCapture(video_path)
+
+#     if not cap.isOpened():
+#         print(f"Error: Cannot open video file {video_path}")
+#         return
+
+#     #start the video from 10 seconds
+#     cap.set(cv2.CAP_PROP_POS_MSEC, 12000)  # 10 seconds in milliseconds
+
+#     # Print dimensions of the video
+#     print("Video dimensions:")
+#     print("Width:", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     print("Height:", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+#     CENTERED_X = cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2
+#     CENTERED_Y = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2
+
+#     while True:
+#         ret, frame = cap.read()
+#         if not ret:
+#             print("End of video or cannot read the frame.")
+#             break
+
+#         if model.detect_target(frame):
+#             pos = model.locate_target(frame)
+#             print(f"Target located at (relative): {pos}")
+#         else:
+#             pos = model.locate_target(frame)
+#             print("No color detected.")
+
+#         if cv2.waitKey(30) & 0xFF == ord('q'):
+#             break
+
+#     cap.release()
+#     cv2.destroyAllWindows()
+
+
+# if __name__ == "__main__":
+#     main()
