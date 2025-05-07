@@ -249,4 +249,30 @@ class TestAlgorithm9(DroneAlgorithm):
         self.drone_client.land()
         self.drone_client.disconnect()
 
+
+class TestAlgorithm10(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        self.drone_client = drone_client
+
+    def main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+
+        self.drone_client.set_speed(0.5, 0.5, 0)
+
+        time.sleep(2)
+
+        self.drone_client.stop_movement()
+
+        time.sleep(1)
+
+        self.drone_client.set_speed(-0.5, -0.5, 0)
+
+        time.sleep(2)
+
+        self.drone_client.stop_movement()
+        
+        self.drone_client.land()
+        self.drone_client.disconnect()
+
         

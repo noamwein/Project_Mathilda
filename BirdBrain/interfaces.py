@@ -113,6 +113,10 @@ class DroneClient(ABC):
     @abstractmethod
     def pid(self, target_position):
         pass
+
+    @abstractmethod
+    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
+        pass
     
     @abstractmethod
     def has_stopped(self):
