@@ -3,6 +3,9 @@ from .drone_client import calculate_target_location, get_distance_meters
 import time
 from dronekit import LocationGlobalRelative
 
+START_LAT  = 31.76953
+START_LON = 35.19831
+
 
 class TestAlgorithm1(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
@@ -163,18 +166,18 @@ class TestAlgorithm8(DroneAlgorithm):
         
     def main(self):
         # Constants
-        LONG_FORWARD = 2 
-        SHORT_FORWARD = 1 
+        LONG_FORWARD = 3
+        SHORT_FORWARD = 2 
         TURN_ANGLE = 90
-        STEPS = 1  # number of snake segments
+        STEPS = 3  # number of snake segments
 
         self.drone_client.connect()
         self.drone_client.takeoff()
         self.wait()
         
         # waypoints = [(self.drone_client.get_location(), self.drone_client.get_heading(), "movement")]
-        waypoints = [(LocationGlobalRelative(31.76950, 35.19828, self.drone_client.get_initial_altitude()), 90, "movement")]
-
+        waypoints = [(LocationGlobalRelative(START_LAT, START_LON, self.drone_client.get_initial_altitude()), 90, "movement"),]
+        
         for i in range(STEPS):
             # Move long
             waypoints.append((calculate_target_location(
@@ -219,11 +222,22 @@ class TestAlgorithm9(DroneAlgorithm):
         
     def main(self):
         self.drone_client.connect()
+        time.sleep(1)
+        print("---------")
+        print(self.drone_client.get_current_location())
+        # print(get_distance_meters(
+        #     self.drone_client.get_current_location(), waypoints[0][0]
+        # ))
+        print("---------")
+        input("Press Enter to continue...")
+        input("Press Enter to continue again...")
+        
+        
         self.drone_client.takeoff()
         self.wait()
         
-        waypoints = [(LocationGlobalRelative(31.76950, 35.19828, self.drone_client.get_initial_altitude()), 90, "movement"),
-                     (LocationGlobalRelative(31.76950, 35.19828, self.drone_client.get_initial_altitude()), 90, "rotation"),]
+        waypoints = [(LocationGlobalRelative(START_LAT, START_LON, self.drone_client.get_initial_altitude()), 90, "movement"),
+                     (LocationGlobalRelative(START_LAT, START_LON, self.drone_client.get_initial_altitude()), 90, "rotation"),]
         #calc dist from my location to target location
         print(get_distance_meters(
             self.drone_client.get_current_location(), waypoints[0][0]
