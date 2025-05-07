@@ -203,7 +203,7 @@ class BasicClient(DroneClient):
             time.sleep(0.5)
 
     @require_guided
-    def rotate(self, angle):
+    def rotate(self, angle, speed_factor=0.5):
         """
         Rotate the drone by a fixed yaw angle at a specified speed factor.
 
@@ -218,9 +218,10 @@ class BasicClient(DroneClient):
         new_heading = (current_heading + angle) % 360
 
         self.log_and_print(f"Rotating to {new_heading} degrees...")
+        
+        self.rotate_to(new_heading, speed_factor=speed_factor)
 
-        self.rotate_to(new_heading)
-
+    
     @require_guided
     def rotate_to(self, angle, speed_factor=0.5):
         """
@@ -305,34 +306,53 @@ class BasicClient(DroneClient):
 
     @require_guided
     def pid(self, target_position, speed=0.1):
-        """
-        Moves the drone towards the target position at a constant speed.
+      """
+      Moves the drone towards the target position at a constant speed.
 
-        Parameters:
-            target_position (tuple): Target (x, y) position in Cartesian coordinates.
-            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
-        """
-        target_x, target_y = target_position
+      First rotates towards the target if needed (1° steps), then moves when aligned.
 
-        # Calculate the distance to the target
-        distance = math.sqrt(target_x ** 2 + target_y ** 2)
-        if distance == 0:
-            self.log_and_print("Already at the target position!")
-            return
+      Coordinates are in the camera frame where the drone’s forward direction is along the +Y axis.
 
-        # Calculate the unit direction vector
-        direction_x = target_x / distance
-        direction_y = target_y / distance
+      Parameters:
+          target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
+          speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
+      """
+      target_x, target_y = target_position
 
-        # Scale by the desired speed
-        velocity_x = direction_x * speed
-        velocity_y = direction_y * speed
+      # Calculate the distance to the target
+      distance = math.hypot(target_x, target_y)
+      if distance == 0:
+          self.log_and_print("Already at the target position!")
+          return
 
-        # Set the velocity in the XY plane, keeping Z velocity 0
-        self.set_speed(velocity_x, velocity_y, 0.0)
+      # Determine angle to target relative to the Y axis (drone forward)
+      # atan2(x, y) gives angle from +Y axis, positive clockwise from front
+      angle_to_target = math.degrees(math.atan2(target_x, target_y))
+      # Normalize to [-180, 180]
+      angle_to_target = (angle_to_target + 180) % 360 - 180
 
+      # Rotate stepwise (1°) until within tolerance
+      tolerance = 2      # allowable error in degrees
+      rotation_step = 1  # degrees per rotation call
+      if abs(angle_to_target) > tolerance:
+          # Rotate one degree toward the target
+          rotation_direction = rotation_step if angle_to_target > 0 else -rotation_step
+          self.rotate(rotation_direction, speed_factor=0.1)
+          return
+
+      # Already facing target: compute velocity vector
+      direction_x = target_x / distance
+      direction_y = target_y / distance
+
+      # Scale by the desired speed
+      velocity_x = direction_x * speed
+      velocity_y = direction_y * speed
+
+      # Set the velocity in the XY plane, keeping Z velocity zero
+      self.set_speed(velocity_x, velocity_y, 0.0)
+    
     @require_guided
-    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):  # TODO integrate target detection
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
         """
         Follow a series of waypoints at a constant speed.
 
