@@ -91,7 +91,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         waypoints = self.generate_path()
         self.drone_client.follow_path(waypoints, self.source, self.img_detection)
 
-    def main(self,only_search=False):
+    def _main(self, only_search=False):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -122,7 +122,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         while time.time()-t<10:
             target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
             if target_position != (None, None):
-                self.drone_client.pid(target_position)
+                self.drone_client.pid(target_position, only_rotate=True)
         
         self.drone_client.land()
         self.drone_client.disconnect()

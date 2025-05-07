@@ -9,7 +9,7 @@ from dronekit import LocationGlobalRelative
 
 
 from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
-from EagleEye.image_detection_models.color_detection_model import ColorDetectionModel
+from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.picamera_source import PiCameraSource
 
 START_LAT = 31.76953
@@ -293,12 +293,12 @@ class TestAlgorithm11(DroneAlgorithm):
     patttern search and log if found
     '''
     def __init__(self, drone_client: DroneClient):
-        self.basic_client = drone_client
-        self.detection_model=ColorDetectionModel(None)
+        super().__init__(drone_client)
+        self.detection_model=ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
 
-    def main(self):
+    def _main(self):
        self.drone.main(only_search=True)
 
         
@@ -308,12 +308,12 @@ class TestAlgorithm12(DroneAlgorithm):
     full operation - pattern search and move to target
     '''
     def __init__(self, drone_client: DroneClient):
-        self.basic_client = drone_client
-        self.detection_model=ColorDetectionModel(None)
+        super().__init__(drone_client)
+        self.detection_model=ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
 
-    def main(self):
+    def _main(self):
        self.drone.main(only_search=False)
     
 class TestAlgorithm13(DroneAlgorithm): 
@@ -322,10 +322,10 @@ class TestAlgorithm13(DroneAlgorithm):
     only rotate to the target 
     '''
     def __init__(self, drone_client: DroneClient):
-        self.basic_client = drone_client
-        self.detection_model=ColorDetectionModel(None)
+        super().__init__(drone_client)
+        self.detection_model=ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
 
-    def main(self):
+    def _main(self):
        self.drone.just_rotate()

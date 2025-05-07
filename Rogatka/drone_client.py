@@ -305,7 +305,7 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def pid(self, target_position, speed=0.5):
+    def pid(self, target_position, speed=0.5, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
@@ -339,6 +339,9 @@ class BasicClient(DroneClient):
             # Rotate one degree toward the target
             rotation_direction = rotation_step * clipped_x * YAW_FACTOR
             self.rotate(rotation_direction, speed_factor=0.1)
+            return
+        
+        if only_rotate:
             return
 
         # Already facing target: compute velocity vector
