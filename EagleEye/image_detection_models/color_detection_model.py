@@ -6,15 +6,13 @@ import cv2
 
 import EagleEye.FindBecker as FindBecker
 from BirdBrain.interfaces import ImageDetection, Source
-from EagleEye.ImageProcessingConstants import *
+# from EagleEye.ImageProcessingConstants import *
 
 # Constants
-ORIGINAL_CAM_WIDTH = 3840  # original frame width (camera properties)
-ORIGINAL_CAM_HEIGHT = 2160  # original frame height (camera properties)
-# ORIGINAL_CAM_WIDTH = 800  # original frame width (camera properties)
-# ORIGINAL_CAM_HEIGHT = 450 # original frame height (camera properties)
-FRAME_WIDTH = 800  # Display frame width (resized window)
-FRAME_HEIGHT = 450  # Display frame height (resized window)
+FRAME_WIDTH = 640  # Display frame width (resized window)
+FRAME_HEIGHT = 480  # Display frame height (resized window)
+CENTERED_X=0 #x's pixel of the dropped object
+CENTERED_Y=0 #y's pixel of the dropped object
 
 class ImageDetectionModel(ImageDetection):
     def __init__(self, reference_image_path: str, display: bool = True,
@@ -50,7 +48,7 @@ class ImageDetectionModel(ImageDetection):
                 self.position = self.export_position(x + w // 2, y + h // 2)
                 self.draw_bounding_box(frame, self.bbox)
         else:
-            self.position = (-1, -1)
+            self.position = (None, None)
 
         # Resize and display
         frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
@@ -70,9 +68,9 @@ class ImageDetectionModel(ImageDetection):
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
     def export_position(self, x, y):
-        center_x = ORIGINAL_CAM_WIDTH // 2
-        center_y = ORIGINAL_CAM_HEIGHT // 2
-        return x - center_x, y - center_y
+        # center_x = ORIGINAL_CAM_WIDTH // 2
+        # center_y = ORIGINAL_CAM_HEIGHT // 2
+        return x - CENTERED_X, y - CENTERED_Y
 
     def extract_yellow(self, frame):
         """
@@ -99,7 +97,12 @@ def main():
     model = ImageDetectionModel(reference_image_path="", display=True)
 
     cap = cv2.VideoCapture(0)  # Open default webcam
-
+    #print dimensions of the camera
+    print("Camera dimensions:")
+    print("Width:", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    print("Height:", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    CENTERED_X=cap.get(cv2.CAP_PROP_FRAME_WIDTH)//2
+    CENTERED_Y=cap.get(cv2.CAP_PROP_FRAME_HEIGHT)//2
     while True:
         ret, frame = cap.read()
         if not ret:

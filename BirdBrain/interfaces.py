@@ -1,6 +1,6 @@
 import time
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, List
 import cv2
 
 
@@ -100,7 +100,7 @@ class DroneClient(ABC):
         pass
     
     @abstractmethod
-    def follow_path(self, waypoints: list):
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
         pass
     
     @abstractmethod
@@ -112,10 +112,14 @@ class DroneClient(ABC):
     # def goto_target(self, target_position: Tuple[int, int]):
     #     pass
 
-    # @abstractmethod
-    # def goto_fast(self, target_position):
-    #     pass
-    #
+    @abstractmethod
+    def pid(self, target_position):
+        pass
+
+    @abstractmethod
+    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
+        pass
+    
     @abstractmethod
     def has_stopped(self):
         pass
@@ -149,15 +153,23 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
+    def log_and_print(self, message: str):
+        pass
+
+    @abstractmethod
     def rotate(self, angle):
         pass
 
     @abstractmethod
-    def mission_terminated(self) -> bool:
+    def change_altitude(self, delta):
         pass
 
     @abstractmethod
-    def change_altitude(self, delta):
+    def mission_completed(self):
+        pass
+
+    @abstractmethod
+    def assassinate(self):
         pass
 
 

@@ -1,6 +1,7 @@
 import collections.abc
 
-from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, Waypoint, MovementAction
+from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection, Source, Waypoint, MovementAction
+
 from .utils import get_distance_meters, calculate_target_location
 
 collections.MutableMapping = collections.abc.MutableMapping
@@ -43,7 +44,7 @@ class BasicClient(DroneClient):
         self.vehicle = None
         self.state = -1
         self.logger = logger
-        self.terminated = False
+        self.done = False
 
         # Set up logging to file
         log_folder = "../Flight Logs"
@@ -303,13 +304,13 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def goto_fast(self, target_position, speed=1.0):
+    def pid(self, target_position, speed=0.1):
         """
         Moves the drone towards the target position at a constant speed.
 
         Parameters:
             target_position (tuple): Target (x, y) position in Cartesian coordinates.
-            speed (float): Absolute speed in the XY plane (default is 1 m/s).
+            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
         """
         target_x, target_y = target_position
 
@@ -331,7 +332,7 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
 
     @require_guided
-    def follow_path(self, waypoints: List[Waypoint], detection_obj: ImageDetection):  # TODO integrate target detection
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):  # TODO integrate target detection
         """
         Follow a series of waypoints at a constant speed.
 
@@ -345,6 +346,10 @@ class BasicClient(DroneClient):
                 self.vehicle.simple_goto(wp.position, airspeed=0.8)
 
                 while True:
+                    frame = source_obj.get_current_frame()
+                    if detection_obj.detect_target(frame):
+                        self.stop_movement()
+                        return True
                     current_location = self.vehicle.location.global_relative_frame
                     distance_to_target = get_distance_meters(current_location, wp.position)
 
@@ -358,10 +363,18 @@ class BasicClient(DroneClient):
                 self.log_and_print(f"Rotating to angle: {wp.angle}")
                 self.rotate_to(wp.angle)
                 time.sleep(1)  # Wait for rotation to complete
+                start = time.time()
+                while time.time() - start < 0.5:
+                    frame = source_obj.get_current_frame()
+                    if detection_obj.detect_target(frame):
+                        return True
+                    time.sleep(0.01)  # small pause
 
             time.sleep(1)
+        
+        return False
 
-    def has_stopped(self, error_tolerence=0.05):
+    def has_stopped(self, error_tolerence=0.1):
         return abs(self.vehicle.groundspeed) < error_tolerence
 
     @require_guided
@@ -398,6 +411,13 @@ class BasicClient(DroneClient):
         current_location = self.vehicle.location.global_relative_frame
         dist = get_distance_meters(home_location, current_location)
         return dist
+    
+    def mission_completed(self):
+        return self.done
+
+    @require_guided
+    def assassinate(self): # TODO implement servo operation
+        self.done = True
 
     def disconnect(self):
         # wait until battery info arrives
@@ -409,9 +429,6 @@ class BasicClient(DroneClient):
         self.log_and_print(f"Battery voltage: {self.vehicle.battery.voltage:.2f} V")
         self.log_and_print("Disconnecting.")
         self.vehicle.close()
-
-    def mission_terminated(self):
-        return self.terminated
 
 
 def calculate_direction(target_position: Tuple[int, int]):
