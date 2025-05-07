@@ -5,9 +5,9 @@ import time
 class MVPDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
                  drone_client: DroneClient):
+        super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
-        self.drone_client = drone_client
         self.done = False
 
     def mission_completed(self):
@@ -20,7 +20,7 @@ class MVPDroneAlgorithm(DroneAlgorithm):
     def frame(self):
         return self.source.get_current_frame()
 
-    def main(self):
+    def _main(self):
         self.drone_client.connect()
         # self.drone_client.takeoff()
 

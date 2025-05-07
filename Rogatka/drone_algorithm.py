@@ -22,9 +22,9 @@ LEFT_ANGLE = (INITIAL_ANGLE - TURN_ANGLE) % 360
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
                  drone_client: DroneClient):
+        super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
-        self.drone_client = drone_client
     
     @property
     def frame(self):
