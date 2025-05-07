@@ -1,4 +1,7 @@
 import math
+
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 
 def get_distance_meters(location1, location2):

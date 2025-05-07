@@ -1,5 +1,8 @@
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm
 from .utils import get_distance_meters, calculate_target_location
+
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 
 # Southwest corner of the search area.

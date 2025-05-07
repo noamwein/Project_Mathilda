@@ -1,12 +1,11 @@
-import collections.abc
-
 from BirdBrain.interfaces import DroneClient, require_guided, ImageDetection
 
 from .utils import get_distance_meters, calculate_target_location
 
+import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
-
 from dronekit import connect, VehicleMode, LocationGlobalRelative
+
 from pymavlink import mavutil
 
 import time
