@@ -305,51 +305,52 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def pid(self, target_position, speed=0.1):
-      """
-      Moves the drone towards the target position at a constant speed.
+    def pid(self, target_position, speed=0.5):
+        """
+        Moves the drone towards the target position at a constant speed.
 
-      First rotates towards the target if needed (1° steps), then moves when aligned.
+        First rotates towards the target if needed (1° steps), then moves when aligned.
 
-      Coordinates are in the camera frame where the drone’s forward direction is along the +Y axis.
+        Coordinates are in the camera frame where the drone’s forward direction is along the +Y axis.
 
-      Parameters:
-          target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
-          speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
-      """
-      target_x, target_y = target_position
+        Parameters:
+            target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
+            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
+        """
+        PIXEL_THRESHOLD = 10
+        YAW_FACTOR = 0.001
+        SPEED_FACTOR = 0.001
+        target_x, target_y = target_position
 
-      # Calculate the distance to the target
-      distance = math.hypot(target_x, target_y)
-      if distance == 0:
-          self.log_and_print("Already at the target position!")
-          return
+        clipped_x = max(-1000, min(target_x, 1000))
+        clipped_y = max(-1000, min(target_y, 1000))
 
-      # Determine angle to target relative to the Y axis (drone forward)
-      # atan2(x, y) gives angle from +Y axis, positive clockwise from front
-      angle_to_target = math.degrees(math.atan2(target_x, target_y))
-      # Normalize to [-180, 180]
-      angle_to_target = (angle_to_target + 180) % 360 - 180
 
-      # Rotate stepwise (1°) until within tolerance
-      tolerance = 2      # allowable error in degrees
-      rotation_step = 1  # degrees per rotation call
-      if abs(angle_to_target) > tolerance:
-          # Rotate one degree toward the target
-          rotation_direction = rotation_step if angle_to_target > 0 else -rotation_step
-          self.rotate(rotation_direction, speed_factor=0.1)
-          return
+        # Calculate the distance to the target
+        distance = math.hypot(target_x, target_y)
+        if distance < PIXEL_THRESHOLD:
+            self.log_and_print("Already at the target position!")
+            return
 
-      # Already facing target: compute velocity vector
-      direction_x = target_x / distance
-      direction_y = target_y / distance
+        # Rotate stepwise (1°) until within tolerance
+        tolerance = 10      # allowable error in pixels
+        rotation_step = 5  # max degrees per rotation call
+        if abs(target_x) > tolerance:
+            # Rotate one degree toward the target
+            rotation_direction = rotation_step * clipped_x * YAW_FACTOR
+            self.rotate(rotation_direction, speed_factor=0.1)
+            return
 
-      # Scale by the desired speed
-      velocity_x = direction_x * speed
-      velocity_y = direction_y * speed
+        # Already facing target: compute velocity vector
+        #   direction_x = target_x / distance
+        #   direction_y = target_y / distance
 
-      # Set the velocity in the XY plane, keeping Z velocity zero
-      self.set_speed(velocity_x, velocity_y, 0.0)
+        # Scale by the desired speed
+        velocity_x = clipped_x * speed * SPEED_FACTOR
+        velocity_y = clipped_y * speed * SPEED_FACTOR
+
+        # Set the velocity in the XY plane, keeping Z velocity zero
+        self.set_speed(velocity_x, velocity_y, 0.0)
     
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
