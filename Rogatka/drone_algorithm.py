@@ -1,6 +1,6 @@
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
 from .utils import get_distance_meters, calculate_target_location
-
+import time
 import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
@@ -113,3 +113,17 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
+    
+    
+    def just_rotate(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        t=time.time()
+        while time.time()-t<10:
+            target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
+            if target_position != (None, None):
+                self.drone_client.pid(target_position)
+        
+        self.drone_client.land()
+        self.drone_client.disconnect()
+

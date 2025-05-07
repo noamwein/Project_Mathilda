@@ -316,17 +316,16 @@ class TestAlgorithm12(DroneAlgorithm):
     def main(self):
        self.drone.main(only_search=False)
     
-# class TestAlgorithm13(DroneAlgorithm): 
-#     '''
-#     color detection module
-#     only rotate to the target 
-#     '''
-#     def __init__(self, drone_client: DroneClient):
-#         self.basic_client = drone_client
-#         self.detection_model=ColorDetectionModel(None)
-#         self.video_source = PiCameraSource()
-#         self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+class TestAlgorithm13(DroneAlgorithm): 
+    '''
+    color detection module
+    only rotate to the target 
+    '''
+    def __init__(self, drone_client: DroneClient):
+        self.basic_client = drone_client
+        self.detection_model=ColorDetectionModel(None)
+        self.video_source = PiCameraSource()
+        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
 
-#     def main(self):
-#     #    self.drone.main(only_search=False)
-#         pass
+    def main(self):
+       self.drone.just_rotate()
