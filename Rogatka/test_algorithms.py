@@ -1,10 +1,16 @@
 from BirdBrain.interfaces import DroneAlgorithm, DroneClient
 from .drone_client import calculate_target_location, get_distance_meters
+from .drone_algorithm import MainDroneAlgorithm
 import time
 
 import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
+
+
+from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
+from EagleEye.image_detection_models.color_detection_model import ColorDetectionModel
+from EagleEye.sources.picamera_source import PiCameraSource
 
 START_LAT = 31.76953
 START_LON = 35.19831
@@ -279,3 +285,48 @@ class TestAlgorithm10(DroneAlgorithm):
         self.drone_client.disconnect()
 
         
+
+
+class TestAlgorithm11(DroneAlgorithm): 
+    '''
+    color detection module
+    patttern search and log if found
+    '''
+    def __init__(self, drone_client: DroneClient):
+        self.basic_client = drone_client
+        self.detection_model=ColorDetectionModel(None)
+        self.video_source = PiCameraSource()
+        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+
+    def main(self):
+       self.drone.main(only_search=True)
+
+        
+class TestAlgorithm12(DroneAlgorithm): 
+    '''
+    color detection module
+    full operation - pattern search and move to target
+    '''
+    def __init__(self, drone_client: DroneClient):
+        self.basic_client = drone_client
+        self.detection_model=ColorDetectionModel(None)
+        self.video_source = PiCameraSource()
+        self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+
+    def main(self):
+       self.drone.main(only_search=False)
+    
+# class TestAlgorithm13(DroneAlgorithm): 
+#     '''
+#     color detection module
+#     only rotate to the target 
+#     '''
+#     def __init__(self, drone_client: DroneClient):
+#         self.basic_client = drone_client
+#         self.detection_model=ColorDetectionModel(None)
+#         self.video_source = PiCameraSource()
+#         self.drone=MainDroneAlgorithm(self.model,self.source,self.basic_client)
+
+#     def main(self):
+#     #    self.drone.main(only_search=False)
+#         pass
