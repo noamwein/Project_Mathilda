@@ -305,7 +305,7 @@ class TestAlgorithm14(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
         t=time.time()
-        while time.time() - t < 7:
+        while True:
             frame = self.video_source.get_current_frame()
             if self.detection_model.detect_target(frame):
                 self.drone_client.log_and_print("Target detected!!!")
