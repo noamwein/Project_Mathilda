@@ -27,9 +27,7 @@ class ColorImageDetectionModel(ImageDetection):
         """
         Detects if there is any yellow area in the frame.
         """
-        mask = self.extract_yellow(frame)
-        yellow_pixels = cv2.countNonZero(mask)
-        return yellow_pixels > 0
+        return self.locate_target(frame) != (None, None)
 
     def locate_target(self, frame):
         """
@@ -47,6 +45,9 @@ class ColorImageDetectionModel(ImageDetection):
                 self.bbox = (x, x + w, y, y + h)
                 self.position = self.export_position(x + w // 2, y + h // 2)
                 self.draw_bounding_box(frame, self.bbox)
+            else:
+                self.bbox = None
+                self.position = (None, None)
         else:
             self.position = (None, None)
 
