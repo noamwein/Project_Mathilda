@@ -129,7 +129,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         while True:
             target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
             if target_position != (None, None):
-                self.drone_client.log_and_print("Facing target at:", target_position)
+                self.drone_client.log_and_print(f"Facing target at: {target_position}")
                 self.drone_client.pid(target_position, only_rotate=True)
         
         self.drone_client.land()
