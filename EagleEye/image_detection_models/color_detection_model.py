@@ -85,12 +85,12 @@ class ColorImageDetectionModel(ImageDetection):
         # upper_color = np.array([40, 255, 255])
 
         # # Pink (magenta) range — adjust if needed
-        # lower_color = np.array([140, 80, 80])
-        # upper_color = np.array([170, 255, 255])
+        lower_color = np.array([140, 80, 80])
+        upper_color = np.array([170, 255, 255])
 
         # Rust color range (reddish-brown/orange-brown)
-        lower_color = np.array([5, 100, 50])
-        upper_color = np.array([20, 255, 200])
+        # lower_color = np.array([5, 100, 50])
+        # upper_color = np.array([20, 255, 200])
         
         mask = cv2.inRange(hsv, lower_color, upper_color)
 
