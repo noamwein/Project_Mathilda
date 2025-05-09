@@ -124,9 +124,9 @@ class MainDroneAlgorithm(DroneAlgorithm):
     def just_rotate(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        t=time.time()
         self.drone_client.log_and_print("Looking for target...")
-        while time.time()-t<10:
+
+        while True:
             target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
             if target_position != (None, None):
                 self.drone_client.log_and_print("Facing target at:", target_position)

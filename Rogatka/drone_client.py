@@ -322,9 +322,10 @@ class BasicClient(DroneClient):
         SPEED_FACTOR = 0.001
         target_x, target_y = target_position
 
-        clipped_x = max(-1000, min(target_x, 1000))
-        clipped_y = max(-1000, min(target_y, 1000))
-
+        # clipped_x = max(-1000, min(target_x, 1000))
+        # clipped_y = max(-1000, min(target_y, 1000))
+        clipped_x = target_x
+        clipped_y = target_y
 
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
