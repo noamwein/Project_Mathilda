@@ -13,7 +13,7 @@ from enum import Enum
 class Waypoint:
     position: LocationGlobalRelative
     angle: float
-    action: str
+    movement_action: str
 
 # Define a strong-typed action enum
 class MovementAction(Enum):
