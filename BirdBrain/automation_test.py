@@ -19,20 +19,24 @@ from Rogatka.test_algorithms import (
     TestAlgorithm10,
     TestAlgorithm11,
     TestAlgorithm12,
-    TestAlgorithm13
+    TestAlgorithm13,
+    TestAlgorithm14,
+    TestAlgorithm15,
+    TestAlgorithm16,
+    TestAlgorithm17
 )
 from Rogatka.drone_client import BasicClient
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run a specified test algorithm (1-6)"
+        description="Run a specified test algorithm (1-17)"
     )
     parser.add_argument(
         "algorithm",
         type=int,
-        choices=range(1, 14),
-        help="Test algorithm number (1-13) to execute",
+        choices=range(1, 18),
+        help="Test algorithm number (1-17) to execute",
     )
     args = parser.parse_args()
 
@@ -50,7 +54,11 @@ def main():
         10: TestAlgorithm10,
         11: TestAlgorithm11,
         12: TestAlgorithm12,
-        13: TestAlgorithm13
+        13: TestAlgorithm13,
+        14: TestAlgorithm14,
+        15: TestAlgorithm15,
+        16: TestAlgorithm16,
+        17: TestAlgorithm17
     }
     selected_algo_cls = algo_map[args.algorithm]
 

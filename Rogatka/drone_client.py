@@ -356,7 +356,7 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
     
     @require_guided
-    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
+    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
         """
         Follow a series of waypoints at a constant speed.
 
@@ -366,14 +366,22 @@ class BasicClient(DroneClient):
         """
         for wp in waypoints:
             if wp.movement_action == MovementAction.MOVEMENT:
-                self.log_and_print(f"Moving to waypoint: {wp.position}")
+                self.log_and_print(f"Moving to location: {wp.position}")
+                if safe:
+                    dist = get_distance_meters(
+                            self.get_current_location(), wp.position
+                        )
+                    input("Press entet to confirm movement...")
                 self.vehicle.simple_goto(wp.position, airspeed=0.8)
 
                 while True:
-                    frame = source_obj.get_current_frame()
-                    if detection_obj.detect_target(frame):
-                        self.stop_movement()
-                        return True
+                    if detect:
+                        frame = source_obj.get_current_frame()
+                        if detection_obj.detect_target(frame):
+                            self.log_and_print("Found target!!")
+                            if stop_on_detect:
+                                self.stop_movement()
+                                return True
                     current_location = self.vehicle.location.global_relative_frame
                     distance_to_target = get_distance_meters(current_location, wp.position)
 
@@ -387,12 +395,16 @@ class BasicClient(DroneClient):
                 self.log_and_print(f"Rotating to angle: {wp.angle}")
                 self.rotate_to(wp.angle)
                 time.sleep(1)  # Wait for rotation to complete
-                start = time.time()
-                while time.time() - start < 0.5:
-                    frame = source_obj.get_current_frame()
-                    if detection_obj.detect_target(frame):
-                        return True
-                    time.sleep(0.01)  # small pause
+                if detect:
+                    start = time.time()
+                    while time.time() - start < 0.5:
+                        frame = source_obj.get_current_frame()
+                        if detection_obj.detect_target(frame):
+                            self.log_and_print("Found target!!")
+                            if stop_on_detect:
+                                self.stop_movement()
+                                return True
+                        time.sleep(0.02)  # small pause
 
             time.sleep(1)
         
