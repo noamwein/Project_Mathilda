@@ -100,6 +100,14 @@ class ColorImageDetectionModel(ImageDetection):
         mask = cv2.GaussianBlur(mask, (7, 7), 0)  # Smooth the mask
 
         return mask
+    
+    def close(self):
+        """
+        Closes the display window.
+        """
+        if self.display:
+            cv2.destroyAllWindows()
+        
 
 def main():
     global CENTERED_X, CENTERED_Y

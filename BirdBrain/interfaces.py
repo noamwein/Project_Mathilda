@@ -51,6 +51,9 @@ class Source(ABC):
             return cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         return frame  # No rotation if 0 degrees
 
+    def close(self):
+        pass
+
 
 class ImageDetection(ABC):
     @abstractmethod
@@ -59,6 +62,9 @@ class ImageDetection(ABC):
 
     @abstractmethod
     def locate_target(self, frame) -> Tuple[int, int]:
+        pass
+
+    def close(self):
         pass
 
 
