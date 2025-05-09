@@ -1,22 +1,23 @@
-from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
-from .utils import get_distance_meters, calculate_target_location
-import time
 import collections.abc
+
+from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
+from .utils import calculate_target_location
+
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from typing import List
+import threading
 
 # Southwest corner of the search area.
-START_LAT  = 31.76953
+START_LAT = 31.76953
 START_LON = 35.19831
 LONG_SEGMENT = 3
-SHORT_SEGMENT = 2 
+SHORT_SEGMENT = 2
 TURN_ANGLE = 90
 STEPS = 3  # number of snake segments
 INITIAL_ANGLE = 0
 RIGHT_ANGLE = (INITIAL_ANGLE + TURN_ANGLE) % 360
 LEFT_ANGLE = (INITIAL_ANGLE - TURN_ANGLE) % 360
-
 
 
 class MainDroneAlgorithm(DroneAlgorithm):
@@ -25,11 +26,11 @@ class MainDroneAlgorithm(DroneAlgorithm):
         super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
-    
+
     @property
     def frame(self):
         return self.source.get_current_frame()
-    
+
     def generate_path(self, steps=STEPS) -> List[Waypoint]:
         initial_alt = self.drone_client.get_initial_altitude()
         waypoints: List[Waypoint] = [
@@ -91,20 +92,31 @@ class MainDroneAlgorithm(DroneAlgorithm):
         waypoints = self.generate_path()
         self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
 
+    def connect_and_takeoff_with_preview(self):
+        def connect_and_takeoff():
+            self.drone_client.connect()
+            self.drone_client.takeoff()
+
+        thread = threading.Thread(target=connect_and_takeoff)
+        thread.start()
+
+        while thread.is_alive():
+            self.img_detection.locate_target(self.frame)
+
     def _main(self, search=True, only_search=False, stop_on_detect=True):
-        self.drone_client.connect()
-        self.drone_client.takeoff()
+        self.connect_and_takeoff_with_preview()
 
         if search:
             target_found = self.perform_search_pattern(stop_on_detect=stop_on_detect)
         else:
             target_found = True
 
-        if target_found: 
+        if target_found:
             self.drone_client.log_and_print("Finished search! Continuing mission...")
             if not only_search:
                 while not self.drone_client.mission_completed():
-                    target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
+                    target_position = self.img_detection.locate_target(
+                        self.frame)  # position is in pixels relative to the desired target point
                     if target_position != (None, None):
                         self.drone_client.log_and_print("Found target position in frame!")
                         if self.drone_client.is_on_target(target_position):
@@ -119,19 +131,18 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
-    
-    
+
     def just_rotate(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
         self.drone_client.log_and_print("Looking for target...")
 
         while True:
-            target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
+            target_position = self.img_detection.locate_target(
+                self.frame)  # position is in pixels relative to the desired target point
             if target_position != (None, None):
                 self.drone_client.log_and_print(f"Facing target at: {target_position}")
                 self.drone_client.pid(target_position, only_rotate=True)
-        
+
         self.drone_client.land()
         self.drone_client.disconnect()
-
