@@ -325,7 +325,7 @@ class TestAlgorithm15(DroneAlgorithm):
         self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
 
     def _main(self):
-       self.drone.just_rotate()
+       self.drone._main(search=False, only_rotate=True)
 
 
 class TestAlgorithm16(DroneAlgorithm): 
@@ -355,3 +355,5 @@ class TestAlgorithm17(DroneAlgorithm):
 
     def _main(self):
        self.drone.main()
+
+    

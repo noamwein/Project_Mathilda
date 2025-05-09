@@ -91,7 +91,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         waypoints = self.generate_path()
         self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
 
-    def _main(self, search=True, only_search=False, stop_on_detect=True):
+    def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
@@ -100,38 +100,29 @@ class MainDroneAlgorithm(DroneAlgorithm):
         else:
             target_found = True
 
-        if target_found: 
-            self.drone_client.log_and_print("Finished search! Continuing mission...")
-            if not only_search:
-                while not self.drone_client.mission_completed():
-                    target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
-                    if target_position != (None, None):
-                        self.drone_client.log_and_print("Found target position in frame!")
-                        if self.drone_client.is_on_target(target_position):
-                            if self.drone_client.has_stopped():
-                                self.drone_client.assassinate()
+        try:
+            if target_found: 
+                self.drone_client.log_and_print("Finished search! Continuing mission...")
+                if not only_search:
+                    while not self.drone_client.mission_completed():
+                        target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
+                        if target_position != (None, None):
+                            self.drone_client.log_and_print("Found target position in frame!")
+                            if self.drone_client.is_on_target(target_position):
+                                if self.drone_client.has_stopped():
+                                    self.drone_client.assassinate()
+                                else:
+                                    self.drone_client.stop_movement()
                             else:
-                                self.drone_client.stop_movement()
-                        else:
-                            self.drone_client.pid(target_position)
-        else:
-            self.drone_client.log_and_print("Failed to find target. Landing...")
-
+                                self.drone_client.pid(target_position, only_rotate=only_rotate)
+            else:
+                self.drone_client.log_and_print("Failed to find target. Landing...")
+        finally:
+            #destroy all OpenCV windows
+            self.img_detection.close()
+            #release the VideoWriter that inside picamera source
+            self.source.close()
         self.drone_client.land()
         self.drone_client.disconnect()
     
     
-    def just_rotate(self):
-        self.drone_client.connect()
-        self.drone_client.takeoff()
-        self.drone_client.log_and_print("Looking for target...")
-
-        while True:
-            target_position = self.img_detection.locate_target(self.frame) # position is in pixels relative to the desired target point
-            if target_position != (None, None):
-                self.drone_client.log_and_print(f"Facing target at: {target_position}")
-                self.drone_client.pid(target_position, only_rotate=True)
-        
-        self.drone_client.land()
-        self.drone_client.disconnect()
-
