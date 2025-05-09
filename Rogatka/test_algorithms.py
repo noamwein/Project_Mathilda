@@ -182,7 +182,7 @@ class TestAlgorithm8(DroneAlgorithm):
             
         print("Waypoints:", waypoints)
         
-        self.drone_client.follow_path(waypoints, safe=True, detect=False, stop_on_detect=False)
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
         self.drone_client.disconnect()
@@ -205,7 +205,7 @@ class TestAlgorithm9(DroneAlgorithm):
             
         print("Waypoints:", waypoints)
         
-        self.drone_client.follow_path(waypoints, safe=True, detect=False, stop_on_detect=False)
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
         self.drone_client.disconnect()
@@ -227,7 +227,7 @@ class TestAlgorithm10(DroneAlgorithm):
             
         print("Waypoints:", waypoints)
         
-        self.drone_client.follow_path(waypoints, safe=True, detect=False, stop_on_detect=False)
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
         self.drone_client.disconnect()
