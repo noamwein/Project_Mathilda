@@ -371,6 +371,7 @@ class BasicClient(DroneClient):
                     dist = get_distance_meters(
                             self.get_current_location(), wp.position
                         )
+                    self.log_and_print(f"Moving {dist} meters...")
                     input("Press entet to confirm movement...")
                 self.vehicle.simple_goto(wp.position, airspeed=0.8)
 
