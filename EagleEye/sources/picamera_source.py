@@ -7,17 +7,17 @@ from BirdBrain.interfaces import Source
 
 
 class PiCameraSource(Source):
-    def __init__(self, resolution=(1156, 668), target_brightness=120, exposure_time=500, auto_gain_interval=0,
-                 **kwargs):
+    def __init__(self, logging=False, target_brightness=120, exposure_time=500, auto_gain_interval=0, **kwargs):
+        resolution = (300, 300)
         super().__init__(rotation=270, **kwargs)
 
         # Camera configuration
-        self.resolution = resolution
+        self.logging = logging
         self.target_brightness = target_brightness
         self.picam2 = Picamera2()
         self.exposure_time = exposure_time
-        self.max_gain = 50.0  # Maximum gain limit from camera control
-        self.min_gain = 1.0  # Minimum gain limit from camera control
+
+        self.fps_list = []  # Used for calculating average fps
 
         # Auto-adjustment settings
         auto_gain_interval = auto_gain_interval  # Seconds
@@ -31,58 +31,67 @@ class PiCameraSource(Source):
             self.get_current_frame()
         self.auto_gain_interval = auto_gain_interval
 
-    def set_camera_resolution_and_controls(self, resolution):
-        # config = self.picam2.create_still_configuration(
-        #     main={"format": "RGB888", "size": resolution})
+    def configure_camera(self):
+        # [{'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (1280, 720), 'fps': 120.09,
+        #   'crop_limits': (2064, 2032, 5120, 2880), 'exposure_limits': (69, 64497721, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (1920, 1080), 'fps': 60.04,
+        #   'crop_limits': (784, 1312, 7680, 4320), 'exposure_limits': (107, 99943495, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (2312, 1736), 'fps': 30.0,
+        #   'crop_limits': (0, 0, 9248, 6944), 'exposure_limits': (131, 122582952, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (3840, 2160), 'fps': 20.0,
+        #   'crop_limits': (784, 1312, 7680, 4320), 'exposure_limits': (201, 187816992, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (4624, 3472), 'fps': 10.0,
+        #   'crop_limits': (0, 0, 9248, 6944), 'exposure_limits': (254, 237625637, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (8000, 6000), 'fps': 3.0,
+        #   'crop_limits': (624, 472, 9248, 6944), 'exposure_limits': (467, 435918849, None)},
+        #  {'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (9152, 6944), 'fps': 2.7,
+        #   'crop_limits': (0, 0, 9248, 6944), 'exposure_limits': (467, 435918849, None)}]
+        low_res = (1280, 720)
+        high_res = (1920, 1080)
+        res = high_res
+
+        frame_duration = int(1_000_000 / 200)  # Will be set to max FPS
         config = self.picam2.create_video_configuration(
-            main={"format": "RGB888", "size": self.resolution},
-            raw={"size": resolution}  # Full sensor input for full FOV
+            buffer_count=1, queue=False,
+            main={"format": "RGB888", "size": res},
+            controls={"FrameDurationLimits": (frame_duration, frame_duration)}
         )
         self.picam2.configure(config)
 
         # Set initial exposure and gain
         self.picam2.set_controls({
             "AfMode": 2,
-            "ExposureTime": self.exposure_time,
+            "ExposureTime": 10,  # Will be set to minimum
             "AeEnable": False,
-            "AnalogueGain": 50.0  # Start with default gain
+            "AnalogueGain": 70.0,
         })
 
         # Ensure the camera is ready
         time.sleep(0.2)
         self.picam2.start()
 
-        print(f"[Camera] Using capture resolution: {resolution}")
         time.sleep(2)  # Camera warm-up
 
-    def configure_camera(self):
-        """Set up the camera and configure it with the correct resolution."""
-        # Configure the camera with the correct resolution and exposure
-        resolutions = sorted(
-            {mode["size"] for mode in self.picam2.sensor_modes},
-            key=lambda s: s[0] * s[1],
-            reverse=True
-        )
-        print('Camera supported resolutions:')
-        for res in resolutions:
-            print('\t', res)
-
-        for res in resolutions:
-            try:
-                self.set_camera_resolution_and_controls(res)
-                break
-            except Exception as e:
-                print(f"[Camera] Failed to configure resolution {res}: {e}")
-        else:
-            raise RuntimeError("No valid resolution could be configured.")
-
-        print('Exposure time configured:', self.exposure_time)
-        print('Resolution configured:', self.resolution)
+        print('[Configuration]')
+        metadata = self.picam2.capture_metadata()
+        print("Exposure Time (micro seconds):", metadata.get("ExposureTime"))
+        print("Frame Duration (micro seconds):", metadata.get("FrameDuration"))
+        fps = 1_000_000 / metadata.get("FrameDuration")
+        print(f"Estimated FPS: {fps:.2f}")
+        print(self.picam2.camera_config)
+        print()
 
     def _get_current_frame(self):
         """Get the current frame, adjust gain if necessary, and return the image."""
         # Capture the current frame
+        before = time.time_ns()
         frame = self.picam2.capture_array()
+        duration_ns = time.time_ns() - before
+        fps = 1 / (duration_ns / 1e9)
+        self.fps_list.append(fps)
+        avg_fps = sum(self.fps_list) / len(self.fps_list)
+        if self.logging:
+            print('[FPS] Average FPS:', avg_fps, '\tCurrent FPS:', fps)
 
         # Convert frame to brightness (average pixel intensity)
         current_brightness = np.mean(frame)
@@ -102,17 +111,19 @@ class PiCameraSource(Source):
             raise RuntimeError("Cannot find Lux or AnalogueGain in camera metadata!")
 
         gain = metadata["AnalogueGain"]
+        if self.logging:
+            print(f"[AutoGain] Brightness: {brightness:.2f} average pixel intensity, Gain: {gain:.2f}")
 
-        print(f"[AutoGain] Brightness: {brightness:.2f} average pixel intensity, Gain: {gain:.2f}")
-
-        if brightness < self.target_brightness / 1.2 and gain * 1.05 < self.max_gain:
+        if brightness < self.target_brightness / 1.2:
             # Too dark -> increase gain
-            new_gain = min(gain * 1.05, self.max_gain)
-            print(f"[AutoGain] Increasing gain to {new_gain:.2f}")
+            new_gain = gain * 1.05
+            if self.logging:
+                print(f"[AutoGain] Increasing gain to {new_gain:.2f}")
             self.picam2.set_controls({"AnalogueGain": new_gain})
 
-        elif brightness > self.target_brightness * 1.2 and gain / 1.05 > self.min_gain:
+        elif brightness > self.target_brightness * 1.2:
             # Too bright -> decrease gain
-            new_gain = max(gain / 1.05, self.min_gain)
-            print(f"[AutoGain] Decreasing gain to {new_gain:.2f}")
+            new_gain = gain / 1.0
+            if self.logging:
+                print(f"[AutoGain] Decreasing gain to {new_gain:.2f}")
             self.picam2.set_controls({"AnalogueGain": new_gain})

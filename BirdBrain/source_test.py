@@ -15,7 +15,7 @@ def main():
     os.makedirs(video_dir, exist_ok=True)
 
     # Create an instance of the camera source
-    camera_source = PiCameraSource()
+    camera_source = PiCameraSource(logging=True)
 
     # Get the current timestamp for video filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
