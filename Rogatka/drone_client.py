@@ -318,7 +318,7 @@ class BasicClient(DroneClient):
             speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
         """
         PIXEL_THRESHOLD = 10
-        YAW_FACTOR = 0.001
+        YAW_FACTOR = 0.002
         SPEED_FACTOR = 0.001
         target_x, target_y = target_position
 

@@ -52,7 +52,6 @@ class ColorImageDetectionModel(ImageDetection):
             self.position = (None, None)
 
         # Resize and display
-        frame = cv2.resize(frame, (FRAME_WIDTH, FRAME_HEIGHT))
         if self.display:
             cv2.imshow('Video', frame)
 
