@@ -14,7 +14,7 @@ FRAME_HEIGHT = 480  # Display frame height (resized window)
 CENTERED_X=0 #x's pixel of the dropped object
 CENTERED_Y=0 #y's pixel of the dropped object
 
-class ImageDetectionModel(ImageDetection):
+class ColorImageDetectionModel(ImageDetection):
     def __init__(self, reference_image_path: str, display: bool = True,
         always_recognize_person: bool = False):
         self.reference_image_path = reference_image_path
@@ -103,7 +103,7 @@ class ImageDetectionModel(ImageDetection):
 
 def main():
     global CENTERED_X, CENTERED_Y
-    model = ImageDetectionModel(reference_image_path="", display=True)
+    model = ColorImageDetectionModel(reference_image_path="", display=True)
 
     cap = cv2.VideoCapture(0)  # Open default webcam
     #print dimensions of the camera
@@ -134,7 +134,7 @@ def main():
 
 # def main():
 #     global CENTERED_X, CENTERED_Y
-#     model = ImageDetectionModel(reference_image_path="", display=True)
+#     model = ColorImageDetectionModel(reference_image_path="", display=True)
 
 #     # Replace this with the path to your video file
 #     video_path = r"C:\Users\TLP-001\Desktop\TamirTalpi\שנה ב\מגדד\videos\vid1.mp4"

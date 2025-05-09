@@ -16,20 +16,27 @@ from Rogatka.test_algorithms import (
     TestAlgorithm7,
     TestAlgorithm8,
     TestAlgorithm9,
-    TestAlgorithm10
+    TestAlgorithm10,
+    TestAlgorithm11,
+    TestAlgorithm12,
+    TestAlgorithm13,
+    TestAlgorithm14,
+    TestAlgorithm15,
+    TestAlgorithm16,
+    TestAlgorithm17
 )
 from Rogatka.drone_client import BasicClient
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run a specified test algorithm (1-6)"
+        description="Run a specified test algorithm (1-17)"
     )
     parser.add_argument(
         "algorithm",
         type=int,
-        choices=range(1, 11),
-        help="Test algorithm number (1-10) to execute",
+        choices=range(1, 18),
+        help="Test algorithm number (1-17) to execute",
     )
     args = parser.parse_args()
 
@@ -44,8 +51,14 @@ def main():
         7: TestAlgorithm7,
         8: TestAlgorithm8,
         9: TestAlgorithm9,
-        10: TestAlgorithm10
-        
+        10: TestAlgorithm10,
+        11: TestAlgorithm11,
+        12: TestAlgorithm12,
+        13: TestAlgorithm13,
+        14: TestAlgorithm14,
+        15: TestAlgorithm15,
+        16: TestAlgorithm16,
+        17: TestAlgorithm17
     }
     selected_algo_cls = algo_map[args.algorithm]
 
@@ -53,7 +66,7 @@ def main():
     main_alg = selected_algo_cls(
         BasicClient(
             '/dev/ttyACM0',  # serial port
-            1.5,             # initial altitude
+            2.5,             # initial altitude
             10,              # max altitude
             20,              # min battery percent
             logger=logging.getLogger(__name__)
