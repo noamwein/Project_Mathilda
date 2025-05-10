@@ -352,7 +352,7 @@ class BasicClient(DroneClient):
             return
 
         # Rotate stepwise (1°) until within tolerance
-        tolerance = 10      # allowable error in pixels
+        tolerance = 200      # allowable error in pixels
         rotation_step = 5  # max degrees per rotation call
         if abs(target_x) > tolerance:
             # Rotate one degree toward the target
