@@ -70,7 +70,7 @@ class PiCameraSource(Source):
             "AfMode": 2,
             "ExposureTime": 10,  # Will be set to minimum
             "AeEnable": False,
-            "AnalogueGain": 70.0,
+            "AnalogueGain": 20.0,
         })
 
         # Ensure the camera is ready

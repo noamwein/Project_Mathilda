@@ -24,6 +24,10 @@ MAXIMUM_DISTANCE = 12
 KILL_SWITCH_CHANNEL = '8'
 KILL_SWITCH_MODE = 'ALTHOLD'
 
+PIXEL_THRESHOLD = 10
+YAW_FACTOR = 0.005
+SPEED_FACTOR = 0.001
+
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -333,9 +337,6 @@ class BasicClient(DroneClient):
             target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
             speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
         """
-        PIXEL_THRESHOLD = 10
-        YAW_FACTOR = 0.002
-        SPEED_FACTOR = 0.001
         target_x, target_y = target_position
 
         # clipped_x = max(-1000, min(target_x, 1000))
