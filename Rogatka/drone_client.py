@@ -371,7 +371,7 @@ class BasicClient(DroneClient):
 
         # Scale by the desired speed
         velocity_x = clipped_x * speed * SPEED_FACTOR
-        velocity_y = clipped_y * speed * SPEED_FACTOR
+        velocity_y = -clipped_y * speed * SPEED_FACTOR
 
         # Set the velocity in the XY plane, keeping Z velocity zero
         self.set_speed(velocity_x, velocity_y, 0.0)
