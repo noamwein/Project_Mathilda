@@ -111,8 +111,11 @@ class BasicClient(DroneClient):
         self.log_and_print(f"Battery voltage: {self.vehicle.battery.voltage:.2f} V")
 
         self.log_and_print('Connected!')
+
+        self.calibrate_barometer()
     
     def calibrate_barometer(self):
+        self.log_and_print("Calibrating barometer...")
          # send the command_long to reset baro “ground pressure”
         msg = self.vehicle.message_factory.command_long_encode(
             0, 0,                                        # target system, target component (0 = autopick)
@@ -140,8 +143,6 @@ class BasicClient(DroneClient):
         #     time.sleep(1)
 
         self.log_and_print("Armed!")
-
-        self.calibrate_barometer()
 
         self.vehicle.simple_takeoff(self.initial_altitude)
 
