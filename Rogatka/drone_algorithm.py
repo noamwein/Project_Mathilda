@@ -104,7 +104,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
             self.img_detection.locate_target(self.frame)
 
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
-        self.connect_and_takeoff_with_preview()
+        # self.connect_and_takeoff_with_preview()
 
         if search:
             target_found = self.perform_search_pattern(stop_on_detect=stop_on_detect)
@@ -130,10 +130,10 @@ class MainDroneAlgorithm(DroneAlgorithm):
             else:
                 self.drone_client.log_and_print("Failed to find target. Landing...")
         finally:
-            # destroy all OpenCV windows
-            self.img_detection.close()
             # release the VideoWriter that inside picamera source
             self.source.close()
+            # destroy all OpenCV windows
+            self.img_detection.close()
         self.drone_client.land()
         self.drone_client.disconnect()
 
