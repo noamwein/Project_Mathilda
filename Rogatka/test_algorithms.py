@@ -356,4 +356,77 @@ class TestAlgorithm17(DroneAlgorithm):
     def _main(self):
        self.drone.main()
 
+
+class TestAlgorithm18(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+        
+    def _main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
+                              angle=self.drone_client.get_heading(), 
+                              movement_action=MovementAction.MOVEMENT)]
+        
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+
+        self.drone_client.log_and_print("Wating 30 seconds...")
+
+        time.sleep(30)
+
+        self.drone_client.land()
+        self.drone_client.disconnect()
+
+
+class TestAlgorithm19(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+        
+    def _main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
+                              angle=self.drone_client.get_heading(), 
+                              movement_action=MovementAction.MOVEMENT)]
+        
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+
+        self.drone_client.log_and_print("Trying set_speed")
+
+        self.drone_client.set_speed(1, 1, 0)
+
+        self.drone_client.log_and_print("Wating 30 seconds...")
+
+        time.sleep(30)
+
+        self.drone_client.land()
+        self.drone_client.disconnect()
+
+
+class TestAlgorithm20(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+        
+    def _main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+        
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
+                              angle=self.drone_client.get_heading(), 
+                              movement_action=MovementAction.MOVEMENT)]
+        
+        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+
+        self.drone_client.log_and_print("Trying rotate")
+
+        self.drone_client.rotate(90)
+
+        self.drone_client.log_and_print("Wating 30 seconds...")
+
+        time.sleep(30)
+
+        self.drone_client.land()
+        self.drone_client.disconnect()
     
