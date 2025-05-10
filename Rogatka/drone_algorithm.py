@@ -104,7 +104,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
             self.img_detection.locate_target(self.frame)
 
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
-        # self.connect_and_takeoff_with_preview()
+        self.connect_and_takeoff_with_preview()
 
         if search:
             target_found = self.perform_search_pattern(stop_on_detect=stop_on_detect)
