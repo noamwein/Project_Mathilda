@@ -26,7 +26,8 @@ KILL_SWITCH_MODE = 'ALTHOLD'
 
 PIXEL_THRESHOLD = 10
 YAW_FACTOR = 0.005
-SPEED_FACTOR = 0.001
+SPEED_FACTOR = 0.002
+ANGLE_TOLERANCE = 200
 
 
 class State(enum.Enum):
@@ -279,6 +280,7 @@ class BasicClient(DroneClient):
             velocity_y (float): Velocity in m/s in the east direction.
             velocity_z (float): Velocity in m/s in the downward direction.
         """
+        self.log_and_print(f"Setting speed x: {velocity_x}, y: {velocity_y}")
         msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
             0,  # time_boot_ms (not used)
             0, 0,  # target system, target component
@@ -352,7 +354,7 @@ class BasicClient(DroneClient):
             return
 
         # Rotate stepwise (1°) until within tolerance
-        tolerance = 200      # allowable error in pixels
+        tolerance = ANGLE_TOLERANCE      # allowable error in pixels
         rotation_step = 5  # max degrees per rotation call
         if abs(target_x) > tolerance:
             # Rotate one degree toward the target
