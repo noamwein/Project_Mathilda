@@ -1,6 +1,7 @@
 import collections.abc
 
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
+from Rogatka import ServoMotor
 from .utils import calculate_target_location
 
 collections.MutableMapping = collections.abc.MutableMapping
@@ -22,11 +23,12 @@ LEFT_ANGLE = (INITIAL_ANGLE - TURN_ANGLE) % 360
 
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
-                 drone_client: DroneClient):
+                 drone_client: DroneClient, servo: ServoMotor):
         super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
-
+        self.servo=servo
+        
     @property
     def frame(self):
         return self.source.get_current_frame()
@@ -103,6 +105,10 @@ class MainDroneAlgorithm(DroneAlgorithm):
         while thread.is_alive():
             self.img_detection.locate_target(self.frame)
 
+    def assassinate(self):
+        self.drone_client.assassinate()
+        self.servo.drop()
+        
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
         self.connect_and_takeoff_with_preview()
 
@@ -122,7 +128,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
                             self.drone_client.log_and_print("Found target position in frame!")
                             if self.drone_client.is_on_target(target_position):
                                 if self.drone_client.has_stopped():
-                                    self.drone_client.assassinate()
+                                    self.assassinate()
                                 else:
                                     self.drone_client.stop_movement()
                             else:
@@ -134,6 +140,8 @@ class MainDroneAlgorithm(DroneAlgorithm):
             self.source.close()
             # destroy all OpenCV windows
             self.img_detection.close()
+            # close the servo motor
+            self.servo.close()
         self.drone_client.land()
         self.drone_client.disconnect()
 

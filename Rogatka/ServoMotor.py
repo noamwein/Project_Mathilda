@@ -1,11 +1,12 @@
 import RPi.GPIO as GPIO
-from time import sleep
+import time
 
-SERVO_PIN = 3
+SERVO_PIN = 2
 
 
+COOLDOWN_TIME=2 #time between drops
 class ServoMotor:
-    def __init__(self, pin, frequency=50):
+    def __init__(self, pin=3, frequency=50):
         """
         Initialize the servo motor.
         :param pin: GPIO pin connected to the servo.
@@ -17,8 +18,11 @@ class ServoMotor:
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
+        self.index=0
+        self.angles=[110,122,145]
+        self.last_dropped=0
 
-    def set_angle(self, angle, direction='counterclockwise'):
+    def set_angle(self, angle, direction='clockwise'):
         """
         Set the servo motor to a specific angle, rotating clockwise or counterclockwise.
         :param angle: Desired angle (0-180 degrees).
@@ -33,31 +37,33 @@ class ServoMotor:
 
         GPIO.output(self.pin, True)
         self.pwm.ChangeDutyCycle(duty)
-        sleep(1)
+        time.sleep(1)
         GPIO.output(self.pin, False)
         self.pwm.ChangeDutyCycle(0)
 
-    def release_payload(self):
+    def drop(self):
         """
-        Release payload by setting the servo to 90 degrees, waiting 1 second, and returning to 0 degrees.
+        Drop the payload by setting the servo to 90 degrees.
         """
-        self.set_angle(0)
-        sleep(1)
-        self.set_angle(150)
-        sleep(1)
+        if self.index>=len(self.angles) or time.time()-self.last_dropped<COOLDOWN_TIME:
+            return
+        self.set_angle(self.angles[self.index])
+        self.index+=1
+        self.last_dropped=time.time()
+        
 
-    def stop(self):
+    def close(self):
         """
-        Stop the PWM signal and clean up GPIO resources.
+        Close the servo motor.
         """
         self.pwm.stop()
         GPIO.cleanup(self.pin)
-
-
 # Example usage
 if __name__ == "__main__":
     servo = ServoMotor(pin=SERVO_PIN)
     try:
-        servo.release_payload()
+        while True:
+            servo.drop()
+            time.sleep(0.1)
     finally:
         servo.stop()

@@ -71,7 +71,7 @@ class ColorImageDetectionModel(ImageDetection):
         x_min, x_max, y_min, y_max = bbox
         x_circle=(x_min+x_max)//2
         y_circle=(y_min+y_max)//2
-        cv2.circle(frame, (x_circle,y_circle), 5, (0, 0, 255), -1)
+        cv2.circle(frame, (x_circle,y_circle), 5, (255, 0, 0), -1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
     def export_position(self, x, y):
