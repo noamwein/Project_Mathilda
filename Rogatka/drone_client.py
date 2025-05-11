@@ -293,7 +293,7 @@ class BasicClient(DroneClient):
         self.vehicle.flush()
 
     @require_guided
-    def raw_set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
+    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
         Move vehicle relative to current heading and rotate to align with motion vector.
 
