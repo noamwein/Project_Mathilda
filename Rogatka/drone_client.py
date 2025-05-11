@@ -20,14 +20,17 @@ import enum
 
 import os
 
+import numpy as np
+
 MAXIMUM_DISTANCE = 12
 KILL_SWITCH_CHANNEL = '8'
 KILL_SWITCH_MODE = 'ALTHOLD'
 
 PIXEL_THRESHOLD = 10
 YAW_FACTOR = 0.005
-SPEED_FACTOR = 0.005
+SPEED_FACTOR = 0.003
 ANGLE_TOLERANCE = 200
+MAX_SPEED = 1
 
 
 class State(enum.Enum):
@@ -267,30 +270,6 @@ class BasicClient(DroneClient):
         )
         self.vehicle.send_mavlink(msg)
         self.vehicle.flush()
-    
-    @require_guided
-    def _send_global_velocity_with_yaw(self, vx: float, vy: float, vz: float, yaw: float):
-        """
-        Helper to send global NED velocity and absolute yaw command.
-
-        vx, vy (m/s): global north/east velocities
-        vz (m/s): global down velocity
-        yaw (rad): absolute yaw angle
-        """
-        # Mask: ignore pos(0-2), ignore accel(6-8), ignore yaw_rate (10)
-        type_mask = 0b0000110111000111  # enable vx, vy, vz and yaw
-
-        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
-            0, 0, 0,
-            mavutil.mavlink.MAV_FRAME_LOCAL_NED,
-            type_mask,
-            0, 0, 0,
-            vx, vy, vz,
-            0, 0, 0,
-            yaw, 0
-        )
-        self.vehicle.send_mavlink(msg)
-        self.vehicle.flush()
 
     @require_guided
     def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
@@ -323,23 +302,6 @@ class BasicClient(DroneClient):
             ))
             self.set_speed(velocity_x, velocity_y, velocity_z)
             time.sleep(1)
-    
-    @require_guided
-    def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
-        """
-        Move vehicle relative to current heading, holding heading constant.
-
-        velocity_x, velocity_y: body-frame forward/rightward velocities (m/s)
-        velocity_z: body-frame downward velocity (m/s)
-        """
-        self.log_and_print('Setting speed to {}, {}, {} with no rotation'.format(velocity_x, velocity_y, velocity_z))
-        # Compute global velocities from body-frame inputs
-        heading_rad = math.radians(self.vehicle.heading)
-        vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
-        vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
-
-        # Use current heading as yaw to hold orientation
-        self._send_global_velocity_with_yaw(vx, vy, velocity_z, heading_rad)
     
     @require_guided
     def goto_target(self, target_position):
@@ -389,10 +351,6 @@ class BasicClient(DroneClient):
         """
         target_x, target_y = target_position
 
-        # clipped_x = max(-1000, min(target_x, 1000))
-        # clipped_y = max(-1000, min(target_y, 1000))
-        clipped_x = target_x
-        clipped_y = target_y
 
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
@@ -405,20 +363,21 @@ class BasicClient(DroneClient):
         rotation_step = 5  # max degrees per rotation call
         if abs(target_x) > tolerance:
             # Rotate one degree toward the target
-            rotation_direction = rotation_step * clipped_x * YAW_FACTOR
+            rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
             self.rotate(rotation_direction, speed_factor=0.1)
             return
         
         if only_rotate:
             return
 
-        # Already facing target: compute velocity vector
-        #   direction_x = target_x / distance
-        #   direction_y = target_y / distance
-
         # Scale by the desired speed
-        velocity_x = clipped_x * speed * SPEED_FACTOR
-        velocity_y = -clipped_y * speed * SPEED_FACTOR # Image y is upside-down
+        velocity_x = target_x * speed * SPEED_FACTOR
+        velocity_y = -target_y * speed * SPEED_FACTOR # Image y is upside-down
+
+        v_norm = math.hypot(velocity_x, velocity_y)
+        if v_norm > MAX_SPEED: # make sure speed is not too high
+            velocity_x /= v_norm
+            velocity_y /= v_norm
 
         # Set the velocity in the XY plane, keeping Z velocity zero
         self.set_speed(velocity_x, velocity_y, 0.0)
