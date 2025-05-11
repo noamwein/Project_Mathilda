@@ -83,7 +83,7 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
-    def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float):
+    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         pass
 
     @abstractmethod
@@ -121,24 +121,11 @@ class DroneClient(ABC):
     @abstractmethod
     def get_initial_altitude(self):
         pass
-    
-    #
-    # @abstractmethod
-    # def goto_target(self, target_position: Tuple[int, int]):
-    #     pass
 
     @abstractmethod
     def pid(self, target_position):
         pass
 
-    @abstractmethod
-    def set_speed_and_rotate(self, velocity_x: float, velocity_y: float, velocity_z: float):
-        pass
-
-    @abstractmethod
-    def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
-        pass
-    
     @abstractmethod
     def has_stopped(self):
         pass
@@ -190,7 +177,6 @@ class DroneClient(ABC):
     @abstractmethod
     def assassinate(self):
         pass
-
 
 
 class DroneAlgorithm(ABC):

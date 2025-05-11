@@ -241,7 +241,7 @@ class TestAlgorithm11(DroneAlgorithm):
 
         time.sleep(5)
 
-        self.drone_client.set_speed_no_rotation(0, -0.5, 0)
+        # self.drone_client.set_speed_no_rotation(0, -0.5, 0)
 
         # time.sleep(5)
 
@@ -249,7 +249,7 @@ class TestAlgorithm11(DroneAlgorithm):
 
         time.sleep(5)
 
-        self.drone_client.set_speed_and_rotate(-0.5, -0.5, 0)
+        # self.drone_client.set_speed_and_rotate(-0.5, -0.5, 0)
 
         time.sleep(5)
 

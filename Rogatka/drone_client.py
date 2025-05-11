@@ -241,7 +241,6 @@ class BasicClient(DroneClient):
         self.log_and_print(f"Rotating to {new_heading} degrees...")
         
         self.rotate_to(new_heading, speed_factor=speed_factor)
-
     
     @require_guided
     def rotate_to(self, angle, speed_factor=0.5):
@@ -322,7 +321,7 @@ class BasicClient(DroneClient):
             self.drone_client.log_and_print('Movement duration in direction: {x}, {y}, {z} after {t} secs'.format(
                 x=velocity_x, y=velocity_y, z=velocity_z, t=i
             ))
-            self.drone_client.set_speed_and_rotate(velocity_x, velocity_y, velocity_z)
+            self.drone_client.set_speed(velocity_x, velocity_y, velocity_z)
             time.sleep(1)
     
     @require_guided
@@ -422,7 +421,7 @@ class BasicClient(DroneClient):
         velocity_y = -clipped_y * speed * SPEED_FACTOR # Image y is upside-down
 
         # Set the velocity in the XY plane, keeping Z velocity zero
-        self.set_speed_no_rotation(velocity_x, velocity_y, 0.0)
+        self.set_speed(velocity_x, velocity_y, 0.0)
     
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
