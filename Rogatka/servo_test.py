@@ -1,5 +1,8 @@
 import time
+import os
+import sys
 
+sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 from Rogatka.servo import ServoMotor, SERVO_PIN
 
 
