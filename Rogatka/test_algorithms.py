@@ -1,12 +1,10 @@
-from BirdBrain.interfaces import DroneAlgorithm, DroneClient, Waypoint, MovementAction
-from .drone_client import calculate_target_location, get_distance_meters
-from .drone_algorithm import MainDroneAlgorithm
+import collections.abc
 import time
 
-import collections.abc
-collections.MutableMapping = collections.abc.MutableMapping
-from dronekit import LocationGlobalRelative
+from BirdBrain.interfaces import DroneAlgorithm, DroneClient, Waypoint, MovementAction
+from .drone_algorithm import MainDroneAlgorithm
 
+collections.MutableMapping = collections.abc.MutableMapping
 
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.picamera_source import PiCameraSource
@@ -56,7 +54,7 @@ class TestAlgorithm3(DroneAlgorithm):
         self.drone_client.rotate(-45)
 
         time.sleep(1)
-        
+
         self.drone_client.land()
         self.drone_client.disconnect()
 
@@ -74,7 +72,7 @@ class TestAlgorithm4(DroneAlgorithm):
         self.drone_client.move_forward(1.5)
 
         time.sleep(2)
-        
+
         self.drone_client.land()
         self.drone_client.disconnect()
 
@@ -90,7 +88,6 @@ class TestAlgorithm5(DroneAlgorithm):
         time.sleep(1)
 
         for i in range(4):
-
             self.drone_client.move_forward(1.5)
 
             time.sleep(2)
@@ -98,7 +95,7 @@ class TestAlgorithm5(DroneAlgorithm):
             self.drone_client.rotate(-90)
 
             time.sleep(2)
-        
+
         self.drone_client.land()
         self.drone_client.disconnect()
 
@@ -120,23 +117,22 @@ class TestAlgorithm6(DroneAlgorithm):
         self.drone_client.change_altitude(-0.5)
 
         time.sleep(3)
-        
+
         self.drone_client.land()
         self.drone_client.disconnect()
-
 
 
 class TestAlgorithm7(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        
+
     def wait(self, seconds=3):
         time.sleep(seconds)
-        
+
     def _main(self):
         # Constants
-        LONG_FORWARD = 3  
-        SHORT_FORWARD = 1 
+        LONG_FORWARD = 3
+        SHORT_FORWARD = 1
         TURN_ANGLE = 90
         STEPS = 3  # number of snake segments
 
@@ -164,46 +160,45 @@ class TestAlgorithm7(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
-        
+
+
 class TestAlgorithm8(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client)
-        
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
+
         waypoints = self.drone.generate_path(steps=0)
-            
+
         print("Waypoints:", waypoints)
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
         self.drone_client.disconnect()
-        
-        
-        
+
+
 class TestAlgorithm9(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client)
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
+
         # waypoints = [(self.drone_client.get_location(), self.drone_client.get_heading(), "movement")]
         waypoints = self.drone.generate_path(steps=1)
-            
+
         print("Waypoints:", waypoints)
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
@@ -216,16 +211,16 @@ class TestAlgorithm10(DroneAlgorithm):
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client)
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
+
         # waypoints = [(self.drone_client.get_location(), self.drone_client.get_heading(), "movement")]
         waypoints = self.drone.generate_path(steps=3)
-            
+
         print("Waypoints:", waypoints)
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.land()
@@ -261,53 +256,55 @@ class TestAlgorithm11(DroneAlgorithm):
         self.drone_client.land()
         self.drone_client.disconnect()
 
-        
 
-
-class TestAlgorithm12(DroneAlgorithm): 
+class TestAlgorithm12(DroneAlgorithm):
     '''
     color detection module
     patttern search and log if found
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
-       self.drone._main(only_search=True, stop_on_detect=False)
+        self.drone._main(only_search=True, stop_on_detect=False)
 
-        
-class TestAlgorithm13(DroneAlgorithm): 
+
+class TestAlgorithm13(DroneAlgorithm):
     '''
     color detection module
     full operation - pattern search and stop if found
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
-       self.drone._main(only_search=True)
-    
-class TestAlgorithm14(DroneAlgorithm): 
+        self.drone._main(only_search=True)
+
+
+class TestAlgorithm14(DroneAlgorithm):
     '''
     color detection module
     log if target is found
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        t=time.time()
+        t = time.time()
         while True:
             frame = self.video_source.get_current_frame()
             if self.detection_model.detect_target(frame):
@@ -316,62 +313,65 @@ class TestAlgorithm14(DroneAlgorithm):
         self.drone_client.disconnect()
 
 
-class TestAlgorithm15(DroneAlgorithm): 
+class TestAlgorithm15(DroneAlgorithm):
     '''
     color detection module
     rotate to always face target
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
-       self.drone._main(search=False, only_rotate=True)
+        self.drone._main(search=False, only_rotate=True)
 
 
-class TestAlgorithm16(DroneAlgorithm): 
+class TestAlgorithm16(DroneAlgorithm):
     '''
     color detection module
     perform full pid
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
-       self.drone._main(search=False)
+        self.drone._main(search=False)
 
 
-class TestAlgorithm17(DroneAlgorithm): 
+class TestAlgorithm17(DroneAlgorithm):
     '''
     color detection module - full MVP!!
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client)
 
     def _main(self):
-       self.drone.main()
+        self.drone.main()
 
 
 class TestAlgorithm18(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
-        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
-                              angle=self.drone_client.get_heading(), 
+
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(),
+                              angle=self.drone_client.get_heading(),
                               movement_action=MovementAction.MOVEMENT)]
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.log_and_print("Wating 30 seconds...")
@@ -385,15 +385,15 @@ class TestAlgorithm18(DroneAlgorithm):
 class TestAlgorithm19(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
-        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
-                              angle=self.drone_client.get_heading(), 
+
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(),
+                              angle=self.drone_client.get_heading(),
                               movement_action=MovementAction.MOVEMENT)]
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.log_and_print("Trying set_speed")
@@ -411,15 +411,15 @@ class TestAlgorithm19(DroneAlgorithm):
 class TestAlgorithm20(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        
+
     def _main(self):
         self.drone_client.connect()
         self.drone_client.takeoff()
-        
-        waypoints = [Waypoint(position=self.drone_client.get_current_location(), 
-                              angle=self.drone_client.get_heading(), 
+
+        waypoints = [Waypoint(position=self.drone_client.get_current_location(),
+                              angle=self.drone_client.get_heading(),
                               movement_action=MovementAction.MOVEMENT)]
-        
+
         self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
         self.drone_client.log_and_print("Trying rotate")
@@ -432,22 +432,25 @@ class TestAlgorithm20(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
-    
-class TestAlgorithm21(DroneAlgorithm): 
+
+
+class TestAlgorithm21(DroneAlgorithm):
     '''
     color detection module
     during manual flight
     '''
+
     def __init__(self, drone_client: DroneClient):
         super().__init__(drone_client)
-        self.detection_model=ColorImageDetectionModel(None)
+        self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
 
     def _main(self):
         try:
             while True:
-                frame=self.video_source.get_current_frame()
-                target_position = self.detection_model.locate_target(frame)  # position is in pixels relative to the desired target point   
+                frame = self.video_source.get_current_frame()
+                target_position = self.detection_model.locate_target(
+                    frame)  # position is in pixels relative to the desired target point
                 if target_position != (None, None):
                     if self.drone_client.is_on_target(target_position):
                         print("boom!")
@@ -458,3 +461,23 @@ class TestAlgorithm21(DroneAlgorithm):
             self.video_source.close()
             self.detection_model.close()
             print("Resources released. Exiting cleanly.")
+
+
+class TestAlgorithm22(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+
+    def _main(self):
+        self.drone_client.connect()
+        self.drone_client.takeoff()
+
+        time.sleep(5)
+
+        start = time.time()
+        while time.time() - start < 5:
+            self.drone_client.log_and_print('Movement duration: {} secs'.format(time.time() - start))
+            self.drone_client.set_speed_and_rotate(0, -0.5, 0)
+            time.sleep(1)
+
+        self.drone_client.land()
+        self.drone_client.disconnect()
