@@ -443,8 +443,6 @@ class TestAlgorithm21(DroneAlgorithm):
         try:
             while True:
                 target_position = self.img_detection.locate_target(self.frame)  # position is in pixels relative to the desired target point    
-                if self.drone_client.is_on_target(target_position):
-                    print("boom!")
         except KeyboardInterrupt:
             print("Interrupted by user (Ctrl+C)")
         finally:
