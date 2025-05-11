@@ -4,6 +4,8 @@ import threading
 import time
 import psutil
 
+THRESHOLD_TEMPERATURE = 40
+
 def get_cpu_temp():
     try:
         output = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
@@ -30,7 +32,7 @@ def update():
         net_now, up_speed, down_speed = get_bandwidth(prev_net)
         prev_net = net_now
 
-        overheat = temp > 70
+        overheat = temp > THRESHOLD_TEMPERATURE
         flash_state = not flash_state if overheat else False
 
         if overheat and flash_state:
@@ -52,11 +54,11 @@ root.overrideredirect(True)
 root.attributes("-topmost", True)
 
 # Window size and position
-width, height = 140, 60
+width, height = 200, 60
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x = screen_width - width - 10
-y = screen_height - height - 40
+y = screen_height - height - 10
 root.geometry(f"{width}x{height}+{x}+{y}")
 
 cpu_label = tk.Label(root, text="", font=("Arial", 16), bg="white", fg="black")
