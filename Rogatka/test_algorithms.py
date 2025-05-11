@@ -474,7 +474,7 @@ class TestAlgorithm22(DroneAlgorithm):
         start = time.time()
         while time.time() - start < 5:
             self.drone_client.log_and_print('Movement duration: {} secs'.format(time.time() - start))
-            self.drone_client.set_speed_and_rotate(0, -0.5, 0)
+            self.drone_client.set_speed_and_rotate(-0.5, 0, 0)
             time.sleep(1)
 
         self.drone_client.land()
