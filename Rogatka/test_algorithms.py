@@ -430,3 +430,26 @@ class TestAlgorithm20(DroneAlgorithm):
         self.drone_client.land()
         self.drone_client.disconnect()
     
+class TestAlgorithm21(DroneAlgorithm): 
+    '''
+    color detection module
+    during manual flight
+    '''
+    def __init__(self, drone_client: DroneClient):
+        self.detection_model=ColorImageDetectionModel(None)
+        self.video_source = PiCameraSource()
+        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
+
+    def _main(self):
+        try:
+            while True:
+                target_position = self.img_detection.locate_target(self.frame)  # position is in pixels relative to the desired target point    
+                if self.drone_client.is_on_target(target_position):
+                    print("boom!")
+        except KeyboardInterrupt:
+            print("Interrupted by user (Ctrl+C)")
+        finally:
+            # Always called on exit
+            self.video_source.close()
+            self.detection_model.close()
+            print("Resources released. Exiting cleanly.")
