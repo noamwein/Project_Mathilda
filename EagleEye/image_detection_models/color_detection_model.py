@@ -1,20 +1,20 @@
-import typing
-
-import numpy as np
 import cv2
+import numpy as np
 
-from BirdBrain.interfaces import ImageDetection, Source
+from BirdBrain.interfaces import ImageDetection
+
 # from EagleEye.ImageProcessingConstants import *
 
 # Constants
 FRAME_WIDTH = 640  # Display frame width (resized window)
 FRAME_HEIGHT = 480  # Display frame height (resized window)
-CENTERED_X = 1080 // 2 #x's pixel of the dropped object
-CENTERED_Y = 1920 // 2 #y's pixel of the dropped object
+CENTERED_X = 1080 // 2  # x's pixel of the dropped object
+CENTERED_Y = 1600  # y's pixel of the dropped object
+
 
 class ColorImageDetectionModel(ImageDetection):
     def __init__(self, reference_image_path: str, display: bool = True,
-        always_recognize_person: bool = False):
+                 always_recognize_person: bool = False):
         self.reference_image_path = reference_image_path
         self.display = display
         self.always_recognize_person = always_recognize_person
@@ -65,13 +65,12 @@ class ColorImageDetectionModel(ImageDetection):
         """
         cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
         cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
-        
-        
+
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
-        x_circle=(x_min+x_max)//2
-        y_circle=(y_min+y_max)//2
-        cv2.circle(frame, (x_circle,y_circle), 5, (255, 0, 0), -1)
+        x_circle = (x_min + x_max) // 2
+        y_circle = (y_min + y_max) // 2
+        cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
     def export_position(self, x, y):
@@ -97,7 +96,7 @@ class ColorImageDetectionModel(ImageDetection):
         # Rust color range (reddish-brown/orange-brown)
         # lower_color = np.array([5, 100, 50])
         # upper_color = np.array([20, 255, 200])
-        
+
         mask = cv2.inRange(hsv, lower_color, upper_color)
 
         # Improve mask for blurred images
@@ -107,26 +106,26 @@ class ColorImageDetectionModel(ImageDetection):
         mask = cv2.GaussianBlur(mask, (7, 7), 0)  # Smooth the mask
 
         return mask
-    
+
     def close(self):
         """
         Closes the display window.
         """
         if self.display:
             cv2.destroyAllWindows()
-        
+
 
 def main():
     global CENTERED_X, CENTERED_Y
     model = ColorImageDetectionModel(reference_image_path="", display=True)
 
     cap = cv2.VideoCapture(0)  # Open default webcam
-    #print dimensions of the camera
+    # print dimensions of the camera
     print("Camera dimensions:")
     print("Width:", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     print("Height:", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    CENTERED_X=cap.get(cv2.CAP_PROP_FRAME_WIDTH)//2
-    CENTERED_Y=cap.get(cv2.CAP_PROP_FRAME_HEIGHT)//2
+    CENTERED_X = cap.get(cv2.CAP_PROP_FRAME_WIDTH) // 2
+    CENTERED_Y = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) // 2
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -144,8 +143,6 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
-
-
 
 # def main():
 #     global CENTERED_X, CENTERED_Y
