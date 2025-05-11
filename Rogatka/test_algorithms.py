@@ -438,7 +438,6 @@ class TestAlgorithm21(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
         self.detection_model=ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.drone=MainDroneAlgorithm(self.detection_model,self.video_source,self.drone_client)
 
     def _main(self):
         try:
