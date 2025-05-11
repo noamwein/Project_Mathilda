@@ -13,3 +13,4 @@ numpy
 pillow
 picamera2
 RPi.GPIO
+psutil
