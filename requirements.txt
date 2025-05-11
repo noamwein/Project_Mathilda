@@ -1,13 +1,13 @@
-git+https://github.com/ageitgey/face_recognition_models
 opencv-python
 numpy
 dronekit
 pymavlink
 click
 dlib
-face-recognition
 future
 lxml
 monotonic
 numpy
 pillow
+RPi.GPIO
+psutil

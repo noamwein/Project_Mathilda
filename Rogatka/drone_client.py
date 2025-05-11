@@ -52,7 +52,7 @@ class BasicClient(DroneClient):
         self.done = False
 
         # Set up logging to file
-        log_folder = "../Flight Logs"
+        log_folder = "../../Flight Logs"
         os.makedirs(log_folder, exist_ok=True)
         start_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         log_filename = os.path.join(log_folder, f"flight-{start_time}.log")
