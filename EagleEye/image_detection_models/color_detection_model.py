@@ -33,6 +33,7 @@ class ColorImageDetectionModel(ImageDetection):
         """
         Locates the largest yellow area and draws a bounding box around it.
         """
+        self.draw_cross(frame)
         mask = self.extract_yellow(frame)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -60,6 +61,14 @@ class ColorImageDetectionModel(ImageDetection):
 
         return self.position
 
+    def draw_cross(self, frame):
+        """
+        Draws a cross at the center of the frame.
+        """
+        cv2.line(frame, (CENTERED_X - 10, CENTERED_Y), (CENTERED_X + 10, CENTERED_Y), (0, 0, 255), 3)
+        cv2.line(frame, (CENTERED_X, CENTERED_Y - 10), (CENTERED_X, CENTERED_Y + 10), (0, 0, 255), 3)
+        
+        
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
         x_circle=(x_min+x_max)//2
