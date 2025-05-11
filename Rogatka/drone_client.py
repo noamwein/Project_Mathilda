@@ -318,10 +318,10 @@ class BasicClient(DroneClient):
     @require_guided
     def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
         for i in range(duration_seconds):
-            self.drone_client.log_and_print('Movement duration in direction: {x}, {y}, {z} after {t} secs'.format(
+            self.log_and_print('Movement duration in direction: {x}, {y}, {z} after {t} secs'.format(
                 x=velocity_x, y=velocity_y, z=velocity_z, t=i
             ))
-            self.drone_client.set_speed(velocity_x, velocity_y, velocity_z)
+            self.set_speed(velocity_x, velocity_y, velocity_z)
             time.sleep(1)
     
     @require_guided
