@@ -240,17 +240,17 @@ class TestAlgorithm11(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        time.sleep(5)
+        # time.sleep(5)
 
-        self.drone_client.set_speed_no_rotation(0.5, 0.5, 0)
-
-        time.sleep(5)
-
-        self.drone_client.set_speed_no_rotation(-0.5, -0.5, 0)
+        # self.drone_client.set_speed_no_rotation(0, 0.5, 0)
 
         time.sleep(5)
 
-        self.drone_client.set_speed_and_rotate(0.5, 0.5, 0)
+        self.drone_client.set_speed_no_rotation(0, -0.5, 0)
+
+        # time.sleep(5)
+
+        # self.drone_client.set_speed_and_rotate(0.5, 0.5, 0)
 
         time.sleep(5)
 
