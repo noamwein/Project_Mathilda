@@ -302,16 +302,30 @@ class BasicClient(DroneClient):
         velocity_z: body-frame downward velocity (m/s)
         """
         self.log_and_print('Setting speed to {}, {}, {} with rotation'.format(velocity_x, velocity_y, velocity_z))
+
+        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
+            0,  # time_boot_ms (not used)
+            0, 0,  # target system, target component
+            mavutil.mavlink.MAV_FRAME_LOCAL_NED,  # frame
+            0b0000111111000111,  # type_mask (only speeds enabled)
+            0, 0, 0,  # x, y, z positions (not used)
+            velocity_x, velocity_y, velocity_z,  # x, y, z velocity in m/s
+            0, 0, 0,  # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+            0, 0)  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+
+        self.vehicle.send_mavlink(msg)
+        self.vehicle.flush()
+
         # Compute global velocities
-        heading_rad = math.radians(self.vehicle.heading)
-        vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
-        vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
-
-        # Desired yaw: align with body-frame velocity vector
-        yaw_offset = math.atan2(velocity_y, velocity_x)
-        desired_yaw = heading_rad + yaw_offset
-
-        self._send_global_velocity_with_yaw(vx, vy, velocity_z, desired_yaw)
+        # heading_rad = math.radians(self.vehicle.heading)
+        # vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
+        # vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
+        #
+        # # Desired yaw: align with body-frame velocity vector
+        # yaw_offset = math.atan2(velocity_y, velocity_x)
+        # desired_yaw = heading_rad + yaw_offset
+        #
+        # self._send_global_velocity_with_yaw(vx, vy, velocity_z, desired_yaw)
     
     @require_guided
     def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):

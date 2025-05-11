@@ -471,8 +471,6 @@ class TestAlgorithm22(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        time.sleep(5)
-
         start = time.time()
         while time.time() - start < 5:
             self.drone_client.log_and_print('Movement duration: {} secs'.format(time.time() - start))
