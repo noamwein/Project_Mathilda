@@ -40,7 +40,7 @@ def main():
     parser.add_argument(
         "algorithm",
         type=int,
-        choices=range(1, 22),
+        choices=range(1, 100),
         help="Test algorithm number (1-21) to execute",
     )
     args = parser.parse_args()
