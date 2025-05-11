@@ -4,7 +4,7 @@ import threading
 import time
 import psutil
 
-THRESHOLD_TEMPERATURE = 40
+THRESHOLD_TEMPERATURE = 75
 
 def get_cpu_temp():
     try:
