@@ -474,7 +474,7 @@ class TestAlgorithm22(DroneAlgorithm):
         self.drone_client.set_speed_for_duration(0, -0.5, 0, 5)
         self.drone_client.set_speed_for_duration(0.5, 0, 0, 5)
         self.drone_client.set_speed_for_duration(0, 0.5, 5)
-        self.drone_client.set_speed_for_duration(0.5, 0, 0, 5)
+        self.drone_client.set_speed_for_duration(-0.5, 0, 0, 5)
 
         self.drone_client.land()
         self.drone_client.disconnect()
