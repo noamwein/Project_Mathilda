@@ -1,6 +1,8 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
+SERVO_PIN = 3
+
 
 class ServoMotor:
     def __init__(self, pin, frequency=50):
@@ -54,7 +56,7 @@ class ServoMotor:
 
 # Example usage
 if __name__ == "__main__":
-    servo = ServoMotor(pin=3)
+    servo = ServoMotor(pin=SERVO_PIN)
     try:
         servo.release_payload()
     finally:
