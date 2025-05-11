@@ -241,19 +241,19 @@ class TestAlgorithm11(DroneAlgorithm):
         self.drone_client.connect()
         self.drone_client.takeoff()
 
-        self.drone_client.set_speed(0.5, 0.5, 0)
+        self.drone_client.set_speed_no_rotation(0.5, 0.5, 0)
 
         time.sleep(3)
 
-        self.drone_client.stop_movement()
-
-        time.sleep(1)
-
-        self.drone_client.set_speed(-0.5, -0.5, 0)
+        self.drone_client.set_speed_no_rotation(-0.5, -0.5, 0)
 
         time.sleep(3)
 
-        self.drone_client.stop_movement()
+        self.drone_client.set_speed_and_rotate(0.5, 0.5, 0)
+
+        time.sleep(3)
+
+        self.drone_client.set_speed_and_rotate(-0.5, -0.5, 0)
         
         self.drone_client.land()
         self.drone_client.disconnect()

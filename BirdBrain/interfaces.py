@@ -124,7 +124,11 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
-    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
+    def set_speed_and_rotate(self, velocity_x: float, velocity_y: float, velocity_z: float):
+        pass
+
+    @abstractmethod
+    def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
         pass
     
     @abstractmethod

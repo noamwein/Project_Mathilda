@@ -270,30 +270,64 @@ class BasicClient(DroneClient):
         self.vehicle.flush()
 
     @require_guided
-    def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
+    def set_speed_and_rotate(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
-        Move vehicle in direction based on specified velocity vectors.
+        Move vehicle with velocities and rotate heading to align with the velocity vector,
+        all relative to current heading.
 
         Parameters:
-            vehicle (Vehicle): The connected DroneKit vehicle object.
-            velocity_x (float): Velocity in m/s in the north direction.
-            velocity_y (float): Velocity in m/s in the east direction.
-            velocity_z (float): Velocity in m/s in the downward direction.
+            velocity_x (float): Forward velocity (m/s) relative to current heading.
+            velocity_y (float): Rightward velocity (m/s) relative to current heading.
+            velocity_z (float): Downward velocity (m/s).
         """
-        self.log_and_print(f"Setting speed x: {velocity_x}, y: {velocity_y}")
+        # Calculate yaw offset from velocity vector (radians) relative to current heading
+        yaw_offset = math.atan2(velocity_y, velocity_x)
+
+        # Mask: ignore position (x,y,z), acceleration (x,y,z), and yaw_rate — enable velocities and relative yaw
+        type_mask = 0b0000101111000111  # bits: ignore pos(0-2), ignore accel(6-8), ignore yaw_rate(10)
+
+        # BODY_NED frame: velocities and yaw offset are relative to current heading
         msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
-            0,  # time_boot_ms (not used)
-            0, 0,  # target system, target component
-            mavutil.mavlink.MAV_FRAME_LOCAL_NED,  # frame
-            0b0000111111000111,  # type_mask (only speeds enabled)
-            0, 0, 0,  # x, y, z positions (not used)
-            velocity_x, velocity_y, velocity_z,  # x, y, z velocity in m/s
-            0, 0, 0,  # x, y, z acceleration (not used)
-            0, 0)  # yaw, yaw_rate (not used)
+            0,
+            0, 0,
+            mavutil.mavlink.MAV_FRAME_BODY_NED,
+            type_mask,
+            0, 0, 0,
+            velocity_x, velocity_y, velocity_z,
+            0, 0, 0,
+            yaw_offset,  # relative yaw offset in radians
+            0            # ignored yaw_rate
+        )
         self.vehicle.send_mavlink(msg)
-        self.vehicle.commands.upload()
+        self.vehicle.flush()
+    
+    @require_guided
+    def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
+        """
+        Move vehicle with specified velocities relative to its current heading, without changing heading.
 
+        Parameters:
+            velocity_x (float): Forward velocity (m/s) relative to current heading.
+            velocity_y (float): Rightward velocity (m/s) relative to current heading.
+            velocity_z (float): Downward velocity (m/s).
+        """
+        # Mask: ignore position (x,y,z), acceleration (x,y,z), yaw, and yaw_rate — only velocities enabled
+        type_mask = 0b0000111111000111  # bits: ignore pos(0-2), ignore accel(6-8), ignore yaw(9), ignore yaw_rate(10)
 
+        # BODY_NED: velocities relative to vehicle heading
+        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
+            0,
+            0, 0,
+            mavutil.mavlink.MAV_FRAME_BODY_NED,
+            type_mask,
+            0, 0, 0,
+            velocity_x, velocity_y, velocity_z,
+            0, 0, 0,
+            0, 0
+        )
+        self.vehicle.send_mavlink(msg)
+        self.vehicle.flush()
+    
     @require_guided
     def goto_target(self, target_position):
         if self.state == State.TAKEOFF:  # acctually finished takeoff
@@ -371,10 +405,10 @@ class BasicClient(DroneClient):
 
         # Scale by the desired speed
         velocity_x = clipped_x * speed * SPEED_FACTOR
-        velocity_y = -clipped_y * speed * SPEED_FACTOR
+        velocity_y = -clipped_y * speed * SPEED_FACTOR # Image y is upside-down
 
         # Set the velocity in the XY plane, keeping Z velocity zero
-        self.set_speed(velocity_x, velocity_y, 0.0)
+        self.set_speed_no_rotation(velocity_x, velocity_y, 0.0)
     
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
