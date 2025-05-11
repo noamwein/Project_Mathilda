@@ -268,67 +268,67 @@ class BasicClient(DroneClient):
         )
         self.vehicle.send_mavlink(msg)
         self.vehicle.flush()
+    
+    @require_guided
+    def _send_global_velocity_with_yaw(self, vx: float, vy: float, vz: float, yaw: float):
+        """
+        Helper to send global NED velocity and absolute yaw command.
+
+        vx, vy (m/s): global north/east velocities
+        vz (m/s): global down velocity
+        yaw (rad): absolute yaw angle
+        """
+        # Mask: ignore pos(0-2), ignore accel(6-8), ignore yaw_rate (10)
+        type_mask = 0b0000110111000111  # enable vx, vy, vz and yaw
+
+        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
+            0, 0, 0,
+            mavutil.mavlink.MAV_FRAME_LOCAL_NED,
+            type_mask,
+            0, 0, 0,
+            vx, vy, vz,
+            0, 0, 0,
+            yaw, 0
+        )
+        self.vehicle.send_mavlink(msg)
+        self.vehicle.flush()
 
     @require_guided
     def set_speed_and_rotate(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
-        Move vehicle with velocities and rotate heading to align with the velocity vector,
-        all relative to current heading.
+        Move vehicle relative to current heading and rotate to align with motion vector.
 
-        Parameters:
-            velocity_x (float): Forward velocity (m/s) relative to current heading.
-            velocity_y (float): Rightward velocity (m/s) relative to current heading.
-            velocity_z (float): Downward velocity (m/s).
+        velocity_x, velocity_y: body-frame forward/rightward velocities (m/s)
+        velocity_z: body-frame downward velocity (m/s)
         """
         self.log_and_print('Setting speed to {}, {}, {} with rotation'.format(velocity_x, velocity_y, velocity_z))
-        # Calculate yaw offset from velocity vector (radians) relative to current heading
+        # Compute global velocities
+        heading_rad = math.radians(self.vehicle.heading)
+        vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
+        vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
+
+        # Desired yaw: align with body-frame velocity vector
         yaw_offset = math.atan2(velocity_y, velocity_x)
+        desired_yaw = heading_rad + yaw_offset
 
-        # Mask: ignore position (x,y,z), acceleration (x,y,z), and yaw_rate — enable velocities and relative yaw
-        type_mask = 0b0000101111000111  # bits: ignore pos(0-2), ignore accel(6-8), ignore yaw_rate(10)
-
-        # BODY_NED frame: velocities and yaw offset are relative to current heading
-        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
-            0,
-            0, 0,
-            mavutil.mavlink.MAV_FRAME_BODY_NED,
-            type_mask,
-            0, 0, 0,
-            velocity_x, velocity_y, velocity_z,
-            0, 0, 0,
-            yaw_offset,  # relative yaw offset in radians
-            0            # ignored yaw_rate
-        )
-        self.vehicle.send_mavlink(msg)
-        self.vehicle.flush()
+        self._send_global_velocity_with_yaw(vx, vy, velocity_z, desired_yaw)
     
     @require_guided
     def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
-        Move vehicle with specified velocities relative to its current heading, without changing heading.
+        Move vehicle relative to current heading, holding heading constant.
 
-        Parameters:
-            velocity_x (float): Forward velocity (m/s) relative to current heading.
-            velocity_y (float): Rightward velocity (m/s) relative to current heading.
-            velocity_z (float): Downward velocity (m/s).
+        velocity_x, velocity_y: body-frame forward/rightward velocities (m/s)
+        velocity_z: body-frame downward velocity (m/s)
         """
         self.log_and_print('Setting speed to {}, {}, {} with no rotation'.format(velocity_x, velocity_y, velocity_z))
-        # Mask: ignore position (x,y,z), acceleration (x,y,z), yaw, and yaw_rate — only velocities enabled
-        type_mask = 0b0000111111000111  # bits: ignore pos(0-2), ignore accel(6-8), ignore yaw(9), ignore yaw_rate(10)
+        # Compute global velocities from body-frame inputs
+        heading_rad = math.radians(self.vehicle.heading)
+        vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
+        vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
 
-        # BODY_NED: velocities relative to vehicle heading
-        msg = self.vehicle.message_factory.set_position_target_local_ned_encode(
-            0,
-            0, 0,
-            mavutil.mavlink.MAV_FRAME_BODY_NED,
-            type_mask,
-            0, 0, 0,
-            velocity_x, velocity_y, velocity_z,
-            0, 0, 0,
-            0, 0
-        )
-        self.vehicle.send_mavlink(msg)
-        self.vehicle.flush()
+        # Use current heading as yaw to hold orientation
+        self._send_global_velocity_with_yaw(vx, vy, velocity_z, heading_rad)
     
     @require_guided
     def goto_target(self, target_position):
