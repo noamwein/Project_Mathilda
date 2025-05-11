@@ -436,13 +436,17 @@ class TestAlgorithm21(DroneAlgorithm):
     during manual flight
     '''
     def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
         self.detection_model=ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
 
     def _main(self):
         try:
             while True:
-                target_position = self.img_detection.locate_target(self.frame)  # position is in pixels relative to the desired target point    
+                target_position = self.detection_model.locate_target(self.frame)  # position is in pixels relative to the desired target point   
+                if target_position != (None, None):
+                    if self.drone_client.is_on_target(target_position):
+                        self.drone_client.log_and_print("boom!")
         except KeyboardInterrupt:
             print("Interrupted by user (Ctrl+C)")
         finally:
