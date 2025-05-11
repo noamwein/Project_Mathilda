@@ -199,7 +199,7 @@ class DroneAlgorithm(ABC):
         except Exception as e:
             self.drone_client.log_and_print("The code has encountered an error:")
             self.drone_client.log_and_print(e)
-            self.drone_client.log_and_print("Wating 5 seconds then landing:")
+            self.drone_client.log_and_print("Waiting 5 seconds then landing:")
             time.sleep(5)
             self.drone_client.land()
             self.drone_client.disconnect()

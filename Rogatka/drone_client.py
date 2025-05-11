@@ -280,6 +280,7 @@ class BasicClient(DroneClient):
             velocity_y (float): Rightward velocity (m/s) relative to current heading.
             velocity_z (float): Downward velocity (m/s).
         """
+        self.log_and_print('Setting speed to {}, {}, {} with rotation'.format(velocity_x, velocity_y, velocity_z))
         # Calculate yaw offset from velocity vector (radians) relative to current heading
         yaw_offset = math.atan2(velocity_y, velocity_x)
 
@@ -311,6 +312,7 @@ class BasicClient(DroneClient):
             velocity_y (float): Rightward velocity (m/s) relative to current heading.
             velocity_z (float): Downward velocity (m/s).
         """
+        self.log_and_print('Setting speed to {}, {}, {} with no rotation'.format(velocity_x, velocity_y, velocity_z))
         # Mask: ignore position (x,y,z), acceleration (x,y,z), yaw, and yaw_rate — only velocities enabled
         type_mask = 0b0000111111000111  # bits: ignore pos(0-2), ignore accel(6-8), ignore yaw(9), ignore yaw_rate(10)
 
