@@ -9,6 +9,5 @@ lxml
 monotonic
 numpy
 pillow
-picamera2
 RPi.GPIO
 psutil
