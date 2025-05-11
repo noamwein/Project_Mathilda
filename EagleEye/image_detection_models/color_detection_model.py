@@ -65,8 +65,8 @@ class ColorImageDetectionModel(ImageDetection):
         """
         Draws a cross at the center of the frame.
         """
-        cv2.line(frame, (CENTERED_X - 10, CENTERED_Y), (CENTERED_X + 10, CENTERED_Y), (0, 0, 255), 3)
-        cv2.line(frame, (CENTERED_X, CENTERED_Y - 10), (CENTERED_X, CENTERED_Y + 10), (0, 0, 255), 3)
+        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
+        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
         
         
     def draw_bounding_box(self, frame, bbox):
