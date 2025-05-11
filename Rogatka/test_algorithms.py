@@ -8,7 +8,6 @@ collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 
 
-from EagleEye.image_detection_models.ImageDetectionModel import ImageDetectionModel
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.picamera_source import PiCameraSource
 

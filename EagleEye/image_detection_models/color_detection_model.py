@@ -1,10 +1,8 @@
 import typing
 
-import face_recognition
 import numpy as np
 import cv2
 
-import EagleEye.FindBecker as FindBecker
 from BirdBrain.interfaces import ImageDetection, Source
 # from EagleEye.ImageProcessingConstants import *
 
