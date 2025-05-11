@@ -79,6 +79,14 @@ def require_guided(func):
 
 class DroneClient(ABC):
     @abstractmethod
+    def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
+        pass
+
+    @abstractmethod
+    def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float):
+        pass
+
+    @abstractmethod
     def check_if_mode_guided(self) -> bool:
         pass
 

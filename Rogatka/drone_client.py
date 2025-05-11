@@ -294,7 +294,7 @@ class BasicClient(DroneClient):
         self.vehicle.flush()
 
     @require_guided
-    def set_speed_and_rotate(self, velocity_x: float, velocity_y: float, velocity_z: float):
+    def raw_set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         """
         Move vehicle relative to current heading and rotate to align with motion vector.
 
@@ -309,23 +309,21 @@ class BasicClient(DroneClient):
             mavutil.mavlink.MAV_FRAME_LOCAL_NED,  # frame
             0b0000111111000111,  # type_mask (only speeds enabled)
             0, 0, 0,  # x, y, z positions (not used)
-            velocity_x, velocity_y, velocity_z,  # x, y, z velocity in m/s
+            velocity_y, velocity_x, -velocity_z,  # x, y, z velocity in m/s
             0, 0, 0,  # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
             0, 0)  # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
 
         self.vehicle.send_mavlink(msg)
         self.vehicle.flush()
 
-        # Compute global velocities
-        # heading_rad = math.radians(self.vehicle.heading)
-        # vx = velocity_x * math.cos(heading_rad) - velocity_y * math.sin(heading_rad)
-        # vy = velocity_x * math.sin(heading_rad) + velocity_y * math.cos(heading_rad)
-        #
-        # # Desired yaw: align with body-frame velocity vector
-        # yaw_offset = math.atan2(velocity_y, velocity_x)
-        # desired_yaw = heading_rad + yaw_offset
-        #
-        # self._send_global_velocity_with_yaw(vx, vy, velocity_z, desired_yaw)
+    @require_guided
+    def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
+        for i in range(duration_seconds):
+            self.drone_client.log_and_print('Movement duration in direction: {x}, {y}, {z} after {t} secs'.format(
+                x=velocity_x, y=velocity_y, z=velocity_z, t=i
+            ))
+            self.drone_client.set_speed_and_rotate(velocity_x, velocity_y, velocity_z)
+            time.sleep(1)
     
     @require_guided
     def set_speed_no_rotation(self, velocity_x: float, velocity_y: float, velocity_z: float):
