@@ -475,6 +475,7 @@ class TestAlgorithm21(DroneAlgorithm):
             print("Interrupted by user (Ctrl+C)")
         finally:
             # Always called on exit
+            self.gui.video_saver.save_and_close()
             self.video_source.close()
             self.detection_model.close()
             print("Resources released. Exiting cleanly.")

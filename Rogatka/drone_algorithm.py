@@ -143,6 +143,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
                     self.drone_client.pid(target_position, only_rotate=only_rotate)
 
         finally:
+            self.gui.video_saver.save_and_close()
             # release the VideoWriter that inside picamera source
             self.source.close()
             # destroy all OpenCV windows
