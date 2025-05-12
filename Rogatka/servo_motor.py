@@ -80,6 +80,7 @@ class ServoMotor:
 def test():
     servo = ServoMotor()
     try:
+        print("drop")
         while True:
             servo.drop()
             time.sleep(0.1)
