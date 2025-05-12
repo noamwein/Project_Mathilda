@@ -23,7 +23,7 @@ class ServoMotor:
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
         self.index=0
-        self.angles=[110,122,145]
+        self.angles=[107,119,145]
         self.last_dropped=0
         self.set_angle(0)
 
@@ -80,7 +80,6 @@ class ServoMotor:
 def test():
     servo = ServoMotor()
     try:
-        print("drop")
         while True:
             servo.drop()
             time.sleep(0.1)
