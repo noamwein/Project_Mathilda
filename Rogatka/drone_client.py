@@ -446,7 +446,7 @@ class BasicClient(DroneClient):
         self.state = State.ON_TARGET
 
     def is_on_target(self, target_position: Tuple[int, int], error_tolerence_raduis=ERROR_TOLERANCE_RADIUS):
-        return math.sqrt(target_position[0] ** 2 + target_position[1] ** 2) < error_tolerence_raduis**2
+        return target_position[0] ** 2 + target_position[1] ** 2 < error_tolerence_raduis**2
 
     @require_guided
     def face_target(self, target_position):
