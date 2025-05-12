@@ -88,7 +88,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def perform_search_pattern(self, stop_on_detect=True):
         waypoints = self.generate_path()
-        self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
+        return self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
 
     def connect_and_takeoff_with_preview(self):
         def connect_and_takeoff():
