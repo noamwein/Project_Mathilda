@@ -6,7 +6,7 @@ SERVO_PIN = 3
 
 COOLDOWN_TIME=2 #time between drops
 class ServoMotor:
-    def __init__(self, pin=3, frequency=50):
+    def __init__(self, pin=SERVO_PIN, frequency=50):
         """
         Initialize the servo motor.
         :param pin: GPIO pin connected to the servo.
@@ -74,7 +74,7 @@ class ServoMotor:
         self.set_angle(0)
 
 def test():
-    servo = ServoMotor(pin=SERVO_PIN)
+    servo = ServoMotor()
     try:
         while True:
             servo.drop()
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     command = sys.argv[1].lower()
-    servo = ServoMotor(pin=SERVO_PIN)
+    servo = ServoMotor()
 
     try:
         if command == "open":
