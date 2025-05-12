@@ -9,7 +9,7 @@ class VideoSaver:
 
     def init_recording(self, frame):
         # Create the video output directory if it doesn't exist
-        video_dir = os.path.join(os.path.dirname(__file__), '../../videos')
+        video_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'videos')
         os.makedirs(video_dir, exist_ok=True)
 
         # Get the current timestamp for video filename

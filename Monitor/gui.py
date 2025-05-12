@@ -13,11 +13,15 @@ class GUI:
         self.image_detection = image_detection
 
     def draw_gui(self, frame):
+        if frame is None:
+            return
         processed_frame = self._draw_gui(frame)
         if self.video_saver is not None:
             self.video_saver.write_frame(processed_frame)
         if self.enable_display:
-            cv2.imshow('Video', frame)
+            cv2.imshow('Video', processed_frame)
+            cv2.waitKey(1)
+
 
     def _draw_gui(self, frame):
         bbox = self.image_detection.image_detection_data.get('bbox')
@@ -25,6 +29,7 @@ class GUI:
         self.draw_cross(processed_frame)
         if bbox:
             self.draw_bounding_box(frame, bbox)
+        return processed_frame
 
     def draw_cross(self, frame):
         """
