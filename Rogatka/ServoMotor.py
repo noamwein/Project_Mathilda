@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import sys
-SERVO_PIN = 2
+SERVO_PIN = 3
 
 
 COOLDOWN_TIME=2 #time between drops
