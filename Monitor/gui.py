@@ -1,4 +1,5 @@
 import subprocess
+import os
 import tkinter as tk
 
 import cv2
@@ -129,23 +130,38 @@ class GUI:
         self.draw_text(frame, monitor_text, None, None, 0, 0)
 
     def draw_text(self, frame, text, width=None, height=None, margin_x=20, margin_y=20,
-                  font_path="consola.ttf", font_size=20, padding=10):
+                  font_size=20, padding=10):
         """
-        Draw a textbox at bottom-right with optional auto-sizing and multiline support using a custom font.
+        Draw a textbox at bottom-right using a default system font.
+        Auto-sizes box if width/height are not given.
         """
 
-        # Convert frame to Pillow image
+        # Convert OpenCV image to Pillow format
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_img = Image.fromarray(frame_rgb)
         draw = ImageDraw.Draw(pil_img)
 
-        # Load custom font
-        try:
-            font = ImageFont.truetype(font_path, font_size)
-        except IOError:
-            raise ValueError(f"Font not found at {font_path}")
+        # Try to use a common monospaced system font
+        fallback_paths = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",  # Linux/Pi
+            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",  # Alt
+            "/usr/share/fonts/truetype/freefont/FreeMono.ttf",  # Alt
+        ]
 
-        # Measure each line
+        font = None
+        for path in fallback_paths:
+            if os.path.exists(path):
+                try:
+                    font = ImageFont.truetype(path, font_size)
+                    break
+                except Exception:
+                    continue
+
+        # If no system font available, fall back to Pillow's default (small)
+        if font is None:
+            font = ImageFont.load_default()
+
+        # Split text into lines and measure
         lines = text.split('\n')
         line_sizes = [draw.textbbox((0, 0), line, font=font) for line in lines]
         line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
@@ -154,19 +170,19 @@ class GUI:
         text_width = max(line_widths)
         text_height = sum(line_heights) + 5 * (len(lines) - 1)
 
-        # Determine box size if not provided
+        # Auto-size if needed
         box_width = width if width is not None else text_width + 2 * padding
         box_height = height if height is not None else text_height + 2 * padding
 
-        # Calculate box position (bottom-right)
+        # Calculate bottom-right position
         img_w, img_h = frame.shape[1], frame.shape[0]
         x2, y2 = img_w - margin_x, img_h - margin_y
         x1, y1 = x2 - box_width, y2 - box_height
 
-        # Draw background box
+        # Draw background rectangle
         draw.rectangle([x1, y1, x2, y2], fill=(0, 0, 0, 255))
 
-        # Draw each line centered
+        # Draw each line
         y_cursor = y1 + padding
         for i, line in enumerate(lines):
             line_width = line_widths[i]
@@ -175,7 +191,7 @@ class GUI:
             draw.text((x_text, y_cursor), line, font=font, fill=(255, 255, 255))
             y_cursor += line_height + 5
 
-        # Convert back to OpenCV image
+        # Convert back to OpenCV BGR format
         frame[:] = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     def close(self):
