@@ -98,10 +98,27 @@ class GUI:
     def draw_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
+        battery_voltage = vehicle_mode = altitude = 'unknown'
+
+        try:
+            altitude = self.drone_client.get_altitude()
+        except Exception:
+            pass
+
+        try:
+            vehicle_mode = self.drone_client.get_vehicle_mode()
+        except Exception:
+            pass
+
+        try:
+            battery_voltage = self.drone_client.get_battery_voltage()
+        except Exception:
+            pass
+
         monitor_text = '\n'.join([
-            f'altitude: {self.drone_client.get_altitude():.2f} m',
-            f'mode: {self.drone_client.get_vehicle_mode()}',
-            f'battery: {self.drone_client.get_battery_voltage():.2f} V',
+            f'altitude: {altitude:.2f} m',
+            f'mode: {vehicle_mode}',
+            f'battery: {battery_voltage:.2f} V',
             '',
             f'cpu temp: {get_cpu_temp():.2f} deg',
             f'upload: {upload_speed:.2f} KB/s',
