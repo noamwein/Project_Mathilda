@@ -8,12 +8,12 @@ from picamera2 import Picamera2
 
 from BirdBrain.interfaces import Source
 
-TARGET_BRIGHTNESS = 170
-EXPOSURE_TIME = 10
-DEFAULT_GAIN = 30
-LOW_RESOLUTION = (1280, 720)
-HIGH_RESOLUTION = (1920, 1080)
-RESOLUTION = HIGH_RESOLUTION
+from BirdBrain.settings import (TARGET_BRIGHTNESS,
+                                EXPOSURE_TIME, 
+                                DEFAULT_GAIN,
+                                LOW_RESOLUTION,
+                                HIGH_RESOLUTION,
+                                RESOLUTION)
 
 
 class PiCameraSource(Source):
