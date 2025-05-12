@@ -1,3 +1,5 @@
+import tkinter as tk
+
 import cv2
 
 from EagleEye.image_detection_models.color_detection_model import CENTERED_X, CENTERED_Y, ImageDetection
@@ -6,6 +8,8 @@ from EagleEye.sources.camera_source import CameraSource
 from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
+
+CLOSE_WINDOW_KEY = 27  # escape
 
 
 class GUI:
@@ -16,11 +20,20 @@ class GUI:
         self.enable_display = enable_display
         self.image_detection = image_detection
 
+        # Use tkinter to get screen resolution
+        root = tk.Tk()
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        root.destroy()
+        margin = 50
+
         # Create a named window
         cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
+        # Resize to screen size minus margin
+        cv2.resizeWindow("Video", screen_width - margin * 2, screen_height - margin * 2)
 
-        # Set the window to fullscreen
-        cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        # Move to top-left corner
+        cv2.moveWindow("Video", margin, margin)
 
     def draw_gui(self, frame):
         if frame is None:
@@ -30,6 +43,10 @@ class GUI:
             self.video_saver.write_frame(processed_frame)
         if self.enable_display:
             cv2.imshow('Video', processed_frame)
+
+        if cv2.waitKey(1) == CLOSE_WINDOW_KEY:
+            self.enable_display = False
+            self.close()
 
     def _draw_gui(self, frame):
         bbox = self.image_detection.image_detection_data.get('bbox')
@@ -52,6 +69,9 @@ class GUI:
         y_circle = (y_min + y_max) // 2
         cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+
+    def close(self):
+        cv2.destroyAllWindows()
 
 
 def main():
