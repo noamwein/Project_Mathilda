@@ -5,11 +5,10 @@ from BirdBrain.interfaces import ImageDetection
 
 # from EagleEye.ImageProcessingConstants import *
 
-# Constants
-FRAME_WIDTH = 640  # Display frame width (resized window)
-FRAME_HEIGHT = 480  # Display frame height (resized window)
-CENTERED_X = 1080 // 2  # x's pixel of the dropped object
-CENTERED_Y = 1600  # y's pixel of the dropped object
+from BirdBrain.settings import (FRAME_WIDTH,
+                                FRAME_HEIGHT,
+                                CENTERED_X,
+                                CENTERED_Y)
 
 
 class ColorImageDetectionModel(ImageDetection):

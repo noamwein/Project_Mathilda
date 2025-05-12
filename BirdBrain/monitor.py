@@ -4,7 +4,7 @@ import threading
 import time
 import psutil
 
-THRESHOLD_TEMPERATURE = 75
+from BirdBrain.settings import THRESHOLD_TEMPERATURE
 
 def get_cpu_temp():
     try:

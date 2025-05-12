@@ -3,6 +3,8 @@ import os
 import sys
 import argparse
 
+from BirdBrain.settings import INITIAL_ALTITUDE
+
 # allow importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
@@ -76,9 +78,9 @@ def main():
     main_alg = selected_algo_cls(
         BasicClient(
             '/dev/ttyACM0',  # serial port
-            5,             # initial altitude
-            10,              # max altitude
-            20,              # min battery percent
+            initial_altitude=INITIAL_ALTITUDE,             # initial altitude
+            max_altitude=10,              # max altitude
+            min_battery_percent=20,              # min battery percent
             logger=logging.getLogger(__name__)
         )
     )

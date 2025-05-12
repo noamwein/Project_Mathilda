@@ -7,9 +7,9 @@ import EagleEye.FindBecker as FindBecker
 from BirdBrain.interfaces import ImageDetection, Source
 from EagleEye.ImageProcessingConstants import *
 
-MAX_BBOX_WIDTH = 1000
-MAX_BBOX_HEIGHT = 1000
-DELAY_IN_DETECTION = 120
+from BirdBrain.settings import (MAX_BBOX_HEIGHT,
+                                MAX_BBOX_WIDTH,
+                                DELAY_IN_DETECTION)
 
 class ImageDetectionModel(ImageDetection):
     def __init__(self, reference_image_path: str, display: bool = True,
