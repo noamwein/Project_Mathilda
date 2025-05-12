@@ -9,17 +9,15 @@ from dronekit import LocationGlobalRelative
 from typing import List
 import threading
 
-# Southwest corner of the search area.
-START_LAT = 31.76953
-START_LON = 35.19831
-LONG_SEGMENT = 3
-SHORT_SEGMENT = 2
-TURN_ANGLE = 90
-STEPS = 3  # number of snake segments
-INITIAL_ANGLE = 0
-RIGHT_ANGLE = (INITIAL_ANGLE + TURN_ANGLE) % 360
-LEFT_ANGLE = (INITIAL_ANGLE - TURN_ANGLE) % 360
-
+from BirdBrain.settings import (START_LAT,
+                                START_LON,
+                                LONG_SEGMENT,
+                                SHORT_SEGMENT,
+                                TURN_ANGLE,
+                                STEPS,
+                                INITIAL_ANGLE,
+                                RIGHT_ANGLE,
+                                LEFT_ANGLE)
 
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
