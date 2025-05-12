@@ -107,7 +107,7 @@ class GUI:
             pass
 
         try:
-            vehicle_mode = str(self.drone_client.get_vehicle_mode())
+            vehicle_mode = str(self.drone_client.get_vehicle_mode()).split(':')[1]
         except Exception:
             pass
 
