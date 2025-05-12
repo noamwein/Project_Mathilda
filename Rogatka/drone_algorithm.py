@@ -104,9 +104,9 @@ class MainDroneAlgorithm(DroneAlgorithm):
             self.img_detection.locate_target(self.frame)
 
     def assassinate(self):
-        self.drone_client.assassinate()
+        # self.drone_client.assassinate()
         self.drone_client.log_and_print('DROPPING PAYLOAD!!')
-        # self.servo.drop()
+        self.servo.drop()
         
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
         self.connect_and_takeoff_with_preview()
