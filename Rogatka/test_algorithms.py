@@ -457,6 +457,7 @@ class TestAlgorithm21(DroneAlgorithm):
         super().__init__(drone_client)
         self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
+        self.gui = GUI(drone_client=self.drone_client, video_saver=VideoSaver(), image_detection=self.detection_model)
         self.servo = ServoMotor()
 
     def _main(self):
@@ -465,6 +466,8 @@ class TestAlgorithm21(DroneAlgorithm):
                 frame = self.video_source.get_current_frame()
                 target_position = self.detection_model.locate_target(
                     frame)  # position is in pixels relative to the desired target point
+                if self.gui is not None:
+                    self.gui.draw_gui(frame)
                 if target_position != (None, None):
                     if self.drone_client.is_on_target(target_position):
                         print("boom!")
