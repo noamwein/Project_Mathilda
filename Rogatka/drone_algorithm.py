@@ -1,7 +1,7 @@
 import collections.abc
 
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
-from Rogatka import ServoMotor
+from Rogatka.servo_motor import ServoMotor
 from .utils import calculate_target_location
 
 collections.MutableMapping = collections.abc.MutableMapping

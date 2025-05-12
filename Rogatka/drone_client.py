@@ -20,6 +20,8 @@ import enum
 
 import os
 
+import numpy as np
+
 MAXIMUM_DISTANCE = 12
 KILL_SWITCH_CHANNEL = '8'
 KILL_SWITCH_MODE = 'ALTHOLD'
@@ -29,6 +31,7 @@ YAW_FACTOR = 0.005
 SPEED_FACTOR = 0.003
 ANGLE_TOLERANCE = 200
 ERROR_TOLERANCE = 100
+MAX_SPEED = 1
 
 
 class State(enum.Enum):
@@ -349,10 +352,6 @@ class BasicClient(DroneClient):
         """
         target_x, target_y = target_position
 
-        # clipped_x = max(-1000, min(target_x, 1000))
-        # clipped_y = max(-1000, min(target_y, 1000))
-        clipped_x = target_x
-        clipped_y = target_y
 
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
@@ -365,20 +364,21 @@ class BasicClient(DroneClient):
         rotation_step = 5  # max degrees per rotation call
         if abs(target_x) > tolerance:
             # Rotate one degree toward the target
-            rotation_direction = rotation_step * clipped_x * YAW_FACTOR
+            rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
             self.rotate(rotation_direction, speed_factor=0.1)
             return
         
         if only_rotate:
             return
 
-        # Already facing target: compute velocity vector
-        #   direction_x = target_x / distance
-        #   direction_y = target_y / distance
-
         # Scale by the desired speed
-        velocity_x = clipped_x * speed * SPEED_FACTOR
-        velocity_y = -clipped_y * speed * SPEED_FACTOR # Image y is upside-down
+        velocity_x = target_x * speed * SPEED_FACTOR
+        velocity_y = -target_y * speed * SPEED_FACTOR # Image y is upside-down
+
+        v_norm = math.hypot(velocity_x, velocity_y)
+        if v_norm > MAX_SPEED: # make sure speed is not too high
+            velocity_x /= v_norm
+            velocity_y /= v_norm
 
         # Set the velocity in the XY plane, keeping Z velocity zero
         self.set_speed(velocity_x, velocity_y, 0.0)

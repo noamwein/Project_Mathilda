@@ -1,12 +1,12 @@
 import RPi.GPIO as GPIO
 import time
-
-SERVO_PIN = 2
+import sys
+SERVO_PIN = 3
 
 
 COOLDOWN_TIME=2 #time between drops
 class ServoMotor:
-    def __init__(self, pin=3, frequency=50):
+    def __init__(self, pin=SERVO_PIN, frequency=50):
         """
         Initialize the servo motor.
         :param pin: GPIO pin connected to the servo.
@@ -21,6 +21,7 @@ class ServoMotor:
         self.index=0
         self.angles=[110,122,145]
         self.last_dropped=0
+        self.set_angle(0)
 
     def set_angle(self, angle, direction='clockwise'):
         """
@@ -58,12 +59,46 @@ class ServoMotor:
         """
         self.pwm.stop()
         GPIO.cleanup(self.pin)
-# Example usage
-if __name__ == "__main__":
-    servo = ServoMotor(pin=SERVO_PIN)
+        
+        
+    def open_payload(self):
+        """
+        Open the servo motor.
+        """
+        self.set_angle(self.angles[-1])
+        
+    def close_payload(self):
+        """
+        Open the servo motor.
+        """
+        self.set_angle(0)
+
+def test():
+    servo = ServoMotor()
     try:
         while True:
             servo.drop()
             time.sleep(0.1)
     finally:
-        servo.stop()
+        servo.close()
+        
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python main.py [open|close|test]")
+        sys.exit(1)
+
+    command = sys.argv[1].lower()
+    servo = ServoMotor()
+
+    try:
+        if command == "open":
+            servo.open_payload()
+        elif command == "close":
+            servo.close_payload()
+        elif command == "test":
+            test()
+        else:
+            print(f"Unknown command: {command}")
+            sys.exit(1)
+    finally:
+        servo.close()

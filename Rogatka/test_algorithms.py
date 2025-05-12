@@ -2,7 +2,7 @@ import collections.abc
 from BirdBrain.interfaces import DroneAlgorithm, DroneClient, Waypoint, MovementAction
 from .drone_client import calculate_target_location, get_distance_meters
 from .drone_algorithm import MainDroneAlgorithm
-from Rogatka import ServoMotor
+from Rogatka.servo_motor import ServoMotor
 import time
 
 from BirdBrain.interfaces import DroneAlgorithm, DroneClient, Waypoint, MovementAction
