@@ -30,10 +30,10 @@ class GUI:
         # Create a named window
         cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
         # Resize to screen size minus margin
-        cv2.resizeWindow("Video", screen_width - margin * 2, screen_height - margin * 2)
+        cv2.resizeWindow("Video", screen_width // 2 - margin, screen_height - margin * 2)
 
         # Move to top-left corner
-        cv2.moveWindow("Video", margin, margin)
+        cv2.moveWindow("Video", screen_width // 2 - margin, margin)
 
     def draw_gui(self, frame):
         if frame is None:
