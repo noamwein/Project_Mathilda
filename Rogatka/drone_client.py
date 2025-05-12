@@ -30,7 +30,8 @@ from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 SPEED_FACTOR,
                                 ANGLE_TOLERANCE,
                                 ERROR_TOLERANCE_RADIUS,
-                                MAX_SPEED)
+                                MAX_SPEED,
+                                YAW_PIXEL_THRESHOLD)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -358,13 +359,13 @@ class BasicClient(DroneClient):
             return
 
         # Rotate stepwise (1°) until within tolerance
-        tolerance = ANGLE_TOLERANCE      # allowable error in pixels
-        rotation_step = 5  # max degrees per rotation call
-        if abs(target_x) > tolerance:
-            # Rotate one degree toward the target
-            rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
-            self.rotate(rotation_direction, speed_factor=0.1)
-            return
+        if distance > YAW_PIXEL_THRESHOLD:
+            rotation_step = 5  # max degrees per rotation call
+            if abs(target_x) > ANGLE_TOLERANCE:
+                # Rotate one degree toward the target
+                rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
+                self.rotate(rotation_direction, speed_factor=0.1)
+                return
         
         if only_rotate:
             return
