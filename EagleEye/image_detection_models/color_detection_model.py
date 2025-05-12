@@ -31,7 +31,6 @@ class ColorImageDetectionModel(ImageDetection):
         """
         Locates the largest yellow area and draws a bounding box around it.
         """
-        self.draw_cross(frame)
         mask = self.extract_yellow(frame)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -50,12 +49,7 @@ class ColorImageDetectionModel(ImageDetection):
         else:
             self.position = (None, None)
 
-        # Resize and display
-        if self.display:
-            cv2.imshow('Video', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return "over"
+        self.show_gui(frame)
 
         return self.position
 
@@ -66,6 +60,11 @@ class ColorImageDetectionModel(ImageDetection):
         cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
         cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
 
+    def draw_circle(self, frame):
+        from Rogatka.drone_client import ERROR_TOLERANCE_RADIUS
+        x,y=self.position
+        cv2.circle(frame, (x, y), ERROR_TOLERANCE_RADIUS, (0, 255, 255), 15)
+    
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
         x_circle = (x_min + x_max) // 2
@@ -107,6 +106,16 @@ class ColorImageDetectionModel(ImageDetection):
 
         return mask
 
+    def show_gui(self, frame):
+        self.draw_cross(frame)
+        self.draw_circle(frame)
+        # Resize and display
+        if self.display:
+            cv2.imshow('Video', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            return "over"
+        
     def close(self):
         """
         Closes the display window.
