@@ -99,7 +99,10 @@ class MainDroneAlgorithm(DroneAlgorithm):
         thread.start()
 
         while thread.is_alive():
-            self.img_detection.locate_target(self.source.get_current_frame())
+            frame = self.source.get_current_frame()
+            self.img_detection.locate_target(frame)
+            if self.gui is not None:
+                self.gui.draw_gui(frame)
 
     def assassinate(self):
         # self.drone_client.assassinate()
