@@ -101,24 +101,24 @@ class GUI:
         battery_voltage = vehicle_mode = altitude = 'unknown'
 
         try:
-            altitude = self.drone_client.get_altitude()
+            altitude = f'{self.drone_client.get_altitude():.2f} m'
         except Exception:
             pass
 
         try:
-            vehicle_mode = self.drone_client.get_vehicle_mode()
+            vehicle_mode = str(self.drone_client.get_vehicle_mode())
         except Exception:
             pass
 
         try:
-            battery_voltage = self.drone_client.get_battery_voltage()
+            battery_voltage = f'{self.drone_client.get_battery_voltage():.2f} V'
         except Exception:
             pass
 
         monitor_text = '\n'.join([
-            f'altitude: {altitude:.2f} m',
+            f'altitude: {altitude}',
             f'mode: {vehicle_mode}',
-            f'battery: {battery_voltage:.2f} V',
+            f'battery: {battery_voltage}',
             '',
             f'cpu temp: {get_cpu_temp():.2f} deg',
             f'upload: {upload_speed:.2f} KB/s',
