@@ -28,6 +28,7 @@ PIXEL_THRESHOLD = 10
 YAW_FACTOR = 0.005
 SPEED_FACTOR = 0.003
 ANGLE_TOLERANCE = 200
+ERROR_TOLERANCE = 100
 
 
 class State(enum.Enum):
@@ -446,7 +447,7 @@ class BasicClient(DroneClient):
         self.set_speed(0, 0, 0)
         self.state = State.ON_TARGET
 
-    def is_on_target(self, target_position: Tuple[int, int], error_tolerence=0.1):
+    def is_on_target(self, target_position: Tuple[int, int], error_tolerence=ERROR_TOLERANCE):
         return math.sqrt(target_position[0] ** 2 + target_position[1] ** 2) < error_tolerence
 
     @require_guided
