@@ -13,8 +13,8 @@ collections.MutableMapping = collections.abc.MutableMapping
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.picamera_source import PiCameraSource
 
-START_LAT = 31.76953
-START_LON = 35.19831
+from BirdBrain.settings import (START_LAT,
+                                START_LON)
 
 
 class TestAlgorithm1(DroneAlgorithm):

@@ -1,10 +1,10 @@
 import RPi.GPIO as GPIO
 import time
 import sys
-SERVO_PIN = 3
 
+from BirdBrain.settings import (COOLDOWN_TIME,
+                                SERVO_PIN)
 
-COOLDOWN_TIME=2 #time between drops
 class ServoMotor:
     def __init__(self, pin=SERVO_PIN, frequency=50):
         """

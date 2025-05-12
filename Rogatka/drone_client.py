@@ -22,17 +22,15 @@ import os
 
 import numpy as np
 
-MAXIMUM_DISTANCE = 12
-KILL_SWITCH_CHANNEL = '8'
-KILL_SWITCH_MODE = 'ALTHOLD'
-
-PIXEL_THRESHOLD = 10
-YAW_FACTOR = 0.005
-SPEED_FACTOR = 0.002
-ANGLE_TOLERANCE = 200
-ERROR_TOLERANCE_RADIUS = 30
-MAX_SPEED = 1
-
+from BirdBrain.settings import (MAXIMUM_DISTANCE,
+                                KILL_SWITCH_CHANNEL,
+                                KILL_SWITCH_MODE,
+                                PIXEL_THRESHOLD,
+                                YAW_FACTOR,
+                                SPEED_FACTOR,
+                                ANGLE_TOLERANCE,
+                                ERROR_TOLERANCE_RADIUS,
+                                MAX_SPEED)
 
 class State(enum.Enum):
     TAKEOFF = 0
