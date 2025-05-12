@@ -180,7 +180,7 @@ class GUI:
         x1, y1 = x2 - box_width, y2 - box_height
 
         # Draw background rectangle
-        draw.rectangle([x1, y1, x2, y2], fill=(0, 0, 0, 255))
+        draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255, 255))
 
         # Draw each line
         y_cursor = y1 + padding
@@ -188,7 +188,7 @@ class GUI:
             line_width = line_widths[i]
             line_height = line_heights[i]
             x_text = x1 + (box_width - line_width) // 2
-            draw.text((x_text, y_cursor), line, font=font, fill=(255, 255, 255))
+            draw.text((x_text, y_cursor), line, font=font, fill=(0, 0, 0))
             y_cursor += line_height + 5
 
         # Convert back to OpenCV BGR format
