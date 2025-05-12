@@ -22,9 +22,10 @@ class VideoSaver:
         self.video_writer = cv2.VideoWriter(video_file, fourcc, 30.0, (frame.shape[1], frame.shape[0]))
 
     def write_frame(self, frame):
-        if self.video_writer is None:
+        if self.video_writer is None and frame is not None:
             self.init_recording(frame)
-        self.video_writer.write(frame)
+        if self.video_writer is not None:
+            self.video_writer.write(frame)
 
     def save_and_close(self):
         if self.video_writer:
