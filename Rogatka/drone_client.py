@@ -22,17 +22,16 @@ import os
 
 import numpy as np
 
-MAXIMUM_DISTANCE = 12
-KILL_SWITCH_CHANNEL = '8'
-KILL_SWITCH_MODE = 'ALTHOLD'
-
-PIXEL_THRESHOLD = 10
-YAW_FACTOR = 0.005
-SPEED_FACTOR = 0.003
-ANGLE_TOLERANCE = 200
-ERROR_TOLERANCE = 100
-MAX_SPEED = 1
-
+from BirdBrain.settings import (MAXIMUM_DISTANCE,
+                                KILL_SWITCH_CHANNEL,
+                                KILL_SWITCH_MODE,
+                                PIXEL_THRESHOLD,
+                                YAW_FACTOR,
+                                SPEED_FACTOR,
+                                ANGLE_TOLERANCE,
+                                ERROR_TOLERANCE_RADIUS,
+                                MAX_SPEED,
+                                YAW_PIXEL_THRESHOLD)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -360,13 +359,13 @@ class BasicClient(DroneClient):
             return
 
         # Rotate stepwise (1°) until within tolerance
-        tolerance = ANGLE_TOLERANCE      # allowable error in pixels
-        rotation_step = 5  # max degrees per rotation call
-        if abs(target_x) > tolerance:
-            # Rotate one degree toward the target
-            rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
-            self.rotate(rotation_direction, speed_factor=0.1)
-            return
+        if distance > YAW_PIXEL_THRESHOLD:
+            rotation_step = 5  # max degrees per rotation call
+            if abs(target_x) > ANGLE_TOLERANCE:
+                # Rotate one degree toward the target
+                rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
+                self.rotate(rotation_direction, speed_factor=0.1)
+                return
         
         if only_rotate:
             return
@@ -447,8 +446,8 @@ class BasicClient(DroneClient):
         self.set_speed(0, 0, 0)
         self.state = State.ON_TARGET
 
-    def is_on_target(self, target_position: Tuple[int, int], error_tolerence=ERROR_TOLERANCE):
-        return math.sqrt(target_position[0] ** 2 + target_position[1] ** 2) < error_tolerence
+    def is_on_target(self, target_position: Tuple[int, int], error_tolerence_raduis=ERROR_TOLERANCE_RADIUS):
+        return target_position[0] ** 2 + target_position[1] ** 2 < error_tolerence_raduis**2
 
     @require_guided
     def face_target(self, target_position):

@@ -12,9 +12,6 @@ from EagleEye.sources.picamera_source import PiCameraSource
 from Monitor.gui import GUI
 from Monitor.video_saver import VideoSaver
 
-START_LAT = 31.76953
-START_LON = 35.19831
-
 
 class TestAlgorithm1(DroneAlgorithm):
     def __init__(self, drone_client: DroneClient):
@@ -350,7 +347,8 @@ class TestAlgorithm16(DroneAlgorithm):
         self.video_source = PiCameraSource()
         self.servo = ServoMotor()
         self.gui = GUI(drone_client=self.drone_client, video_saver=VideoSaver(), image_detection=self.detection_model)
-        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client, self.servo, self.gui)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client, self.servo,
+                                        self.gui)
 
     def _main(self):
         self.drone._main(search=False)
@@ -368,7 +366,8 @@ class TestAlgorithm17(DroneAlgorithm):
 
         self.servo = ServoMotor()
         self.gui = GUI(drone_client=self.drone_client, video_saver=VideoSaver(), image_detection=self.detection_model)
-        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client, self.servo, self.gui)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client, self.servo,
+                                        self.gui)
 
     def _main(self):
         self.drone.main()
@@ -493,3 +492,18 @@ class TestAlgorithm22(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
+
+
+class TestAlgorithm23(DroneAlgorithm):
+    '''
+    load payload
+    '''
+
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+
+    def _main(self):
+        servo = ServoMotor()
+        servo.open_payload()
+        time.sleep(1)
+        servo.close_payload()

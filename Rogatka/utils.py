@@ -4,6 +4,8 @@ import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 
+from BirdBrain.settings import METERS_PER_DEGREE
+
 def get_distance_meters(location1, location2):
     """
     Returns the ground distance in meters between two LocationGlobalRelative objects.
@@ -17,9 +19,6 @@ def calculate_target_location(current_location, heading, distance):
     """
     Approximate target location for small distances (<100 m) using flat-Earth projection.
     """
-    # Constants
-    METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
-
     # Heading to radians
     heading_rad = math.radians(heading)
 

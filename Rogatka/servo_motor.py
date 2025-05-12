@@ -1,10 +1,14 @@
 import RPi.GPIO as GPIO
 import time
 import sys
-SERVO_PIN = 3
 
+#import for parent directory
+import os
+sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-COOLDOWN_TIME=2 #time between drops
+from BirdBrain.settings import (COOLDOWN_TIME,
+                                SERVO_PIN)
+
 class ServoMotor:
     def __init__(self, pin=SERVO_PIN, frequency=50):
         """
@@ -88,17 +92,18 @@ if __name__ == "__main__":
         sys.exit(1)
 
     command = sys.argv[1].lower()
-    servo = ServoMotor()
 
-    try:
-        if command == "open":
-            servo.open_payload()
-        elif command == "close":
-            servo.close_payload()
-        elif command == "test":
-            test()
-        else:
-            print(f"Unknown command: {command}")
-            sys.exit(1)
-    finally:
-        servo.close()
+    if command == "3":
+        test()
+    elif command in ["1", "2"]: 
+        try:
+            servo = ServoMotor()
+            if command == "1":
+                servo.open_payload()
+            elif command == "2":
+                servo.close_payload()
+        finally:
+            servo.close()
+    else:
+        print(f"Unknown command: {command}")
+        sys.exit(1)
