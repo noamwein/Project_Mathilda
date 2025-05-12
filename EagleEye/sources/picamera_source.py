@@ -1,8 +1,4 @@
-import os
 import time
-from datetime import datetime
-
-import cv2
 import numpy as np
 from picamera2 import Picamera2
 
@@ -21,9 +17,6 @@ class PiCameraSource(Source):
                  default_gain=DEFAULT_GAIN, resolution=RESOLUTION, auto_gain_interval=0, **kwargs):
         super().__init__(rotation=270, **kwargs)
 
-        # for recording
-        self.video_writer = None
-
         # Camera configuration
         self.logging = logging
         self.target_brightness = target_brightness
@@ -41,7 +34,6 @@ class PiCameraSource(Source):
 
         # Configure camera
         self.configure_camera()
-        self.init_recording()
 
     def configure_camera(self):
         # [{'format': SRGGB10_CSI2P, 'unpacked': 'SRGGB10', 'bit_depth': 10, 'size': (1280, 720), 'fps': 120.09,
@@ -91,26 +83,6 @@ class PiCameraSource(Source):
         print(self.picam2.camera_config)
         print()
 
-    def init_recording(self):
-        # Create the video output directory if it doesn't exist
-        video_dir = os.path.join(os.path.dirname(__file__), '../../../videos')
-        os.makedirs(video_dir, exist_ok=True)
-
-        # Get the current timestamp for video filename
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-        video_file = os.path.join(video_dir, f"{timestamp}.mp4")
-
-        # Define the codec and create a VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for .mp4 file format
-        frame = self.get_current_frame()
-        if frame is not None:
-            # Initialize the VideoWriter with the frame's size
-            self.video_writer = cv2.VideoWriter(video_file, fourcc, 30.0, (frame.shape[1], frame.shape[0]))
-        else:
-            print()
-            print("[WARNING] Failed to capture initial frame for video writer initialization.")
-            print()
-
     def _get_current_frame(self):
         """Get the current frame, adjust gain if necessary, and return the image."""
         # Capture the current frame
@@ -130,13 +102,6 @@ class PiCameraSource(Source):
         if time.time() - self.last_gain_adjustment >= self.auto_gain_interval:
             self.adjust_gain(current_brightness)
             self.last_gain_adjustment = time.time()
-        return frame
-
-    def get_current_frame(self):
-        frame = super().get_current_frame()
-        # Write the frame to the video file
-        if self.video_writer is not None:
-            self.video_writer.write(frame)
         return frame
 
     def adjust_gain(self, brightness):
@@ -163,10 +128,3 @@ class PiCameraSource(Source):
             if self.logging:
                 print(f"[AutoGain] Decreasing gain to {new_gain:.2f}")
             self.picam2.set_controls({"AnalogueGain": new_gain})
-
-    def close(self):
-        """Release the camera and video writer resources."""
-        if self.video_writer:
-            print("Closing video writer...")
-            self.video_writer.release()
-        # self.picam2.close() - do we need this?

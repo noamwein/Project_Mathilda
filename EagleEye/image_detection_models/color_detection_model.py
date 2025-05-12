@@ -13,10 +13,9 @@ CENTERED_Y = 1600  # y's pixel of the dropped object
 
 
 class ColorImageDetectionModel(ImageDetection):
-    def __init__(self, reference_image_path: str, display: bool = True,
-                 always_recognize_person: bool = False):
+    def __init__(self, reference_image_path: str, always_recognize_person: bool = False):
+        super().__init__()
         self.reference_image_path = reference_image_path
-        self.display = display
         self.always_recognize_person = always_recognize_person
         self.bbox = None
         self.position = (0, 0)
@@ -31,7 +30,6 @@ class ColorImageDetectionModel(ImageDetection):
         """
         Locates the largest yellow area and draws a bounding box around it.
         """
-        self.draw_cross(frame)
         mask = self.extract_yellow(frame)
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -43,35 +41,14 @@ class ColorImageDetectionModel(ImageDetection):
                 x, y, w, h = cv2.boundingRect(largest_contour)
                 self.bbox = (x, x + w, y, y + h)
                 self.position = self.export_position(x + w // 2, y + h // 2)
-                self.draw_bounding_box(frame, self.bbox)
             else:
                 self.bbox = None
                 self.position = (None, None)
         else:
             self.position = (None, None)
-
-        # Resize and display
-        if self.display:
-            cv2.imshow('Video', frame)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return "over"
-
+        self.image_detection_data['bbox'] = self.bbox
+        self.image_detection_data['position'] = self.position
         return self.position
-
-    def draw_cross(self, frame):
-        """
-        Draws a cross at the center of the frame.
-        """
-        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
-        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
-
-    def draw_bounding_box(self, frame, bbox):
-        x_min, x_max, y_min, y_max = bbox
-        x_circle = (x_min + x_max) // 2
-        y_circle = (y_min + y_max) // 2
-        cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
-        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
     def export_position(self, x, y):
         # center_x = ORIGINAL_CAM_WIDTH // 2
@@ -107,17 +84,10 @@ class ColorImageDetectionModel(ImageDetection):
 
         return mask
 
-    def close(self):
-        """
-        Closes the display window.
-        """
-        if self.display:
-            cv2.destroyAllWindows()
-
 
 def main():
     global CENTERED_X, CENTERED_Y
-    model = ColorImageDetectionModel(reference_image_path="", display=True)
+    model = ColorImageDetectionModel(reference_image_path="")
 
     cap = cv2.VideoCapture(0)  # Open default webcam
     # print dimensions of the camera

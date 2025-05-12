@@ -1,0 +1,41 @@
+from Monitor.video_saver import VideoSaver
+from Rogatka.drone_client import DroneClient
+from EagleEye.image_detection_models.color_detection_model import CENTERED_X, CENTERED_Y, ImageDetection
+
+import cv2
+
+
+class GUI:
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, enable_display=True):
+        self.drone_client = drone_client
+        self.video_saver = video_saver
+        self.enable_display = enable_display
+        self.image_detection = image_detection
+
+    def draw_gui(self, frame):
+        processed_frame = self._draw_gui(frame)
+        if self.video_saver is not None:
+            self.video_saver.write_frame(processed_frame)
+        if self.enable_display:
+            cv2.imshow('Video', frame)
+
+    def _draw_gui(self, frame):
+        bbox = self.image_detection.image_detection_data.get('bbox')
+        processed_frame = frame.copy()
+        self.draw_cross(processed_frame)
+        if bbox:
+            self.draw_bounding_box(frame, bbox)
+
+    def draw_cross(self, frame):
+        """
+        Draws a cross at the center of the frame.
+        """
+        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
+        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
+
+    def draw_bounding_box(self, frame, bbox):
+        x_min, x_max, y_min, y_max = bbox
+        x_circle = (x_min + x_max) // 2
+        y_circle = (y_min + y_max) // 2
+        cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)

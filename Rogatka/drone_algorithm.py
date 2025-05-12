@@ -1,6 +1,7 @@
 import collections.abc
 
 from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
+from Monitor.gui import GUI
 from Rogatka.servo_motor import ServoMotor
 from .utils import calculate_target_location
 
@@ -23,15 +24,12 @@ LEFT_ANGLE = (INITIAL_ANGLE - TURN_ANGLE) % 360
 
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
-                 drone_client: DroneClient, servo: ServoMotor):
+                 drone_client: DroneClient, servo: ServoMotor, gui: GUI = None):
         super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
-        self.servo=servo
-        
-    @property
-    def frame(self):
-        return self.source.get_current_frame()
+        self.servo = servo
+        self.gui = gui
 
     def generate_path(self, steps=STEPS) -> List[Waypoint]:
         initial_alt = self.drone_client.get_initial_altitude()
@@ -103,13 +101,13 @@ class MainDroneAlgorithm(DroneAlgorithm):
         thread.start()
 
         while thread.is_alive():
-            self.img_detection.locate_target(self.frame)
+            self.img_detection.locate_target(self.source.get_current_frame())
 
     def assassinate(self):
         self.drone_client.assassinate()
         self.drone_client.log_and_print('DROPPING PAYLOAD!!')
         # self.servo.drop()
-        
+
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
         self.connect_and_takeoff_with_preview()
 
@@ -118,24 +116,34 @@ class MainDroneAlgorithm(DroneAlgorithm):
         else:
             target_found = True
 
+        if not target_found:
+            self.drone_client.log_and_print("Failed to find target. Landing...")
+            return
+
+        self.drone_client.log_and_print("Finished search! Continuing mission...")
+        if only_search:
+            return
+
         try:
-            if target_found:
-                self.drone_client.log_and_print("Finished search! Continuing mission...")
-                if not only_search:
-                    while not self.drone_client.mission_completed():
-                        target_position = self.img_detection.locate_target(
-                            self.frame)  # position is in pixels relative to the desired target point
-                        if target_position != (None, None):
-                            self.drone_client.log_and_print("Found target position in frame!")
-                            if self.drone_client.is_on_target(target_position):
-                                if self.drone_client.has_stopped():
-                                    self.assassinate()
-                                else:
-                                    self.drone_client.stop_movement()
-                            else:
-                                self.drone_client.pid(target_position, only_rotate=only_rotate)
-            else:
-                self.drone_client.log_and_print("Failed to find target. Landing...")
+            while not self.drone_client.mission_completed():
+                frame = self.source.get_current_frame()
+                target_position = self.img_detection.locate_target(
+                    frame)  # position is in pixels relative to the desired target point
+                if self.gui is not None:
+                    self.gui.draw_gui(frame)
+
+                if target_position == (None, None):
+                    continue
+
+                self.drone_client.log_and_print("Found target position in frame!")
+                if self.drone_client.is_on_target(target_position):
+                    if self.drone_client.has_stopped():
+                        self.assassinate()
+                    else:
+                        self.drone_client.stop_movement()
+                else:
+                    self.drone_client.pid(target_position, only_rotate=only_rotate)
+
         finally:
             # release the VideoWriter that inside picamera source
             self.source.close()
@@ -153,7 +161,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         while True:
             target_position = self.img_detection.locate_target(
-                self.frame)  # position is in pixels relative to the desired target point
+                self.source.get_current_frame())  # position is in pixels relative to the desired target point
             if target_position != (None, None):
                 self.drone_client.log_and_print(f"Facing target at: {target_position}")
                 self.drone_client.pid(target_position, only_rotate=True)

@@ -1,24 +1,27 @@
+import collections.abc
 import time
 from abc import ABC, abstractmethod
 from typing import Tuple, List
+
 import cv2
 
-import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from dataclasses import dataclass
 from enum import Enum
 
-@dataclass
-class Waypoint:
-    position: LocationGlobalRelative
-    angle: float
-    movement_action: str
 
 # Define a strong-typed action enum
 class MovementAction(Enum):
     MOVEMENT = "movement"
     ROTATION = "rotation"
+
+
+@dataclass
+class Waypoint:
+    position: LocationGlobalRelative
+    angle: float
+    movement_action: MovementAction
 
 
 class Source(ABC):
@@ -56,6 +59,9 @@ class Source(ABC):
 
 
 class ImageDetection(ABC):
+    def __init__(self):
+        self.image_detection_data = {}
+
     @abstractmethod
     def detect_target(self, frame) -> bool:
         pass
@@ -74,6 +80,7 @@ def require_guided(func):
             print('Waiting for guided...')
             time.sleep(0.5)
         func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -93,7 +100,7 @@ class DroneClient(ABC):
     @abstractmethod
     def connect(self):
         pass
-    
+
     @abstractmethod
     def get_current_location(self):
         pass
@@ -109,15 +116,15 @@ class DroneClient(ABC):
     @abstractmethod
     def get_altitude(self):
         pass
-    
+
     @abstractmethod
     def get_heading(self):
         pass
-    
+
     @abstractmethod
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
         pass
-    
+
     @abstractmethod
     def get_initial_altitude(self):
         pass
@@ -129,11 +136,11 @@ class DroneClient(ABC):
     @abstractmethod
     def has_stopped(self):
         pass
-    
+
     @abstractmethod
     def stop_movement(self):
         pass
-    
+
     @abstractmethod
     def is_on_target(self, target_position: Tuple[int, int]):
         pass
@@ -186,7 +193,7 @@ class DroneAlgorithm(ABC):
     @abstractmethod
     def _main(self):
         pass
-    
+
     def main(self):
         try:
             self._main()
@@ -197,4 +204,3 @@ class DroneAlgorithm(ABC):
             time.sleep(5)
             self.drone_client.land()
             self.drone_client.disconnect()
-
