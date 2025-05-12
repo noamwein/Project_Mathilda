@@ -502,3 +502,19 @@ class TestAlgorithm23(DroneAlgorithm):
         servo.open_payload()
         time.sleep(1)
         servo.close_payload()
+        
+        
+class TestAlgorithm23(DroneAlgorithm):
+    '''
+    load payload
+    '''
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+
+    def _main(self):
+        servo = ServoMotor()
+        servo.open_payload()
+        time.sleep(1)
+        servo.close_payload()
+        
+        
