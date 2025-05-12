@@ -494,6 +494,11 @@ class BasicClient(DroneClient):
         self.log_and_print("Disconnecting.")
         self.vehicle.close()
 
+    def get_vehicle_mode(self):
+        return self.vehicle.mode
+
+    def get_battery_voltage(self):
+        return self.vehicle.battery.voltage
 
 def calculate_direction(target_position: Tuple[int, int]):
     """

@@ -80,3 +80,9 @@ class DummyClient(DroneClient):
 
     def assassinate(self):
         pass
+
+    def get_vehicle_mode(self):
+        return 'GUIDED'
+
+    def get_battery_voltage(self):
+        return 14.4

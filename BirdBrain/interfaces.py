@@ -185,6 +185,14 @@ class DroneClient(ABC):
     def assassinate(self):
         pass
 
+    @abstractmethod
+    def get_vehicle_mode(self):
+        pass
+
+    @abstractmethod
+    def get_battery_voltage(self):
+        pass
+
 
 class DroneAlgorithm(ABC):
     def __init__(self, drone_client: DroneClient):
