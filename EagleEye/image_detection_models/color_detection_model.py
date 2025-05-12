@@ -61,8 +61,7 @@ class ColorImageDetectionModel(ImageDetection):
 
     def draw_circle(self, frame):
         from Rogatka.drone_client import ERROR_TOLERANCE_RADIUS
-        x,y=self.position
-        cv2.circle(frame, (x, y), ERROR_TOLERANCE_RADIUS, (0, 255, 255), 15)
+        cv2.circle(frame, (CENTERED_X,CENTERED_Y), ERROR_TOLERANCE_RADIUS, (0, 255, 255), 15)
     
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
