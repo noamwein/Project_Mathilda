@@ -79,8 +79,8 @@ class GUI:
         self.draw_cross(processed_frame)
         if bbox:
             self.draw_bounding_box(frame, bbox)
-        self.draw_monitor(processed_frame)
-        return processed_frame
+        monitor = self.get_monitor(processed_frame)
+        return monitor
 
     def draw_cross(self, frame):
         """
@@ -96,7 +96,7 @@ class GUI:
         cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
         cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
-    def draw_monitor(self, frame):
+    def get_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
         battery_voltage = vehicle_mode = altitude = 'unknown'
@@ -117,82 +117,75 @@ class GUI:
             pass
 
         monitor_text = '\n'.join([
-            f'altitude: {altitude}',
-            f'mode: {vehicle_mode}',
-            f'battery: {battery_voltage}',
+            f'ALTITUDE: {altitude}',
+            f'MODE:     {vehicle_mode}',
+            f'BATTERY:  {battery_voltage}',
             '',
-            f'cpu temp: {get_cpu_temp():.2f} deg',
-            f'upload: {upload_speed:.2f} KB/s',
-            f'download: {download_speed:.2f} KB/s',
+            f'CPU TEMP: {get_cpu_temp():.2f} deg',
+            f'UPLOAD:   {upload_speed:.2f} KB/s',
+            f'DOWNLOAD: {download_speed:.2f} KB/s',
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
-        self.draw_text(frame, monitor_text, None, None, 0, 0)
+        return self.add_side_panel(frame, monitor_text)
 
-    def draw_text(self, frame, text, width=None, height=None, margin_x=20, margin_y=20,
-                  font_size=20, padding=10):
+    def add_side_panel(self, frame, text, font_size=40, padding=10, margin_y=20):
         """
-        Draw a textbox at bottom-right using a default system font.
-        Auto-sizes box if width/height are not given.
+        Adds a side panel to the right of the frame and draws text on it.
+        Returns the new extended frame.
         """
 
-        # Convert OpenCV image to Pillow format
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        pil_img = Image.fromarray(frame_rgb)
+        # Convert to Pillow image to measure text
+        pil_img = Image.new("RGB", (1, 1))
         draw = ImageDraw.Draw(pil_img)
 
-        # Try to use a common monospaced system font
+        # Use default monospaced system font
         fallback_paths = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",  # Linux/Pi
-            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",  # Alt
-            "/usr/share/fonts/truetype/freefont/FreeMono.ttf",  # Alt
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+            "/usr/share/fonts/truetype/freefont/FreeMono.ttf",
         ]
-
         font = None
         for path in fallback_paths:
             if os.path.exists(path):
                 try:
                     font = ImageFont.truetype(path, font_size)
                     break
-                except Exception:
-                    continue
-
-        # If no system font available, fall back to Pillow's default (small)
+                except:
+                    pass
         if font is None:
             font = ImageFont.load_default()
 
-        # Split text into lines and measure
+        # Measure text
         lines = text.split('\n')
         line_sizes = [draw.textbbox((0, 0), line, font=font) for line in lines]
-        line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
         line_widths = [bbox[2] - bbox[0] for bbox in line_sizes]
+        line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
 
-        text_width = max(line_widths)
-        text_height = sum(line_heights) + 5 * (len(lines) - 1)
+        panel_width = max(line_widths) + 2 * padding
 
-        # Auto-size if needed
-        box_width = width if width is not None else text_width + 2 * padding
-        box_height = height if height is not None else text_height + 2 * padding
+        # Create new extended frame
+        new_width = frame.shape[1] + panel_width
+        new_frame = np.zeros((frame.shape[0], new_width, 3), dtype=np.uint8)
+        new_frame[:, :frame.shape[1]] = frame  # copy original frame
+        new_frame[:, frame.shape[1]:] = (255, 255, 255)  # fill side panel
 
-        # Calculate bottom-right position
-        img_w, img_h = frame.shape[1], frame.shape[0]
-        x2, y2 = img_w - margin_x, img_h - margin_y
-        x1, y1 = x2 - box_width, y2 - box_height
+        # Convert to Pillow for text drawing
+        full_img = Image.fromarray(cv2.cvtColor(new_frame, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(full_img)
 
-        # Draw background rectangle
-        draw.rectangle([x1, y1, x2, y2], fill=(255, 255, 255, 255))
-
-        # Draw each line
-        y_cursor = y1 + padding
+        # Draw text in panel
+        y = margin_y
         for i, line in enumerate(lines):
-            line_width = line_widths[i]
-            line_height = line_heights[i]
-            x_text = x1 + (box_width - line_width) // 2
-            draw.text((x_text, y_cursor), line, font=font, fill=(0, 0, 0))
-            y_cursor += line_height + 5
+            draw.text(
+                (frame.shape[1] + padding, y),
+                line,
+                font=font,
+                fill=(0, 0, 0)
+            )
+            y += line_heights[i] + 5
 
-        # Convert back to OpenCV BGR format
-        frame[:] = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+        return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
     def close(self):
         cv2.destroyAllWindows()
