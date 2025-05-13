@@ -398,8 +398,8 @@ class TestAlgorithm18(DroneAlgorithm):
 
             self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
-            self.drone_client.log_and_print("Waiting 60 seconds...")
-            time.sleep(60)
+            self.drone_client.log_and_print("Waiting 100 seconds...")
+            time.sleep(100)
             self.drone_client.log_and_print('Finished waiting')
 
             self.drone_client.land()
@@ -548,7 +548,7 @@ class TestAlgorithm24(DroneAlgorithm):
             self.drone_client.connect()
             self.drone_client.takeoff()
 
-            for i in range(60):
+            for i in range(100):
                 self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
                 self.drone_client.log_and_print(f"Waiting, iteration: {i}")
