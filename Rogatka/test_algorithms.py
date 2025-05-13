@@ -15,7 +15,7 @@ import threading
 import collections.abc
 collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
-from BirdBrain.settings import START_LAT, START_LON
+from BirdBrain.settings import START_LAT, START_LON, INITIAL_ANGLE
 
 
 class TestAlgorithm1(DroneAlgorithm):
@@ -389,7 +389,7 @@ class TestAlgorithm18(DroneAlgorithm):
     def _main(self):
 
         waypoints = [Waypoint(position=LocationGlobalRelative(START_LAT, START_LON, 6),
-                              angle=self.drone_client.get_heading(),
+                              angle=INITIAL_ANGLE,
                               movement_action=MovementAction.MOVEMENT)]
 
         def search_thread():
