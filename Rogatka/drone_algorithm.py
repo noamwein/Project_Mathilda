@@ -1,7 +1,6 @@
 import collections.abc
 
-from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction
-from Monitor.gui import GUI
+from BirdBrain.interfaces import Source, ImageDetection, DroneClient, DroneAlgorithm, Waypoint, MovementAction, GUI
 from Rogatka.servo_motor import ServoMotor
 from .utils import calculate_target_location
 
@@ -9,6 +8,7 @@ collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from typing import List
 import threading
+import time
 
 from BirdBrain.settings import (START_LAT,
                                 START_LON,
@@ -22,7 +22,7 @@ from BirdBrain.settings import (START_LAT,
 
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
-                 drone_client: DroneClient, servo: ServoMotor, gui: GUI = None):
+                 drone_client: DroneClient, servo: ServoMotor, gui: GUI):
         super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
@@ -147,12 +147,6 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         finally:
             self.gui.video_saver.save_and_close()
-            # release the VideoWriter that inside picamera source
-            self.source.close()
-            # destroy all OpenCV windows
-            self.img_detection.close()
-            # close the servo motor
-            self.servo.close()
         self.drone_client.land()
         self.drone_client.disconnect()
 
@@ -170,3 +164,16 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         self.drone_client.land()
         self.drone_client.disconnect()
+
+    def main(self):
+        try:
+            self._main()
+        except Exception as e:
+            self.drone_client.log_and_print("The code has encountered an error:")
+            self.drone_client.log_and_print(e)
+            self.drone_client.log_and_print("Waiting 5 seconds then landing:")
+            time.sleep(5)
+            self.drone_client.land()
+        finally:
+            self.gui.close()
+            self.drone_client.disconnect()

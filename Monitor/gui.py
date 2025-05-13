@@ -1,11 +1,14 @@
-import subprocess
 import os
+import subprocess
+import sys
 import tkinter as tk
 
 import cv2
-import psutil
 import numpy as np
+import psutil
 from PIL import Image, ImageDraw, ImageFont
+
+sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
 from EagleEye.image_detection_models.color_detection_model import CENTERED_X, CENTERED_Y, ImageDetection
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
@@ -13,6 +16,8 @@ from EagleEye.sources.camera_source import CameraSource
 from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
+from Monitor.video_saver import PiVideoSaver
+from BirdBrain.interfaces import GUI
 
 CLOSE_WINDOW_KEY = 27  # escape
 
@@ -35,13 +40,11 @@ def get_bandwidth(prev):
     return (upload, download), up_speed, down_speed
 
 
-class GUI:
+class MonitorGUI(GUI):
     def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
                  enable_display=True):
-        self.drone_client = drone_client
-        self.video_saver = video_saver
-        self.enable_display = enable_display
-        self.image_detection = image_detection
+        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
+                         enable_display=enable_display)
 
         # Use tkinter to get screen resolution
         root = tk.Tk()
@@ -188,12 +191,15 @@ class GUI:
         return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
     def close(self):
+        self.video_saver.save_and_close()
+        # destroy all OpenCV windows
         cv2.destroyAllWindows()
 
 
 def main():
     source = CameraSource()
-    gui = GUI(drone_client=DummyClient(), video_saver=VideoSaver(), image_detection=ColorImageDetectionModel(None))
+    gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
+                     image_detection=ColorImageDetectionModel(None))
     while True:
         frame = source.get_current_frame()
         gui.draw_gui(frame)

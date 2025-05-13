@@ -54,9 +54,6 @@ class Source(ABC):
             return cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         return frame  # No rotation if 0 degrees
 
-    def close(self):
-        pass
-
 
 class ImageDetection(ABC):
     def __init__(self):
@@ -68,9 +65,6 @@ class ImageDetection(ABC):
 
     @abstractmethod
     def locate_target(self, frame) -> Tuple[int, int]:
-        pass
-
-    def close(self):
         pass
 
 
@@ -212,3 +206,34 @@ class DroneAlgorithm(ABC):
             time.sleep(5)
             self.drone_client.land()
             self.drone_client.disconnect()
+
+
+class VideoSaver(ABC):
+    @abstractmethod
+    def write_frame(self, frame):
+        pass
+
+    @abstractmethod
+    def save_and_close(self):
+        pass
+
+
+class GUI(ABC):
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+                 enable_display=True):
+        self.drone_client = drone_client
+        self.video_saver = video_saver
+        self.enable_display = enable_display
+        self.image_detection = image_detection
+        self.enable_display = enable_display
+
+    @abstractmethod
+    def draw_gui(self, frame):
+        pass
+
+    def close(self):
+        if self.video_saver is not None:
+            self.video_saver.save_and_close()
+        if self.enable_display:
+            # destroy all OpenCV windows
+            cv2.destroyAllWindows()

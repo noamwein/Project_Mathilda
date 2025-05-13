@@ -2,8 +2,10 @@ import os
 from datetime import datetime
 import cv2
 
+from BirdBrain.interfaces import VideoSaver
 
-class VideoSaver:
+
+class PiVideoSaver(VideoSaver):
     def __init__(self):
         self.video_writer = None
 
