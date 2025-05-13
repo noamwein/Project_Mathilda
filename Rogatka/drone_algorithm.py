@@ -107,6 +107,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
             if self.gui is not None:
                 self.gui.draw_gui(frame)
                 self.drone_client.log_and_print(f'alt: {self.drone_client.get_altitude()}')
+                self.drone_client.log_and_print(f'battery: {self.drone_client.get_battery_voltage()}')
 
     def assassinate(self):
         # self.drone_client.assassinate()
