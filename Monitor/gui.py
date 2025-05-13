@@ -84,8 +84,9 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(frame, bbox)
-        monitor = self.get_monitor(processed_frame)
-        return monitor
+        self.draw_bombs(processed_frame)
+        return processed_frame
+
 
     def draw_cross(self, frame):
         """
