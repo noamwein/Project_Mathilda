@@ -47,6 +47,18 @@ ANGLE_TOLERANCE = 200
 ERROR_TOLERANCE_RADIUS = 150
 MAX_SPEED = 1
 
+# PID gains
+KP_V = SPEED_FACTOR
+KI_V = 0.0
+KD_V = 0.0
+
+KP_YAW = YAW_FACTOR
+KI_YAW = 0.0
+KD_YAW = 0.0
+
+# Miss threshold for resetting stale PID
+MISS_LIMIT = 5
+
 # Servo
 SERVO_PIN = 3
 COOLDOWN_TIME=2 #time between drops

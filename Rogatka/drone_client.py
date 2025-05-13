@@ -31,7 +31,10 @@ from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 ANGLE_TOLERANCE,
                                 ERROR_TOLERANCE_RADIUS,
                                 MAX_SPEED,
-                                YAW_PIXEL_THRESHOLD)
+                                YAW_PIXEL_THRESHOLD,
+                                KP_V, KI_V, KD_V,
+                                KP_YAW, KI_YAW, KD_YAW,
+                                MISS_LIMIT)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -53,6 +56,18 @@ class BasicClient(DroneClient):
         self.state = -1
         self.logger = logger
         self.done = False
+
+        # PID state
+        self._prev_time = None
+        self._integral_vx = 0.0
+        self._prev_error_vx = 0.0
+        self._integral_vy = 0.0
+        self._prev_error_vy = 0.0
+        self._integral_yaw = 0.0
+        self._prev_error_yaw = 0.0
+        # Counters for missed control
+        self._yaw_miss = 0
+        self._vel_miss = 0
 
         # Set up logging to file
         log_folder = "../../Flight Logs"
@@ -351,7 +366,6 @@ class BasicClient(DroneClient):
         """
         target_x, target_y = target_position
 
-
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
         if distance < PIXEL_THRESHOLD:
@@ -366,22 +380,119 @@ class BasicClient(DroneClient):
                 rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
                 self.rotate(rotation_direction, speed_factor=0.1)
                 return
-        
+
         if only_rotate:
             return
 
         # Scale by the desired speed
         velocity_x = target_x * speed * SPEED_FACTOR
-        velocity_y = -target_y * speed * SPEED_FACTOR # Image y is upside-down
+        velocity_y = -target_y * speed * SPEED_FACTOR  # Image y is upside-down
 
         v_norm = math.hypot(velocity_x, velocity_y)
-        if v_norm > MAX_SPEED: # make sure speed is not too high
+        if v_norm > MAX_SPEED:  # make sure speed is not too high
             velocity_x /= v_norm
             velocity_y /= v_norm
 
         # Set the velocity in the XY plane, keeping Z velocity zero
         self.set_speed(velocity_x, velocity_y, 0.0)
-    
+
+    @require_guided
+    def full_pid(self, target_position, speed=0.5, only_rotate=False):
+        """
+        Moves the drone towards the target position at a constant speed.
+
+        First rotates towards the target if needed (1° steps), then moves when aligned.
+
+        Coordinates are in the camera frame where the drone’s forward direction is along the +Y axis.
+
+        Parameters:
+            target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
+            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
+        """
+        target_x, target_y = target_position
+
+        # Initialize and compute dt
+        now = time.time()
+        dt = now - self._prev_time
+        if self._prev_time is None or dt > 1:
+            self.log_and_print("Resetting PID...")
+            self._prev_time = now
+            return
+        self._prev_time = now
+
+        # Yaw PID compute
+        angle_err = math.degrees(math.atan2(target_x, target_y))
+        self._integral_yaw += angle_err * dt
+        deriv_yaw = (angle_err - self._prev_error_yaw) / dt if dt > 0 else 0.0
+        self._prev_error_yaw = angle_err
+
+        # Calculate the distance to the target
+        distance = math.hypot(target_x, target_y)
+        if distance < PIXEL_THRESHOLD:
+            self.log_and_print("Already at the target position!")
+            return
+
+        # Rotate stepwise (1°) until within tolerance
+        if distance > YAW_PIXEL_THRESHOLD:
+            rotation_step = 5  # max degrees per rotation call
+            if abs(target_x) > ANGLE_TOLERANCE:
+                # reset velocity miss
+                self._vel_miss = 0
+                # reset yaw miss
+                self._yaw_miss = 0
+                # PID-based rotation, limited per-step
+                raw_cmd = KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw
+                rot = max(min(raw_cmd, rotation_step), -rotation_step)
+                self.rotate(rot, speed_factor=0.1)
+                return
+
+        # yaw missed
+        self._yaw_miss += 1
+        if self._yaw_miss > MISS_LIMIT:
+            self._integral_yaw = 0.0
+            self._prev_error_yaw = 0.0
+            self._yaw_miss = 0
+
+        if only_rotate:
+            # count vel miss
+            self._vel_miss += 1
+            if self._vel_miss > MISS_LIMIT:
+                self._integral_vx = 0.0
+                self._prev_error_vx = 0.0
+                self._integral_vy = 0.0
+                self._prev_error_vy = 0.0
+                self._vel_miss = 0
+            return
+
+        # Velocity PID compute
+        err_vx = target_x
+        err_vy = target_y
+        self._integral_vx += err_vx * dt
+        self._integral_vy += err_vy * dt
+        deriv_vx = (err_vx - self._prev_error_vx) / dt if dt > 0 else 0.0
+        deriv_vy = (err_vy - self._prev_error_vy) / dt if dt > 0 else 0.0
+        self._prev_error_vx = err_vx
+        self._prev_error_vy = err_vy
+
+        # reset vel miss
+        self._vel_miss = 0
+
+        # PID outputs
+        vx = KP_V * err_vx + KI_V * self._integral_vx + KD_V * deriv_vx
+        vy = KP_V * err_vy + KI_V * self._integral_vy + KD_V * deriv_vy
+        vy = -vy  # invert image Y
+
+        # apply speed factor and cap
+        vx *= speed
+        vy *= speed
+        v_norm = math.hypot(vx, vy)
+        if v_norm > MAX_SPEED:
+            vx /= v_norm
+            vy /= v_norm
+
+        self.set_speed(vx, vy, 0.0)
+
+
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
         """
