@@ -10,7 +10,7 @@ collections.MutableMapping = collections.abc.MutableMapping
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.picamera_source import PiCameraSource
 from Monitor.gui import MonitorGUI
-from Monitor.video_saver import PiVideoSaver
+from Monitor.video_saver import MP4VideoSaver
 
 
 class TestAlgorithm1(DroneAlgorithm):
@@ -272,7 +272,7 @@ class TestAlgorithm12(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=PiVideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(img_detection=detection_model, source=video_source,
                                         drone_client=drone_client, servo=servo, gui=gui)
 
@@ -291,7 +291,7 @@ class TestAlgorithm13(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=PiVideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(img_detection=detection_model, source=video_source,
                                         drone_client=drone_client, servo=servo, gui=gui)
 
@@ -335,7 +335,7 @@ class TestAlgorithm15(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=PiVideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
 
     def _main(self):
@@ -353,7 +353,7 @@ class TestAlgorithm16(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=PiVideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
 
     def _main(self):
@@ -370,7 +370,7 @@ class TestAlgorithm17(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=PiVideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
 
     def _main(self):
@@ -461,7 +461,7 @@ class TestAlgorithm21(DroneAlgorithm):
         super().__init__(drone_client)
         self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=PiVideoSaver(), image_detection=self.detection_model)
+        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(), image_detection=self.detection_model)
         self.servo = ServoMotor()
 
     def _main(self):

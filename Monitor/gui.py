@@ -16,7 +16,7 @@ from EagleEye.sources.camera_source import CameraSource
 from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
-from Monitor.video_saver import PiVideoSaver
+from Monitor.video_saver import MP4VideoSaver
 from Rogatka.servo_motor import ServoMotor
 from BirdBrain.interfaces import GUI
 
@@ -57,10 +57,10 @@ class MonitorGUI(GUI):
         # Create a named window
         cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
         # Resize to screen size minus margin
-        cv2.resizeWindow("Video", screen_width // 2 - margin, screen_height - margin * 2)
+        # cv2.resizeWindow("Video", screen_width // 2 - margin, screen_height - margin * 2)
 
         # Move to top-left corner
-        cv2.moveWindow("Video", screen_width // 2 - margin, margin)
+        cv2.moveWindow("Video", screen_width // 2, margin)
 
         self.prev_net = 0, 0
 
@@ -72,18 +72,18 @@ class MonitorGUI(GUI):
             self.video_saver.write_frame(processed_frame)
         if self.enable_display:
             cv2.imshow('Video', processed_frame)
+            pass
 
         if cv2.waitKey(1) == CLOSE_WINDOW_KEY:
             self.enable_display = False
             self.close()
 
     def _draw_gui(self, frame):
-        bbox = self.image_detection.image_detection_data.get('bbox')
         processed_frame = frame.copy()
         self.draw_cross(processed_frame)
+        bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(frame, bbox)
-        self.draw_bombs(processed_frame)
         monitor = self.get_monitor(processed_frame)
         return monitor
 
@@ -245,6 +245,7 @@ def main():
     while True:
         frame = source.get_current_frame()
         gui.draw_gui(frame)
+    gui.close()
 
 
 if __name__ == '__main__':

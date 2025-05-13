@@ -1,35 +1,47 @@
-import os
-from datetime import datetime
+import os.path
+
 import cv2
 
 from BirdBrain.interfaces import VideoSaver
+from EagleEye.sources.camera_source import CameraSource
+import datetime
+
+VIDEO_DIR_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'videos')
 
 
-class PiVideoSaver(VideoSaver):
-    def __init__(self):
-        self.video_writer = None
-
-    def init_recording(self, frame):
-        # Create the video output directory if it doesn't exist
-        video_dir = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'videos')
-        os.makedirs(video_dir, exist_ok=True)
-
-        # Get the current timestamp for video filename
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-        video_file = os.path.join(video_dir, f"{timestamp}.mp4")
-
-        # Define the codec and create a VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for .mp4 file format
-        # Initialize the VideoWriter with the frame's size
-        self.video_writer = cv2.VideoWriter(video_file, fourcc, 30.0, (frame.shape[1], frame.shape[0]))
+class MP4VideoSaver(VideoSaver):
+    def __init__(self, fps=30):
+        self.fps = fps
+        timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H%M%S')
+        self.video_path = os.path.join(VIDEO_DIR_PATH, f'{timestamp}.mp4')
+        self.out = None
 
     def write_frame(self, frame):
-        if self.video_writer is None and frame is not None:
-            self.init_recording(frame)
-        if self.video_writer is not None:
-            self.video_writer.write(frame)
+        if self.out is None:
+            height, width = frame.shape[:2]
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            self.out = cv2.VideoWriter(self.video_path, fourcc, self.fps, (width, height))
+            if not self.out.isOpened():
+                raise IOError(f"Cannot open video file for writing: {self.video_path}")
+        self.out.write(frame)
 
     def save_and_close(self):
-        if self.video_writer:
-            print("Closing video writer...")
-            self.video_writer.release()
+        if self.out:
+            self.out.release()
+            print(f"Video saved to {self.video_path}")
+        else:
+            print("No frames were written. Video not saved.")
+
+
+def main():
+    saver = MP4VideoSaver(fps=30)
+    source = CameraSource()
+    for _ in range(2 * 30):  # 2 seconds at 30 FPS
+        frame = source.get_current_frame()
+        saver.write_frame(frame)
+
+    saver.save_and_close()
+
+
+if __name__ == "__main__":
+    main()
