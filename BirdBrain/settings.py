@@ -24,7 +24,7 @@ HIGH_RESOLUTION = (1920, 1080)
 RESOLUTION = HIGH_RESOLUTION
 
 # Drone Algorithm
-START_LAT = 31.769534 # Southwest corner of the search area.
+START_LAT = 31.76957 # Southwest corner of the search area.
 START_LON = 35.19831 # Southwest corner of the search area.
 LONG_SEGMENT = 3
 SHORT_SEGMENT = 2
