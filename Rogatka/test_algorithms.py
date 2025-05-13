@@ -532,3 +532,38 @@ class TestAlgorithm23(DroneAlgorithm):
         servo.open_payload()
         time.sleep(1)
         servo.close_payload()
+
+
+class TestAlgorithm24(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+
+    def _main(self):
+
+        waypoints = [Waypoint(position=LocationGlobalRelative(START_LAT, START_LON, 6),
+                              angle=INITIAL_ANGLE,
+                              movement_action=MovementAction.MOVEMENT)]
+
+        def search_thread():
+            self.drone_client.connect()
+            self.drone_client.takeoff()
+
+            for i in range(60):
+                self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+
+                self.drone_client.log_and_print(f"Waiting, iteration: {i}")
+                time.sleep(1)
+
+            self.drone_client.land()
+            self.drone_client.disconnect()
+
+        thread = threading.Thread(target=search_thread)
+        thread.start()
+
+        while thread.is_alive():
+            try:
+                self.drone_client.log_and_print(f'alt: {self.drone_client.get_altitude()}')
+                self.drone_client.log_and_print(f'battery: {self.drone_client.get_battery_voltage()}')
+                time.sleep(0.5)
+            except:
+                pass
