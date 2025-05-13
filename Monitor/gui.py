@@ -17,6 +17,7 @@ from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
 from Monitor.video_saver import PiVideoSaver
+from Rogatka.servo_motor import ServoMotor
 from BirdBrain.interfaces import GUI
 
 CLOSE_WINDOW_KEY = 27  # escape
@@ -41,9 +42,9 @@ def get_bandwidth(prev):
 
 
 class MonitorGUI(GUI):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: ServoMotor = None,
                  enable_display=True):
-        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
+        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,servo=servo,
                          enable_display=enable_display)
 
         # Use tkinter to get screen resolution
@@ -82,6 +83,7 @@ class MonitorGUI(GUI):
         self.draw_cross(processed_frame)
         if bbox:
             self.draw_bounding_box(frame, bbox)
+        self.draw_bombs(processed_frame)
         monitor = self.get_monitor(processed_frame)
         return monitor
 
@@ -190,6 +192,46 @@ class MonitorGUI(GUI):
 
         return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
+    def draw_bombs(self, frame):
+        """
+        Draws bomb images in the bottom-right corner of the frame.
+        The number of bombs is determined by self.servo.get_bombs_left() (0 to 3).
+        """
+        
+        bombs_left = self.servo.get_bombs_left()
+        if bombs_left <= 0:
+            return
+
+        # Path to bomb icon image
+        bomb_image_path = r"assets\bomb.png"
+        #print current working directory
+        print(f"Current working directory: {os.getcwd()}")
+        icon_size = 40  # Width/height of each bomb icon
+        margin = 10     # Space between icons and edges
+
+        # Load and resize the bomb image
+        if not os.path.exists(bomb_image_path):
+            print(f"Bomb image not found: {bomb_image_path}")
+            return
+
+        bomb_img = Image.open(bomb_image_path).convert("RGBA").resize((icon_size, icon_size))
+
+        # Convert OpenCV frame to RGBA PIL Image
+        pil_img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).convert("RGBA")
+
+        # Image size
+        frame_width, frame_height = pil_img.size
+        # Start from the bottom-right corner and move left
+        for i in range(bombs_left):
+            x = frame_width - margin - (icon_size * (i + 1)) - (margin * i)
+            y = frame_height - icon_size - margin
+            pil_img.paste(bomb_img, (x, y), bomb_img)  # Paste with alpha mask
+
+        # Convert back to OpenCV format
+        frame[:] = cv2.cvtColor(np.array(pil_img.convert("RGB")), cv2.COLOR_RGB2BGR)
+
+
+    
     def close(self):
         self.video_saver.save_and_close()
         # destroy all OpenCV windows
@@ -199,7 +241,7 @@ class MonitorGUI(GUI):
 def main():
     source = CameraSource()
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
-                     image_detection=ColorImageDetectionModel(None))
+                     image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     while True:
         frame = source.get_current_frame()
         gui.draw_gui(frame)
