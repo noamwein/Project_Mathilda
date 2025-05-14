@@ -567,3 +567,37 @@ class TestAlgorithm24(DroneAlgorithm):
                 time.sleep(0.5)
             except:
                 pass
+            
+            
+
+class TestAlgorithm25(DroneAlgorithm):
+    '''
+    test gui
+    '''
+
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+        self.detection_model = ColorImageDetectionModel(None)
+        self.video_source = PiCameraSource()
+        self.servo = ServoMotor()
+        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(),
+                              image_detection=self.detection_model,servo=self.servo)
+
+    def _main(self):
+        self.drone_client.connect()
+        try:
+            while True:
+                frame = self.video_source.get_current_frame()
+                target_position = self.detection_model.locate_target(
+                    frame)  # position is in pixels relative to the desired target point
+                if self.gui is not None:
+                    self.gui.draw_gui(frame)
+                if target_position != (None, None):
+                    if self.drone_client.is_on_target(target_position):
+                        print("boom!")
+        except KeyboardInterrupt:
+            print("Interrupted by user (Ctrl+C)")
+        finally:
+            # Always called on exit
+            self.gui.video_saver.save_and_close()
+            print("Resources released. Exiting cleanly.")
