@@ -94,13 +94,13 @@ class DummyClient(DroneClient):
         pass
 
     def get_velocity(self):
-        pass
+        return (0,0)
     
     def get_yaw(self):
-        pass
+        return 0
     
     def get_roll(self):
-        pass
+        return 0
     
     def get_pitch(self):
-        pass
+        return 0
