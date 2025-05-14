@@ -287,6 +287,9 @@ class MonitorGUI(GUI):
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
+            #print current working directory
+            print(f"Current working directory: {os.getcwd()}")
+            print()
             print(f"Bomb image not found: {bomb_image_path}")
             return
 
