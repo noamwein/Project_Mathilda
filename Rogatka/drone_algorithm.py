@@ -9,6 +9,7 @@ from dronekit import LocationGlobalRelative
 from typing import List
 import threading
 import time
+import numpy as np
 
 from BirdBrain.settings import (START_LAT,
                                 START_LON,
@@ -31,6 +32,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.img_detection = img_detection
         self.servo = servo
         self.gui = gui
+        self.last_relative_pos = None
         
     def generate_new_path(self) -> List[Waypoint]:
         initial_alt = self.drone_client.get_initial_altitude()
@@ -153,10 +155,10 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.servo.drop()
         self.drone_client.log_and_print('DROPPING PAYLOAD!!')
 
-    def re_search(self):
+    def re_search(self, direction: int=1):
         self.drone_client.log_and_print("Re-Searching target...")
         for _ in range(72):
-            self.drone_client.rotate(10, speed_factor=0.8)
+            self.drone_client.rotate(direction * 10, speed_factor=0.8)
             frame = self.source.get_current_frame()
             if self.gui is not None:
                 self.gui.draw_gui(frame)
@@ -186,16 +188,20 @@ class MainDroneAlgorithm(DroneAlgorithm):
                 if target_position == (None, None):
                     failed_frames += 1
                     if failed_frames >= RE_SEARCH_LIMIT:
-                        res = self.re_search()
+                        if self.last_relative_pos is not None:
+                            direction = 1 if self.last_relative_pos[0] > 0 else -1
+                        else:
+                            direction = 1
+                        res = self.re_search(direction=direction)
                         if not res:
                             self.drone_client.log_and_print("Failed to relocate target position! Aborting mission...")
                             break
                     continue
-                else:
-                    failed_frames = 0
 
+                failed_frames = 0
                 center_position = self.drone_client.get_center_position()
                 relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
+                self.last_relative_pos = relative_position
 
                 self.drone_client.log_and_print("Found target position in frame!")
                 if self.drone_client.is_on_target(relative_position):
