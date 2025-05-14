@@ -131,17 +131,20 @@ class MonitorGUI(GUI):
         return processed_frame
 
     def draw_shapes(self, frame):
+        cross_color = (0, 0, 255) # Red
+        drop_color = (17, 250, 231) # Yellow
+        yaw_color = (219, 204, 101) # Light Blue
         # Draw cross
-        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
-        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
+        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), cross_color, 6)
+        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), cross_color, 6)
         # Draw circles
-        cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, (0, 0, 255), 6)
-        cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, (0, 0, 255), 6)
+        cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, drop_color, 6)
+        cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, yaw_color, 6)
         # Draw yaw pixel threshold
         print(frame.shape)
         # print(CENTERED_X + YAW_TOLERANCE_THRESHOLD, CENTERED_X - YAW_TOLERANCE_THRESHOLD)
-        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
-        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
+        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
+        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
 
 
     def draw_bounding_box(self, frame, bbox):
