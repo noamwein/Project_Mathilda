@@ -11,15 +11,12 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
 
 from Rogatka.drone_algorithm import MainDroneAlgorithm
-from Rogatka.drone_client import BasicClient
-from EagleEye.sources.picamera_source import PiCameraSource
-from video_saver import MP4VideoSaver
+from BirdBrain.interfaces import DroneClient, ImageDetectionm, Source, Servo
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
-from Rogatka.servo_motor import ServoMotor
 from BirdBrain.settings import INITIAL_ALTITUDE
 
 class ControlPanel(MonitorPanel):
-    def __init__(self,drone_client,video_source, detection_model, servo):
+    def __init__(self,drone_client: DroneClient ,video_source: Source, detection_model: ImageDetectionm, servo: Servo):
         self.drone_client = drone_client
         self.video_source = video_source
         self.detection_model = detection_model
@@ -45,17 +42,7 @@ class ControlPanel(MonitorPanel):
 
     def action_start(self):
         print("Start triggered")
-        drone_client=BasicClient(  
-            '/dev/ttyACM0',  # serial port
-            initial_altitude=INITIAL_ALTITUDE,             # initial altitude
-            max_altitude=10,              # max altitude
-            min_battery_percent=20,              # min battery percent
-            logger=logging.getLogger(__name__))
-        detection_model = ColorImageDetectionModel(None)
-        video_source = PiCameraSource()
-        servo = ServoMotor()
-        # gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
-        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
+        self.drone = MainDroneAlgorithm(self.detection_model, self.video_source, self.drone_client, self.servo)
         self.drone.main()
 
     def action_reboot(self):
