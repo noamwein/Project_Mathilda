@@ -78,7 +78,7 @@ def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> 
 
 class MonitorGUI(GUI):
     def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
-                 enable_display=True):
+                 enable_display=True, running_on_pi=True):
         super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
                          enable_display=enable_display)
 
@@ -100,6 +100,7 @@ class MonitorGUI(GUI):
         cv2.moveWindow("Video", screen_width // 2, margin)
 
         self.prev_net = 0, 0
+        self.running_on_pi = running_on_pi
 
     def draw_gui(self, frame):
         if frame is None:
@@ -116,11 +117,13 @@ class MonitorGUI(GUI):
             self.close()
 
     def _draw_gui(self, frame):
-        processed_frame = resize_and_pad(frame, target_height=self.frame_dims[1], target_width=self.frame_dims[0])
+        processed_frame = frame.copy()
         self.draw_cross(processed_frame)
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(frame, bbox)
+        if not self.running_on_pi:
+            processed_frame = resize_and_pad(frame, target_height=self.frame_dims[1], target_width=self.frame_dims[0])
         return processed_frame
 
     def draw_cross(self, frame):
@@ -237,7 +240,7 @@ class MonitorGUI(GUI):
 def main():
     source = CameraSource()
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None))
+                     image_detection=ColorImageDetectionModel(None), running_on_pi=False)
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)
