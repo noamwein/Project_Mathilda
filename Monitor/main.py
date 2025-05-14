@@ -20,6 +20,7 @@ import numpy as np
 import datetime
 
 import logging
+import threading
 
 from EagleEye.sources.picamera_source import PiCameraSource
 # from EagleEye.sources.camera_source import CameraSource
@@ -59,8 +60,11 @@ class MainWindow(QMainWindow):
             logger=logging.getLogger(__name__)
         )
 
-        self.drone_client.connect()
+        def _connect():
+            self.drone_client.connect()
 
+        thread = threading.Thread(target=_connect)
+        thread.start()
         ########################
 
         # Setup servo
@@ -74,7 +78,8 @@ class MainWindow(QMainWindow):
             img_detection=self.image_detection,
             source=self.video_source,
             drone_client=self.drone_client,
-            servo=self.servo
+            servo=self.servo,
+            gui=None # TODO remove
         )
 
         ########################
