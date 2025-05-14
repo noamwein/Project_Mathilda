@@ -26,10 +26,10 @@ import numpy as np
 from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KILL_SWITCH_CHANNEL,
                                 KILL_SWITCH_MODE,
-                                ANGLE_TOLERANCE,
-                                ERROR_TOLERANCE_RADIUS,
+                                YAW_TOLERANCE_THRESHOLD,
+                                DROP_RADIUS,
                                 MAX_SPEED,
-                                YAW_PIXEL_THRESHOLD,
+                                YAW_TOLERANCE_RADIUS,
                                 KP_V, KI_V, KD_V,
                                 KP_YAW, KI_YAW, KD_YAW,
                                 MISS_LIMIT,
@@ -375,9 +375,9 @@ class BasicClient(DroneClient):
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
         # Rotate stepwise (1°) until within tolerance
-        if distance > YAW_PIXEL_THRESHOLD:
+        if distance > YAW_TOLERANCE_RADIUS:
             rotation_step = 5  # max degrees per rotation call
-            if abs(target_x) > ANGLE_TOLERANCE:
+            if abs(target_x) > YAW_TOLERANCE_THRESHOLD:
                 # Rotate one degree toward the target
                 rotation_direction = -np.sign(target_y) * rotation_step * target_x * KP_YAW
                 self.rotate(rotation_direction, speed_factor=0.1)
@@ -450,8 +450,8 @@ class BasicClient(DroneClient):
         # Distance
         distance = math.hypot(target_x, target_y)
         # Rotate stepwise
-        if distance > YAW_PIXEL_THRESHOLD:
-            if abs(angle_err) > ANGLE_TOLERANCE:
+        if distance > YAW_TOLERANCE_RADIUS:
+            if abs(angle_err) > YAW_TOLERANCE_THRESHOLD:
                 # velocity missed
                 self._vel_miss += 1
                 if self._vel_miss > MISS_LIMIT:
@@ -583,7 +583,7 @@ class BasicClient(DroneClient):
         self.set_speed(0, 0, 0)
         self.state = State.ON_TARGET
 
-    def is_on_target(self, target_position: Tuple[int, int], error_tolerence_raduis=ERROR_TOLERANCE_RADIUS):
+    def is_on_target(self, target_position: Tuple[int, int], error_tolerence_raduis=DROP_RADIUS):
         return target_position[0] ** 2 + target_position[1] ** 2 < error_tolerence_raduis**2
 
     @require_guided
