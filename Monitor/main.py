@@ -19,6 +19,7 @@ import numpy as np
 import datetime
 
 from EagleEye.sources.picamera_source import PiCameraSource
+# from EagleEye.sources.camera_source import CameraSource
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -27,6 +28,7 @@ class MainWindow(QMainWindow):
         ########################
         # Setup live video
         self.video_source = PiCameraSource()
+        # self.video_source = CameraSource()
         ########################
 
 
@@ -42,6 +44,22 @@ class MainWindow(QMainWindow):
         _app = _App.instance()
         if _app:
             _app.aboutToQuit.connect(self._cleanup_recorder)
+
+        # Get screen dimensions
+        screen = QApplication.primaryScreen()
+        W = screen.size().width()
+        H = screen.size().height()
+        # Title height
+        title_h = 50
+        content_h = H - title_h
+        # Row stretch weights: 2,2,1 => total 5
+        row1_h = int(content_h * 2 / 5)
+        row2_h = int(content_h * 2 / 5)
+        row3_h = content_h - row1_h - row2_h
+        # Column weights: 1,2,1 => total 4
+        col0_w = int(W * 1 / 4)
+        col1_w = int(W * 2 / 4)
+        col2_w = W - col0_w - col1_w
 
         # Central widget and layout
         container = QWidget()
@@ -66,6 +84,16 @@ class MainWindow(QMainWindow):
         self.layout.setRowStretch(2, 2)
         self.layout.setRowStretch(3, 1)
 
+        # Save size metrics for panels
+        self.panel_sizes = {
+            'terminal': (col0_w, row1_h + row2_h),
+            'controls': (col0_w, row3_h),
+            'video': (col1_w, content_h),
+            'telemetry': (col2_w, row1_h),
+            'map': (col2_w, row2_h),
+            'bombs': (col2_w, row3_h)
+        }
+
         self._load_panels()
 
         # Timer for updates & recording
@@ -74,6 +102,7 @@ class MainWindow(QMainWindow):
         self.timer.start(100)
 
     def _load_panels(self):
+        # instantiate each panel
         term = InHouseTerminal(parent=self)
         ctrl = ControlPanel(parent=self)
         vid = VideoMonitor(parent=self)
@@ -81,12 +110,21 @@ class MainWindow(QMainWindow):
         mp = MapPanel(parent=self)
         bm = BombsPanel(parent=self)
 
-        self.layout.addWidget(term,  1, 0, 2, 1)
-        self.layout.addWidget(ctrl,  3, 0, 1, 1)
-        self.layout.addWidget(vid,   1, 1, 3, 1)
-        self.layout.addWidget(tel,   1, 2, 1, 1)
-        self.layout.addWidget(mp,    2, 2, 1, 1)
-        self.layout.addWidget(bm,    3, 2, 1, 1)
+        # Set fixed sizes
+        term.setFixedSize(*self.panel_sizes['terminal'])
+        ctrl.setFixedSize(*self.panel_sizes['controls'])
+        vid.setFixedSize(*self.panel_sizes['video'])
+        tel.setFixedSize(*self.panel_sizes['telemetry'])
+        mp.setFixedSize(*self.panel_sizes['map'])
+        bm.setFixedSize(*self.panel_sizes['bombs'])
+
+        # place panels: row, col, rowspan, colspan
+        self.layout.addWidget(term, 1, 0, 2, 1)
+        self.layout.addWidget(ctrl, 3, 0, 1, 1)
+        self.layout.addWidget(vid, 1, 1, 3, 1)
+        self.layout.addWidget(tel, 1, 2, 1, 1)
+        self.layout.addWidget(mp, 2, 2, 1, 1)
+        self.layout.addWidget(bm, 3, 2, 1, 1)
 
     def _on_timer(self):
         # initialize recorder when first frame
