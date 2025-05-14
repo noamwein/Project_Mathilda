@@ -1,6 +1,7 @@
 import sys, os
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
+sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir,os.pathdir)))
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel
 from PySide6.QtCore import Qt, QTimer
