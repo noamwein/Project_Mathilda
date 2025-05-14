@@ -178,6 +178,9 @@ class BasicClient(DroneClient):
     def get_heading(self):
         return self.vehicle.heading
 
+    def get_state(self):
+        return self.state
+    
     @require_guided
     def move_forward(self, distance):
         """
