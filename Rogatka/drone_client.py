@@ -15,6 +15,7 @@ from datetime import datetime
 from typing import Tuple, List
 import math
 import logging
+from collections import deque
 
 import enum
 
@@ -25,13 +26,15 @@ import numpy as np
 from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KILL_SWITCH_CHANNEL,
                                 KILL_SWITCH_MODE,
-                                PIXEL_THRESHOLD,
-                                YAW_FACTOR,
-                                SPEED_FACTOR,
                                 ANGLE_TOLERANCE,
                                 ERROR_TOLERANCE_RADIUS,
                                 MAX_SPEED,
-                                YAW_PIXEL_THRESHOLD)
+                                YAW_PIXEL_THRESHOLD,
+                                KP_V, KI_V, KD_V,
+                                KP_YAW, KI_YAW, KD_YAW,
+                                MISS_LIMIT,
+                                YAW_INTEGRAL_MAX,
+                                VEL_INTEGRAL_MAX)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -53,6 +56,24 @@ class BasicClient(DroneClient):
         self.state = -1
         self.logger = logger
         self.done = False
+
+        # PID state
+        self._prev_time = None
+        # Previous errors
+        self._prev_error_vx = 0.0
+        self._prev_error_vy = 0.0
+        self._prev_error_yaw = 0.0
+        # Integral histories (for sliding window)
+        self._yaw_history = deque(maxlen=YAW_INTEGRAL_MAX)
+        self._vx_history = deque(maxlen=VEL_INTEGRAL_MAX)
+        self._vy_history = deque(maxlen=VEL_INTEGRAL_MAX)
+        # Integral sums
+        self._integral_yaw = 0.0
+        self._integral_vx = 0.0
+        self._integral_vy = 0.0
+        # Miss counters
+        self._yaw_miss = 0
+        self._vel_miss = 0
 
         # Set up logging to file
         log_folder = "../../Flight Logs"
@@ -337,7 +358,7 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def pid(self, target_position, speed=0.5, only_rotate=False):
+    def pid(self, target_position, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
@@ -351,37 +372,153 @@ class BasicClient(DroneClient):
         """
         target_x, target_y = target_position
 
-
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
-        if distance < PIXEL_THRESHOLD:
-            self.log_and_print("Already at the target position!")
-            return
-
         # Rotate stepwise (1°) until within tolerance
         if distance > YAW_PIXEL_THRESHOLD:
             rotation_step = 5  # max degrees per rotation call
             if abs(target_x) > ANGLE_TOLERANCE:
                 # Rotate one degree toward the target
-                rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
+                rotation_direction = -np.sign(target_y) * rotation_step * target_x * KP_YAW
                 self.rotate(rotation_direction, speed_factor=0.1)
                 return
-        
+
         if only_rotate:
             return
 
         # Scale by the desired speed
-        velocity_x = target_x * speed * SPEED_FACTOR
-        velocity_y = -target_y * speed * SPEED_FACTOR # Image y is upside-down
+        velocity_x = target_x * KP_V
+        velocity_y = -target_y * KP_V  # Image y is upside-down
 
         v_norm = math.hypot(velocity_x, velocity_y)
-        if v_norm > MAX_SPEED: # make sure speed is not too high
+        if v_norm > MAX_SPEED:  # make sure speed is not too high
             velocity_x /= v_norm
             velocity_y /= v_norm
 
         # Set the velocity in the XY plane, keeping Z velocity zero
         self.set_speed(velocity_x, velocity_y, 0.0)
-    
+
+    @require_guided
+    def full_pid(self, target_position, only_rotate=False):
+        """
+        Moves the drone towards the target position at a constant speed.
+
+        First rotates towards the target if needed (1° steps), then moves when aligned.
+
+        Coordinates are in the camera frame where the drone’s forward direction is along the +Y axis.
+
+        Parameters:
+            target_position (tuple): Target (x, y) position in Cartesian coordinates relative to the camera.
+            speed (float): Absolute speed in the XY plane (default is 0.1 m/s to avoid tilt).
+        """
+        target_x, target_y = target_position
+
+        # Initialize and compute dt
+        now = time.time()
+        dt = 0
+        if self._prev_time is None:
+            self._prev_time = now
+            return
+        dt = now - self._prev_time
+        if dt > 1:
+            self.log_and_print("Resetting PID...")
+            self._prev_time = now
+            self._yaw_history.clear()
+            self._vx_history.clear()
+            self._vy_history.clear()
+            self._prev_error_yaw = 0.0
+            self._prev_error_vx = 0.0
+            self._prev_error_vy = 0.0
+            self._integral_yaw = 0.0
+            self._integral_vx = 0.0
+            self._integral_vy = 0.0
+            self._yaw_miss = 0
+            self._vel_miss = 0
+            return
+        self._prev_time = now
+
+        # Compute yaw error (px)
+        angle_err = target_x
+        # Update yaw integral sliding window
+        inc_yaw = angle_err * dt
+        self._yaw_history.append(inc_yaw)
+        self._integral_yaw = sum(self._yaw_history)
+        # Derivative
+        deriv_yaw = (angle_err - self._prev_error_yaw) / dt if dt > 0 else 0.0
+        self._prev_error_yaw = angle_err
+
+        # Distance
+        distance = math.hypot(target_x, target_y)
+        # Rotate stepwise
+        if distance > YAW_PIXEL_THRESHOLD:
+            if abs(angle_err) > ANGLE_TOLERANCE:
+                # velocity missed
+                self._vel_miss += 1
+                if self._vel_miss > MISS_LIMIT:
+                    self._vx_history.clear()
+                    self._vy_history.clear()
+                    self._prev_error_vx = 0.0
+                    self._prev_error_vy = 0.0
+                    self._integral_vx = 0.0
+                    self._integral_vy = 0.0
+                    self._vel_miss = 0
+                # reset yaw miss
+                self._yaw_miss = 0
+                # PID-based rotation
+                rot = -np.sign(target_y) * (KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw)
+                self.rotate(rot, speed_factor=0.1)
+                return
+        # yaw missed
+        self._yaw_miss += 1
+        if self._yaw_miss > MISS_LIMIT:
+            self._yaw_history.clear()
+            self._integral_yaw = 0.0
+            self._prev_error_yaw = 0.0
+            self._yaw_miss = 0
+
+        if only_rotate:
+            self._vel_miss += 1
+            if self._vel_miss > MISS_LIMIT:
+                self._vx_history.clear()
+                self._vy_history.clear()
+                self._prev_error_vx = 0.0
+                self._prev_error_vy = 0.0
+                self._integral_vx = 0.0
+                self._integral_vy = 0.0
+                self._vel_miss = 0
+            return
+
+        # Velocity PID compute
+        err_vx = target_x
+        err_vy = target_y
+        # Update sliding windows
+        inc_vx = err_vx * dt
+        inc_vy = err_vy * dt
+        self._vx_history.append(inc_vx)
+        self._vy_history.append(inc_vy)
+        self._integral_vx = sum(self._vx_history)
+        self._integral_vy = sum(self._vy_history)
+        # Derivatives
+        deriv_vx = (err_vx - self._prev_error_vx) / dt if dt > 0 else 0.0
+        deriv_vy = (err_vy - self._prev_error_vy) / dt if dt > 0 else 0.0
+        self._prev_error_vx = err_vx
+        self._prev_error_vy = err_vy
+        # reset vel miss
+        self._vel_miss = 0
+
+        # PID outputs
+        vx = KP_V * err_vx + KI_V * self._integral_vx + KD_V * deriv_vx
+        vy = KP_V * err_vy + KI_V * self._integral_vy + KD_V * deriv_vy
+        vy = -vy  # invert image Y
+
+        # cap speed
+        v_norm = math.hypot(vx, vy)
+        if v_norm > MAX_SPEED:
+            vx /= v_norm
+            vy /= v_norm
+
+        self.set_speed(vx, vy, 0.0)
+
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
         """
