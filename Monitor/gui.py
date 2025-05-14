@@ -169,7 +169,7 @@ class MonitorGUI(GUI):
     def get_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
-        pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
+        roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
 
         try:
             altitude = f'{self.drone_client.get_altitude():.2f} m'
