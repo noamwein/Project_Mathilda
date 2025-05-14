@@ -479,9 +479,9 @@ class TestAlgorithm21(DroneAlgorithm):
         super().__init__(drone_client)
         self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(),
-                              image_detection=self.detection_model)
         self.servo = ServoMotor()
+        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(),
+                              image_detection=self.detection_model,servo=self.servo)
 
     def _main(self):
         try:
