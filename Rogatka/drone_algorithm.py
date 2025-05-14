@@ -106,11 +106,6 @@ class MainDroneAlgorithm(DroneAlgorithm):
             self.img_detection.locate_target(frame)
             if self.gui is not None:
                 self.gui.draw_gui(frame)
-                try:
-                    self.drone_client.log_and_print(f'alt: {self.drone_client.get_altitude()}')
-                    self.drone_client.log_and_print(f'battery: {self.drone_client.get_battery_voltage()}')
-                except:
-                    pass
 
     def assassinate(self):
         # self.drone_client.assassinate()
