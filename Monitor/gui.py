@@ -283,8 +283,8 @@ class MonitorGUI(GUI):
         # Path to bomb icon image
         bomb_image_path = os.path.abspath(os.path.join("..", "Monitor", "assets", "bomb.png"))
 
-        icon_size = 40  # Width/height of each bomb icon
-        margin = 10  # Space between icons and edges
+        icon_size = 80  # Width/height of each bomb icon
+        margin = 15  # Space between icons and edges
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
