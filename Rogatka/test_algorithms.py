@@ -358,7 +358,7 @@ class TestAlgorithm16(DroneAlgorithm):
         detection_model = ColorImageDetectionModel(None)
         video_source = PiCameraSource()
         servo = ServoMotor()
-        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
+        gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model, servo=servo)
         self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
 
     def _main(self):

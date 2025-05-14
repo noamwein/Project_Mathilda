@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 import tkinter as tk
-
+import math
 import cv2
 import numpy as np
 import psutil
@@ -17,8 +17,10 @@ from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
 from Monitor.video_saver import MP4VideoSaver
-from BirdBrain.interfaces import GUI
+from Rogatka.dummy_servo import DummyServo
+from BirdBrain.interfaces import GUI, Servo
 from BirdBrain.settings import DROP_RADIUS, YAW_TOLERANCE_THRESHOLD, YAW_TOLERANCE_RADIUS
+from Rogatka.drone_client import State
 
 CLOSE_WINDOW_KEY = 27  # escape
 
@@ -78,9 +80,9 @@ def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> 
 
 
 class MonitorGUI(GUI):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: Servo = None,
                  enable_display=True):
-        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
+        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection, servo=servo,
                          enable_display=enable_display)
 
         # Use tkinter to get screen resolution
@@ -122,6 +124,7 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(processed_frame, bbox)
+        self.draw_bombs(processed_frame)
         processed_frame = self.get_monitor(processed_frame)
         processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
                                          target_width=self.frame_dims[0])
@@ -237,6 +240,112 @@ class MonitorGUI(GUI):
 
         return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
+    def draw_bombs(self, frame):
+        """
+        Draws bomb images in the bottom-right corner of the frame.
+        The number of bombs is determined by self.servo.get_bombs_left() (0 to 3).
+        """
+        
+        bombs_left = self.servo.get_bombs_left()
+        if bombs_left <= 0:
+            return
+
+        # Path to bomb icon image
+        bomb_image_path = r"assets\bomb.png"
+        icon_size = 40  # Width/height of each bomb icon
+        margin = 10     # Space between icons and edges
+
+        # Load and resize the bomb image
+        if not os.path.exists(bomb_image_path):
+            print(f"Bomb image not found: {bomb_image_path}")
+            return
+
+        bomb_img = Image.open(bomb_image_path).convert("RGBA").resize((icon_size, icon_size))
+
+        # Convert OpenCV frame to RGBA PIL Image
+        pil_img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).convert("RGBA")
+
+        # Image size
+        frame_width, frame_height = pil_img.size
+        # Start from the bottom-right corner and move left
+        for i in range(bombs_left):
+            x = frame_width - margin - (icon_size * (i + 1)) - (margin * i)
+            y = frame_height - icon_size - margin
+            pil_img.paste(bomb_img, (x, y), bomb_img)  # Paste with alpha mask
+
+        # Convert back to OpenCV format
+        frame[:] = cv2.cvtColor(np.array(pil_img.convert("RGB")), cv2.COLOR_RGB2BGR)
+
+    def get_direction(self):
+        mode = self.drone_client.get_mode()
+        rotation_direction = 'clockwise'  # Or dynamically change this too
+        vx=0
+        vy=0
+        return mode, rotation_direction, vx, vy
+    
+    def draw_drone_illus(self, frame):
+        """
+        Draws a drone illustration in the top-right corner of the frame.
+        - In movement mode: displays a rotated arrow based on vx, vy.
+        - In rotation mode: shows a clockwise or counterclockwise arc with a blue circle.
+        """
+        mode,rotation_direction,vx,vy = self.get_direction()
+        
+        h, w = frame.shape[:2]
+        overlay_pos = (w - 60, 20)  # Position in the top-right corner of the frame
+
+        if mode == State.MOVEMENT:
+            # Calculate angle and stretch arrow based on velocity (vx, vy)
+            angle = -math.degrees(math.atan2(vy, vx))  # Get angle from vx, vy
+            norm = math.hypot(vx, vy)
+            if norm == 0:
+                norm=0.001
+            arrow_length = int(norm * 25)  # You can adjust the scaling factor here
+
+            # Draw arrow
+            center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
+            cv2.arrowedLine(frame, center, 
+                            (center[0] + int(arrow_length * vx / norm), 
+                             center[1] - int(arrow_length * vy / norm)),
+                            (0, 255, 0), 3)  # Green arrow
+
+        elif mode ==  State.ROTATION:
+            # For rotation, draw a quarter-circle arc and a blue circle at the head
+            center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
+            radius = 20
+
+            if rotation_direction == 'clockwise':
+                start_angle = 0
+                end_angle = -90
+                angle_rad = math.radians(0)
+
+            else:  # Counterclockwise
+                start_angle = -90
+                end_angle = -180
+                angle_rad = math.radians(180)
+
+
+            color = (0, 255, 0)  # Green for clockwise
+            # Draw the arc (quarter circle)
+            cv2.ellipse(frame, center, (radius, radius), 0, start_angle, end_angle, color, 3)
+
+            # Draw blue circle at the end of the arc (head of the arrow)
+            tip_x = int(center[0] + radius * math.cos(angle_rad))
+            tip_y = int(center[1] + radius * math.sin(angle_rad))
+            cv2.circle(frame, (tip_x, tip_y), 5, (255, 0, 0), -1)  # Blue circle
+
+        # Optionally, you can add text for debugging purposes
+        if mode == 'movement' and norm > 1e-3:
+            cv2.putText(frame, 'Movement', (overlay_pos[0]-20, overlay_pos[1] ), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        elif mode == 'rotation':
+            cv2.putText(frame, 'Rotation', (overlay_pos[0]-20, overlay_pos[1] ), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        else:
+            cv2.putText(frame, 'Stopped', (overlay_pos[0]-20, overlay_pos[1] ), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+
     def close(self):
         self.video_saver.save_and_close()
         # destroy all OpenCV windows
@@ -247,8 +356,10 @@ class MonitorGUI(GUI):
 
 def main():
     source = CameraSource()
+    # gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
+    #                  image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None))
+                     image_detection=ColorImageDetectionModel(None),servo=DummyServo())
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)

@@ -207,6 +207,21 @@ class DroneAlgorithm(ABC):
             self.drone_client.land()
             self.drone_client.disconnect()
 
+class Servo(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def drop(self):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractmethod
+    def get_bombs_left(self):
+        pass
 
 class VideoSaver(ABC):
     @abstractmethod
@@ -219,12 +234,13 @@ class VideoSaver(ABC):
 
 
 class GUI(ABC):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: Servo,
                  enable_display=True):
         self.drone_client = drone_client
         self.video_saver = video_saver
         self.enable_display = enable_display
         self.image_detection = image_detection
+        self.servo = servo
         self.enable_display = enable_display
 
     @abstractmethod
