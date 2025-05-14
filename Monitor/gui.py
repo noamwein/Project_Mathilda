@@ -138,8 +138,6 @@ class MonitorGUI(GUI):
         cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, (0, 0, 255), 6)
         cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, (0, 0, 255), 6)
         # Draw yaw pixel threshold
-        print(frame.shape)
-        # print(CENTERED_X + YAW_TOLERANCE_THRESHOLD, CENTERED_X - YAW_TOLERANCE_THRESHOLD)
         cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
         cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
 
