@@ -80,7 +80,7 @@ class ServoMotor(Servo):
         """
         self.set_angle(0)
 
-    def bombs_left(self):
+    def get_bombs_left(self):
         """
         Return the number of bombs left.
         """
