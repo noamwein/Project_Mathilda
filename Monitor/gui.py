@@ -17,8 +17,9 @@ from Monitor.video_saver import VideoSaver
 from Rogatka.drone_client import DroneClient
 from Rogatka.dummy_client import DummyClient
 from Monitor.video_saver import MP4VideoSaver
-from Rogatka.servo_motor import ServoMotor
-from BirdBrain.interfaces import GUI
+from Rogatka.dummy_servo import DummyServo
+from BirdBrain.interfaces import GUI, Servo
+from BirdBrain.settings import DROP_RADIUS, YAW_TOLERANCE_THRESHOLD, YAW_TOLERANCE_RADIUS
 from Rogatka.drone_client import State
 
 CLOSE_WINDOW_KEY = 27  # escape
@@ -79,9 +80,9 @@ def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> 
 
 
 class MonitorGUI(GUI):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: ServoMotor = None,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: Servo = None,
                  enable_display=True):
-        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,servo=servo,
+        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection, servo=servo,
                          enable_display=enable_display)
 
         # Use tkinter to get screen resolution
@@ -119,7 +120,7 @@ class MonitorGUI(GUI):
 
     def _draw_gui(self, frame):
         processed_frame = frame.copy()
-        self.draw_cross(processed_frame)
+        self.draw_shapes(processed_frame)
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(processed_frame, bbox)
@@ -129,13 +130,19 @@ class MonitorGUI(GUI):
                                          target_width=self.frame_dims[0])
         return processed_frame
 
-
-    def draw_cross(self, frame):
-        """
-        Draws a cross at the center of the frame.
-        """
+    def draw_shapes(self, frame):
+        # Draw cross
         cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), (0, 0, 255), 6)
         cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), (0, 0, 255), 6)
+        # Draw circles
+        cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, (0, 0, 255), 6)
+        cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, (0, 0, 255), 6)
+        # Draw yaw pixel threshold
+        print(frame.shape)
+        # print(CENTERED_X + YAW_TOLERANCE_THRESHOLD, CENTERED_X - YAW_TOLERANCE_THRESHOLD)
+        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
+        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), (0, 0, 255), 6)
+
 
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
@@ -353,7 +360,7 @@ def main():
     # gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
     #                  image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None),servo=ServoMotor())
+                     image_detection=ColorImageDetectionModel(None),servo=DummyServo())
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)

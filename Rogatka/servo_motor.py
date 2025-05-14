@@ -1,14 +1,17 @@
-import RPi.GPIO as GPIO
-from BirdBrain.interfaces import Servo
-import time
-import sys
-
-#import for parent directory
+# import for parent directory
 import os
+import sys
+import time
+
+import RPi.GPIO as GPIO
+
+from BirdBrain.interfaces import Servo
+
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
 from BirdBrain.settings import (COOLDOWN_TIME,
                                 SERVO_PIN)
+
 
 class ServoMotor(Servo):
     def __init__(self, pin=SERVO_PIN, frequency=50):
@@ -24,9 +27,9 @@ class ServoMotor(Servo):
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
-        self.index=0
-        self.angles=[107,119,145]
-        self.last_dropped=0
+        self.index = 0
+        self.angles = [107, 119, 145]
+        self.last_dropped = 0
         self.set_angle(0)
 
     def set_angle(self, angle, direction='clockwise'):
@@ -52,12 +55,11 @@ class ServoMotor(Servo):
         """
         Drop the payload by setting the servo to 90 degrees.
         """
-        if self.index>=len(self.angles) or time.time()-self.last_dropped<COOLDOWN_TIME:
+        if self.index >= len(self.angles) or time.time() - self.last_dropped < COOLDOWN_TIME:
             return
         self.set_angle(self.angles[self.index])
-        self.index+=1
-        self.last_dropped=time.time()
-        
+        self.index += 1
+        self.last_dropped = time.time()
 
     def close(self):
         """
@@ -65,26 +67,26 @@ class ServoMotor(Servo):
         """
         self.pwm.stop()
         GPIO.cleanup(self.pin)
-        
-        
+
     def open_payload(self):
         """
         Open the servo motor.
         """
         self.set_angle(self.angles[-1])
-        
+
     def close_payload(self):
         """
         Open the servo motor.
         """
         self.set_angle(0)
-    
-    def bombs_left(self):
+
+    def get_bombs_left(self):
         """
         Return the number of bombs left.
         """
-        return len(self.angles)-self.index
-    
+        return len(self.angles) - self.index
+
+
 def test():
     servo = ServoMotor()
     try:
@@ -93,7 +95,6 @@ def test():
             time.sleep(0.1)
     finally:
         servo.close()
-
 
 
 if __name__ == "__main__":
@@ -105,7 +106,7 @@ if __name__ == "__main__":
 
     if command == "3":
         test()
-    elif command in ["1", "2"]: 
+    elif command in ["1", "2"]:
         try:
             servo = ServoMotor()
             if command == "1":
@@ -117,4 +118,3 @@ if __name__ == "__main__":
     else:
         print(f"Unknown command: {command}")
         sys.exit(1)
-
