@@ -681,3 +681,22 @@ def calculate_direction(target_position: Tuple[int, int]):
 
 def is_aligned(target_position: Tuple[int, int], error_tolerence=5) -> bool:
     return (abs(target_position[0]) < error_tolerence) and (target_position[1] >= 0)
+
+def reboot_pixhawk(self):
+    """
+    Sends a soft reboot command to the Pixhawk via MAVLink.
+    Requires the script to be run with appropriate permissions.
+    """
+    print("Sending reboot command to Pixhawk...")
+
+    # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN = 246
+    # param1 = 1 → reboot autopilot (but not autopilot+companion computer)
+    self.vehicle._master.mav.command_long_send(
+    self.vehicle._master.target_system,
+    self.vehicle._master.target_component,
+        mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
+        0,     # confirmation
+        1,     # param1: 1=reboot autopilot
+        0, 0, 0, 0, 0, 0  # unused params
+    )
+    self.log_and_print("Reboot command sent. Waiting for reboot...")

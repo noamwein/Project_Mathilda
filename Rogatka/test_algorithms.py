@@ -529,9 +529,7 @@ class TestAlgorithm23(DroneAlgorithm):
 
     def _main(self):
         servo = ServoMotor()
-        servo.open_payload()
-        time.sleep(1)
-        servo.close_payload()
+        servo.load_bombs()
 
 
 class TestAlgorithm24(DroneAlgorithm):

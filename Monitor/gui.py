@@ -282,10 +282,10 @@ class MonitorGUI(GUI):
             return
 
         # Path to bomb icon image
-        bomb_image_path = os.path.abspath(os.path.join("..", "Monitor", "assets", "bomb.png"))
+        bomb_image_path = os.path.abspath(os.path.join("..", "Monitor", "assets", "new_bomb_no_back.png"))
 
         icon_size = 120  # Width/height of each bomb icon
-        margin = 20  # Space between icons and edges
+        margin = 5  # Space between icons and edges
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
@@ -322,7 +322,7 @@ class MonitorGUI(GUI):
         velocity=(0,0)
         yaw=math.degrees(self.drone_client.get_yaw())
         # Constants
-        arrow_length = 50  # pixels
+        arrow_length = 60  # pixels
         color = (0, 255, 0)  # Green arrow
         thickness = 2
         

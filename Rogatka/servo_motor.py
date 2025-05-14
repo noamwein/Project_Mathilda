@@ -86,7 +86,15 @@ class ServoMotor(Servo):
         """
         return len(self.angles) - self.index
 
-
+    def load_bombs(self):
+        """
+        Load the servo motor with a list of bombs.
+        :param bombs: List of angles for the bombs.
+        """
+        self.open_payload()
+        time.sleep(1)
+        self.close_payload()
+        
 def test():
     servo = ServoMotor()
     try:

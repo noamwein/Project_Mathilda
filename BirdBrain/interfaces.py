@@ -210,6 +210,10 @@ class DroneClient(ABC):
     def get_center_position(self):
         pass
 
+    @abstractmethod
+    def reboot_pixhawk(self):
+        pass
+
 
 class DroneAlgorithm(ABC):
     def __init__(self, drone_client: DroneClient):
@@ -244,6 +248,10 @@ class Servo(ABC):
 
     @abstractmethod
     def get_bombs_left(self):
+        pass
+
+    @abstractmethod
+    def load_bombs(self):
         pass
 
 class VideoSaver(ABC):
