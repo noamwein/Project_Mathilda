@@ -160,8 +160,14 @@ class MainWindow(QMainWindow):
     def _load_panels(self):
         # instantiate each panel
         term = InHouseTerminal(parent=self)
-        ctrl = ControlPanel(parent=self)
-        vid = VideoMonitor(parent=self, image_detection=self.image_detection, drone_client=self.drone_client)
+        ctrl = ControlPanel(parent=self,
+                            drone_client=self.drone_client,
+                            video_source=self.video_source,
+                            detection_model=self.image_detection,
+                            servo=self.servo)
+        vid = VideoMonitor(parent=self,
+                           image_detection=self.image_detection,
+                           drone_client=self.drone_client)
         tel = TelemetryPanel(parent=self)
         mp = MapPanel(parent=self)
         bm = BombsPanel(parent=self)
