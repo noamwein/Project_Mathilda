@@ -361,7 +361,7 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def pid(self, target_position, only_rotate=False):
+    def old_pid(self, target_position, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
@@ -402,7 +402,7 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
 
     @require_guided
-    def full_pid(self, target_position, only_rotate=False):
+    def pid(self, target_position, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
