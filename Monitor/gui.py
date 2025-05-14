@@ -282,12 +282,6 @@ class MonitorGUI(GUI):
         # Convert back to OpenCV format
         frame[:] = cv2.cvtColor(np.array(pil_img.convert("RGB")), cv2.COLOR_RGB2BGR)
 
-    def get_direction(self):
-        mode = self.drone_client.get_mode()
-        rotation_direction = 'clockwise'  # Or dynamically change this too
-        vx = 0
-        vy = 0
-        return mode, rotation_direction, vx, vy
 
     def draw_drone_illus(self, frame):
         """
@@ -295,60 +289,88 @@ class MonitorGUI(GUI):
         - In movement mode: displays a rotated arrow based on vx, vy.
         - In rotation mode: shows a clockwise or counterclockwise arc with a blue circle.
         """
+        # mode=self.drone_client.get_state()
+        # velocity=self.drone_client.get_velocity()
+        # yaw=self.drone_client.get_yaw()
+        mode='a'
+        velocity=(0,0)
+        yaw=60
         mode, rotation_direction, vx, vy = self.get_direction()
 
-        h, w = frame.shape[:2]
-        overlay_pos = (w - 60, 20)  # Position in the top-right corner of the frame
+         # Constants
+        arrow_length = 50  # pixels
+        color = (0, 255, 0)  # Green arrow
+        thickness = 2
+        
+        # Compute center of the arrow illustration
+        h, w, _ = frame.shape
+        center = (w - 70, 70)  # top-right corner with some padding
 
-        if mode == State.MOVEMENT:
-            # Calculate angle and stretch arrow based on velocity (vx, vy)
-            angle = -math.degrees(math.atan2(vy, vx))  # Get angle from vx, vy
-            norm = math.hypot(vx, vy)
-            if norm == 0:
-                norm = 0.001
-            arrow_length = int(norm * 25)  # You can adjust the scaling factor here
+        # Convert yaw to radians and rotate counter-clockwise (OpenCV uses standard math coords)
+        angle_rad = math.radians(-yaw + 90)  # +90 to make 0 deg point up
 
-            # Draw arrow
-            center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
-            cv2.arrowedLine(frame, center,
-                            (center[0] + int(arrow_length * vx / norm),
-                             center[1] - int(arrow_length * vy / norm)),
-                            (0, 255, 0), 3)  # Green arrow
+        # Calculate arrow endpoint
+        end_x = int(center[0] + arrow_length * math.cos(angle_rad))
+        end_y = int(center[1] - arrow_length * math.sin(angle_rad))
 
-        elif mode == State.ROTATION:
-            # For rotation, draw a quarter-circle arc and a blue circle at the head
-            center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
-            radius = 20
+        # Draw arrow
+        cv2.arrowedLine(frame, center, (end_x, end_y), color, thickness, tipLength=0.3)
 
-            if rotation_direction == 'clockwise':
-                start_angle = 0
-                end_angle = -90
-                angle_rad = math.radians(0)
+        # Optional: draw a small circle at center
+        cv2.circle(frame, center, 3, (255, 0, 0), -1)
+        #-------------------------------------------------------------------------
+        # h, w = frame.shape[:2]
+        # overlay_pos = (w - 60, 20)  # Position in the top-right corner of the frame
 
-            else:  # Counterclockwise
-                start_angle = -90
-                end_angle = -180
-                angle_rad = math.radians(180)
+        # if mode == State.MOVEMENT:
+        #     # Calculate angle and stretch arrow based on velocity (vx, vy)
+        #     angle = -math.degrees(math.atan2(vy, vx))  # Get angle from vx, vy
+        #     norm = math.hypot(vx, vy)
+        #     if norm == 0:
+        #         norm = 0.001
+        #     arrow_length = int(norm * 25)  # You can adjust the scaling factor here
 
-            color = (0, 255, 0)  # Green for clockwise
-            # Draw the arc (quarter circle)
-            cv2.ellipse(frame, center, (radius, radius), 0, start_angle, end_angle, color, 3)
+        #     # Draw arrow
+        #     center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
+        #     cv2.arrowedLine(frame, center,
+        #                     (center[0] + int(arrow_length * vx / norm),
+        #                      center[1] - int(arrow_length * vy / norm)),
+        #                     (0, 255, 0), 3)  # Green arrow
 
-            # Draw blue circle at the end of the arc (head of the arrow)
-            tip_x = int(center[0] + radius * math.cos(angle_rad))
-            tip_y = int(center[1] + radius * math.sin(angle_rad))
-            cv2.circle(frame, (tip_x, tip_y), 5, (255, 0, 0), -1)  # Blue circle
+        # elif mode == State.ROTATION:
+        #     # For rotation, draw a quarter-circle arc and a blue circle at the head
+        #     center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
+        #     radius = 20
 
-        # Optionally, you can add text for debugging purposes
-        if mode == 'movement' and norm > 1e-3:
-            cv2.putText(frame, 'Movement', (overlay_pos[0] - 20, overlay_pos[1]),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        elif mode == 'rotation':
-            cv2.putText(frame, 'Rotation', (overlay_pos[0] - 20, overlay_pos[1]),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        else:
-            cv2.putText(frame, 'Stopped', (overlay_pos[0] - 20, overlay_pos[1]),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        #     if rotation_direction == 'clockwise':
+        #         start_angle = 0
+        #         end_angle = -90
+        #         angle_rad = math.radians(0)
+
+        #     else:  # Counterclockwise
+        #         start_angle = -90
+        #         end_angle = -180
+        #         angle_rad = math.radians(180)
+
+        #     color = (0, 255, 0)  # Green for clockwise
+        #     # Draw the arc (quarter circle)
+        #     cv2.ellipse(frame, center, (radius, radius), 0, start_angle, end_angle, color, 3)
+
+        #     # Draw blue circle at the end of the arc (head of the arrow)
+        #     tip_x = int(center[0] + radius * math.cos(angle_rad))
+        #     tip_y = int(center[1] + radius * math.sin(angle_rad))
+        #     cv2.circle(frame, (tip_x, tip_y), 5, (255, 0, 0), -1)  # Blue circle
+
+        # # Optionally, you can add text for debugging purposes
+        # if mode == 'movement' and norm > 1e-3:
+        #     cv2.putText(frame, 'Movement', (overlay_pos[0] - 20, overlay_pos[1]),
+        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        # elif mode == 'rotation':
+        #     cv2.putText(frame, 'Rotation', (overlay_pos[0] - 20, overlay_pos[1]),
+        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        # else:
+        #     cv2.putText(frame, 'Stopped', (overlay_pos[0] - 20, overlay_pos[1]),
+        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
     def close(self):
         self.video_saver.save_and_close()

@@ -202,6 +202,12 @@ class BasicClient(DroneClient):
     def get_state(self):
         return self.state
     
+    def get_velocity(self):
+        return self.vehicle.velocity
+    
+    def get_yaw(self):
+        return self.vehicle.attitude.yaw
+    
     @require_guided
     def move_forward(self, distance):
         """

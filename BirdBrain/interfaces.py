@@ -186,8 +186,16 @@ class DroneClient(ABC):
     @abstractmethod
     def get_battery_voltage(self):
         pass
-
-
+    
+    @abstractmethod
+    def get_state(self):
+        pass
+    @abstractmethod
+    def get_velocity(self):
+        pass
+    @abstractmethod
+    def get_yaw(self):
+        pass
 class DroneAlgorithm(ABC):
     def __init__(self, drone_client: DroneClient):
         self.drone_client = drone_client
