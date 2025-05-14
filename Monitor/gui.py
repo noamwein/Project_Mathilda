@@ -235,6 +235,8 @@ class MonitorGUI(GUI):
         self.video_saver.save_and_close()
         # destroy all OpenCV windows
         cv2.destroyAllWindows()
+        self.video_saver = None
+        self.enable_display = False
 
 
 def main():
