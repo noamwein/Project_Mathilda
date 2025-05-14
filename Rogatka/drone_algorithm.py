@@ -17,7 +17,7 @@ from BirdBrain.settings import (START_LAT,
                                 STEPS,
                                 INITIAL_ANGLE,
                                 RIGHT_ANGLE,
-                                LEFT_ANGLE)
+                                LEFT_ANGLE, CENTERED_X, CENTERED_Y)
 
 
 class MainDroneAlgorithm(DroneAlgorithm):
@@ -130,7 +130,11 @@ class MainDroneAlgorithm(DroneAlgorithm):
                 if target_position == (None, None):
                     continue
 
-                center_position = self.drone_client.get_center_position()
+                try:
+                    center_position = self.drone_client.get_center_position()
+                except:
+                    center_position = CENTERED_X, CENTERED_Y
+                    print('could not get center')
                 relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
 
                 self.drone_client.log_and_print("Found target position in frame!")
