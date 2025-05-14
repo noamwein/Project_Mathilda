@@ -165,7 +165,6 @@ class MonitorGUI(GUI):
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
-            '',
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
@@ -174,7 +173,7 @@ class MonitorGUI(GUI):
         ])
         return self.add_side_panel(frame, monitor_text)
 
-    def add_side_panel(self, frame, text, font_size=40, padding=10, margin_y=20):
+    def add_side_panel(self, frame, text, font_size=20, padding=10, margin_y=20):
         """
         Adds a side panel to the right of the frame and draws text on it.
         Returns the new extended frame.
@@ -199,7 +198,7 @@ class MonitorGUI(GUI):
                 except:
                     pass
         if font is None:
-            font = ImageFont.load_default()
+            font = ImageFont.load_default(size=font_size)
 
         # Measure text
         lines = text.split('\n')
@@ -220,7 +219,7 @@ class MonitorGUI(GUI):
         draw = ImageDraw.Draw(full_img)
 
         # Draw text in panel
-        y = margin_y
+        y = padding
         for i, line in enumerate(lines):
             draw.text(
                 (frame.shape[1] + padding, y),
@@ -228,7 +227,7 @@ class MonitorGUI(GUI):
                 font=font,
                 fill=(0, 0, 0)
             )
-            y += line_heights[i] + 5
+            y += line_heights[i] + 2 * padding
 
         return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
