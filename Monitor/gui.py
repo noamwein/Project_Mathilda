@@ -173,7 +173,7 @@ class MonitorGUI(GUI):
         ])
         return self.add_side_panel(frame, monitor_text)
 
-    def add_side_panel(self, frame, text, font_size=20, padding=10, margin_y=20):
+    def add_side_panel(self, frame, text, font_size=50, padding=20):
         """
         Adds a side panel to the right of the frame and draws text on it.
         Returns the new extended frame.
