@@ -41,7 +41,7 @@ class VideoMonitor(MonitorPanel):
         drop_color = (17, 250, 231)  # Yellow
         yaw_color = (219, 204, 101)  # Light Blue
 
-        center_x, center_y = self.get_center_pos()
+        center_x, center_y = self._get_center_pos()
         # Draw cross
         cv2.line(frame, (center_x - 80, center_y), (center_x + 80, center_y), cross_color, 6)
         cv2.line(frame, (center_x, center_y - 80), (center_x, center_y + 80), cross_color, 6)
@@ -60,3 +60,9 @@ class VideoMonitor(MonitorPanel):
     #     y_circle = (y_min + y_max) // 2
     #     cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
     #     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+
+    def _get_center_pos(self):
+        try:
+            return self.drone_client.get_center_position() # TODO add drone client
+        except:
+            return CENTERED_X, CENTERED_Y
