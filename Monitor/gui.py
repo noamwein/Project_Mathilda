@@ -191,11 +191,18 @@ class MonitorGUI(GUI):
         except Exception:
             pass
 
+        try:
+            roll = f'{math.degrees(self.drone_client.get_roll()):.2f} deg'
+        except Exception:
+            pass
+
+
         monitor_text = '\n'.join([
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
             f'PITCH:    {pitch}'
+            f'ROLL:     {roll}'
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
