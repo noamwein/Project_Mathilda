@@ -1,8 +1,9 @@
+import math
 import os
 import subprocess
 import sys
 import tkinter as tk
-import math
+
 import cv2
 import numpy as np
 import psutil
@@ -80,9 +81,11 @@ def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> 
 
 
 class MonitorGUI(GUI):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: Servo = None,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+                 servo: Servo = None,
                  enable_display=True):
-        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection, servo=servo,
+        super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
+                         servo=servo,
                          enable_display=enable_display)
 
         # Use tkinter to get screen resolution
@@ -131,9 +134,9 @@ class MonitorGUI(GUI):
         return processed_frame
 
     def draw_shapes(self, frame):
-        cross_color = (0, 0, 255) # Red
-        drop_color = (17, 250, 231) # Yellow
-        yaw_color = (219, 204, 101) # Light Blue
+        cross_color = (0, 0, 255)  # Red
+        drop_color = (17, 250, 231)  # Yellow
+        yaw_color = (219, 204, 101)  # Light Blue
         # Draw cross
         cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), cross_color, 6)
         cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), cross_color, 6)
@@ -141,11 +144,10 @@ class MonitorGUI(GUI):
         cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, drop_color, 6)
         cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, yaw_color, 6)
         # Draw yaw pixel threshold
-        print(frame.shape)
-        # print(CENTERED_X + YAW_TOLERANCE_THRESHOLD, CENTERED_X - YAW_TOLERANCE_THRESHOLD)
-        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
-        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0), (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
-
+        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0),
+                 (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
+        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0),
+                 (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
 
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
@@ -249,7 +251,7 @@ class MonitorGUI(GUI):
         Draws bomb images in the bottom-right corner of the frame.
         The number of bombs is determined by self.servo.get_bombs_left() (0 to 3).
         """
-        
+
         bombs_left = self.servo.get_bombs_left()
         if bombs_left <= 0:
             return
@@ -257,7 +259,7 @@ class MonitorGUI(GUI):
         # Path to bomb icon image
         bomb_image_path = r"assets\bomb.png"
         icon_size = 40  # Width/height of each bomb icon
-        margin = 10     # Space between icons and edges
+        margin = 10  # Space between icons and edges
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
@@ -283,18 +285,18 @@ class MonitorGUI(GUI):
     def get_direction(self):
         mode = self.drone_client.get_mode()
         rotation_direction = 'clockwise'  # Or dynamically change this too
-        vx=0
-        vy=0
+        vx = 0
+        vy = 0
         return mode, rotation_direction, vx, vy
-    
+
     def draw_drone_illus(self, frame):
         """
         Draws a drone illustration in the top-right corner of the frame.
         - In movement mode: displays a rotated arrow based on vx, vy.
         - In rotation mode: shows a clockwise or counterclockwise arc with a blue circle.
         """
-        mode,rotation_direction,vx,vy = self.get_direction()
-        
+        mode, rotation_direction, vx, vy = self.get_direction()
+
         h, w = frame.shape[:2]
         overlay_pos = (w - 60, 20)  # Position in the top-right corner of the frame
 
@@ -303,17 +305,17 @@ class MonitorGUI(GUI):
             angle = -math.degrees(math.atan2(vy, vx))  # Get angle from vx, vy
             norm = math.hypot(vx, vy)
             if norm == 0:
-                norm=0.001
+                norm = 0.001
             arrow_length = int(norm * 25)  # You can adjust the scaling factor here
 
             # Draw arrow
             center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
-            cv2.arrowedLine(frame, center, 
-                            (center[0] + int(arrow_length * vx / norm), 
+            cv2.arrowedLine(frame, center,
+                            (center[0] + int(arrow_length * vx / norm),
                              center[1] - int(arrow_length * vy / norm)),
                             (0, 255, 0), 3)  # Green arrow
 
-        elif mode ==  State.ROTATION:
+        elif mode == State.ROTATION:
             # For rotation, draw a quarter-circle arc and a blue circle at the head
             center = (overlay_pos[0] + 30, overlay_pos[1] + 30)
             radius = 20
@@ -328,7 +330,6 @@ class MonitorGUI(GUI):
                 end_angle = -180
                 angle_rad = math.radians(180)
 
-
             color = (0, 255, 0)  # Green for clockwise
             # Draw the arc (quarter circle)
             cv2.ellipse(frame, center, (radius, radius), 0, start_angle, end_angle, color, 3)
@@ -340,15 +341,14 @@ class MonitorGUI(GUI):
 
         # Optionally, you can add text for debugging purposes
         if mode == 'movement' and norm > 1e-3:
-            cv2.putText(frame, 'Movement', (overlay_pos[0]-20, overlay_pos[1] ), 
+            cv2.putText(frame, 'Movement', (overlay_pos[0] - 20, overlay_pos[1]),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         elif mode == 'rotation':
-            cv2.putText(frame, 'Rotation', (overlay_pos[0]-20, overlay_pos[1] ), 
+            cv2.putText(frame, 'Rotation', (overlay_pos[0] - 20, overlay_pos[1]),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
         else:
-            cv2.putText(frame, 'Stopped', (overlay_pos[0]-20, overlay_pos[1] ), 
+            cv2.putText(frame, 'Stopped', (overlay_pos[0] - 20, overlay_pos[1]),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
 
     def close(self):
         self.video_saver.save_and_close()
@@ -363,7 +363,7 @@ def main():
     # gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
     #                  image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None),servo=DummyServo())
+                     image_detection=ColorImageDetectionModel(None), servo=DummyServo())
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)
