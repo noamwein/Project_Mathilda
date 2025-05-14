@@ -34,7 +34,7 @@ from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KP_YAW, KI_YAW, KD_YAW,
                                 MISS_LIMIT,
                                 YAW_INTEGRAL_MAX,
-                                VEL_INTEGRAL_MAX, CENTERED_X, CENTERED_Y, PIXELS_PER_DEGREE)
+                                VEL_INTEGRAL_MAX, CENTERED_X, CENTERED_Y, PIXELS_PER_RAD)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -90,7 +90,7 @@ class BasicClient(DroneClient):
 
     def get_center_position(self):
         pitch = self.get_pitch()
-        dy = pitch * PIXELS_PER_DEGREE
+        dy = pitch * PIXELS_PER_RAD
         center_x, center_y = round(CENTERED_X), round(CENTERED_Y + dy)
         print('center position:', center_x, center_y)
         return center_x, center_y
