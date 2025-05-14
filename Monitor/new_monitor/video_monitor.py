@@ -13,7 +13,7 @@ from BirdBrain.interfaces import ImageDetection, DroneClient
 
 class VideoMonitor(MonitorPanel):
     def __init__(self, parent=None, image_detection : ImageDetection = None, drone_client: DroneClient = None):
-        super().__init__(self, parent=parent)
+        super().__init__(parent=parent)
         self.image_detection = image_detection
         self.drone_client = drone_client
 
