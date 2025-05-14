@@ -134,16 +134,19 @@ class MonitorGUI(GUI):
                                          target_width=self.frame_dims[0])
         return processed_frame
 
+
+    def get_center_pos(self):
+        try:
+            return self.drone_client.get_center_position()
+        except:
+            return CENTERED_X, CENTERED_Y
+
     def draw_shapes(self, frame):
         cross_color = (0, 0, 255)  # Red
         drop_color = (17, 250, 231)  # Yellow
         yaw_color = (219, 204, 101)  # Light Blue
-        try:
-            center_x, center_y = self.drone_client.get_center_position()
-            print(center_x, center_y)
-        except:
-            center_x, center_y = CENTERED_X, CENTERED_Y
-            print('could not get center')
+
+        center_x, center_y = self.get_center_pos()
         # Draw cross
         cv2.line(frame, (center_x - 80, center_y), (center_x + 80, center_y), cross_color, 6)
         cv2.line(frame, (center_x, center_y - 80), (center_x, center_y + 80), cross_color, 6)
@@ -166,7 +169,7 @@ class MonitorGUI(GUI):
     def get_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
-        battery_voltage = vehicle_mode = altitude = 'unknown'
+        pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
 
         try:
             altitude = f'{self.drone_client.get_altitude():.2f} m'
@@ -183,6 +186,11 @@ class MonitorGUI(GUI):
         except Exception:
             pass
 
+        try:
+            pitch = f'{self.drone_client.get_pitch():.2f} deg'
+        except Exception:
+            pass
+
         monitor_text = '\n'.join([
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
@@ -190,6 +198,8 @@ class MonitorGUI(GUI):
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
+            f'CENTER: {self.get_center_pos()}'
+            f'PITCH: {pitch}'
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
