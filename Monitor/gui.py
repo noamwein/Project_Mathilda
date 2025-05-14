@@ -78,7 +78,7 @@ def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> 
 
 class MonitorGUI(GUI):
     def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
-                 enable_display=True, running_on_pi=True):
+                 enable_display=True):
         super().__init__(drone_client=drone_client, video_saver=video_saver, image_detection=image_detection,
                          enable_display=enable_display)
 
@@ -100,7 +100,6 @@ class MonitorGUI(GUI):
         cv2.moveWindow("Video", screen_width // 2, margin)
 
         self.prev_net = 0, 0
-        self.running_on_pi = running_on_pi
 
     def draw_gui(self, frame):
         if frame is None:
@@ -123,8 +122,8 @@ class MonitorGUI(GUI):
         if bbox:
             self.draw_bounding_box(frame, bbox)
         processed_frame = self.get_monitor(processed_frame)
-        if not self.running_on_pi:
-            processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1], target_width=self.frame_dims[0])
+        processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
+                                         target_width=self.frame_dims[0])
         return processed_frame
 
     def draw_cross(self, frame):
@@ -207,6 +206,7 @@ class MonitorGUI(GUI):
         line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
 
         panel_width = max(line_widths) + 2 * padding
+        panel_width = self.frame_dims[0] - frame.shape[0]
 
         # Create new extended frame
         new_width = frame.shape[1] + panel_width
@@ -242,7 +242,7 @@ class MonitorGUI(GUI):
 def main():
     source = CameraSource()
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None), running_on_pi=False)
+                     image_detection=ColorImageDetectionModel(None))
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)
