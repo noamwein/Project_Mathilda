@@ -39,7 +39,7 @@ class ColorImageDetectionModel(ImageDetection):
             if area > 500:  # Ignore small noise areas
                 x, y, w, h = cv2.boundingRect(largest_contour)
                 self.bbox = (x, x + w, y, y + h)
-                self.position = self.export_position(x + w // 2, y + h // 2)
+                self.position = x + w // 2, y + h // 2
             else:
                 self.bbox = None
                 self.position = (None, None)
@@ -48,11 +48,6 @@ class ColorImageDetectionModel(ImageDetection):
         self.image_detection_data['bbox'] = self.bbox
         self.image_detection_data['position'] = self.position
         return self.position
-
-    def export_position(self, x, y):
-        # center_x = ORIGINAL_CAM_WIDTH // 2
-        # center_y = ORIGINAL_CAM_HEIGHT // 2
-        return x - CENTERED_X, y - CENTERED_Y
 
     def extract_yellow(self, frame):
         """

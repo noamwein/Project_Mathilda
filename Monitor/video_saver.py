@@ -10,7 +10,7 @@ VIDEO_DIR_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, '
 
 
 class MP4VideoSaver(VideoSaver):
-    def __init__(self, fps=30):
+    def __init__(self, fps=5):
         self.fps = fps
         timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H%M%S')
         self.video_path = os.path.join(VIDEO_DIR_PATH, f'{timestamp}.mp4')

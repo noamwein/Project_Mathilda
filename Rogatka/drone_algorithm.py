@@ -130,11 +130,14 @@ class MainDroneAlgorithm(DroneAlgorithm):
                 if target_position == (None, None):
                     continue
 
+                center_position = self.drone_client.get_center_position()
+                relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
+
                 self.drone_client.log_and_print("Found target position in frame!")
-                if self.drone_client.is_on_target(target_position):
+                if self.drone_client.is_on_target(relative_position):
                     self.assassinate()
                 else:
-                    self.drone_client.pid(target_position, only_rotate=only_rotate)
+                    self.drone_client.pid(relative_position, only_rotate=only_rotate)
 
         finally:
             self.gui.video_saver.save_and_close()

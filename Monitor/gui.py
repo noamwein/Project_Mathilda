@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from EagleEye.image_detection_models.color_detection_model import CENTERED_X, CENTERED_Y, ImageDetection
+from EagleEye.image_detection_models.color_detection_model import ImageDetection
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from EagleEye.sources.camera_source import CameraSource
 from Monitor.video_saver import VideoSaver
@@ -137,17 +137,18 @@ class MonitorGUI(GUI):
         cross_color = (0, 0, 255)  # Red
         drop_color = (17, 250, 231)  # Yellow
         yaw_color = (219, 204, 101)  # Light Blue
+        center_x, center_y = self.drone_client.get_center_position()
         # Draw cross
-        cv2.line(frame, (CENTERED_X - 80, CENTERED_Y), (CENTERED_X + 80, CENTERED_Y), cross_color, 6)
-        cv2.line(frame, (CENTERED_X, CENTERED_Y - 80), (CENTERED_X, CENTERED_Y + 80), cross_color, 6)
+        cv2.line(frame, (center_x - 80, center_y), (center_x + 80, center_y), cross_color, 6)
+        cv2.line(frame, (center_x, center_y - 80), (center_x, center_y + 80), cross_color, 6)
         # Draw circles
-        cv2.circle(frame, (CENTERED_X, CENTERED_Y), DROP_RADIUS, drop_color, 6)
-        cv2.circle(frame, (CENTERED_X, CENTERED_Y), YAW_TOLERANCE_RADIUS, yaw_color, 6)
+        cv2.circle(frame, (center_x, center_y), DROP_RADIUS, drop_color, 6)
+        cv2.circle(frame, (center_x, center_y), YAW_TOLERANCE_RADIUS, yaw_color, 6)
         # Draw yaw pixel threshold
-        cv2.line(frame, (CENTERED_X + YAW_TOLERANCE_THRESHOLD, 0),
-                 (CENTERED_X + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
-        cv2.line(frame, (CENTERED_X - YAW_TOLERANCE_THRESHOLD, 0),
-                 (CENTERED_X - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
+        cv2.line(frame, (center_x + YAW_TOLERANCE_THRESHOLD, 0),
+                 (center_x + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
+        cv2.line(frame, (center_x - YAW_TOLERANCE_THRESHOLD, 0),
+                 (center_x - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
 
     def draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
