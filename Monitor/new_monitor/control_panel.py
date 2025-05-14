@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 # print(sys.path)
 #allow importing from grandparent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
-
+print(sys.path)
 from Rogatka.drone_algorithm import MainDroneAlgorithm
 from BirdBrain.interfaces import DroneClient, ImageDetectionm, Source, Servo
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
