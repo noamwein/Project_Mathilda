@@ -11,6 +11,11 @@ from EagleEye.image_detection_models.color_detection_model import ColorImageDete
 from EagleEye.sources.picamera_source import PiCameraSource
 from Monitor.gui import MonitorGUI
 from Monitor.video_saver import MP4VideoSaver
+import threading
+import collections.abc
+collections.MutableMapping = collections.abc.MutableMapping
+from dronekit import LocationGlobalRelative
+from BirdBrain.settings import START_LAT, START_LON, INITIAL_ANGLE
 
 
 class TestAlgorithm1(DroneAlgorithm):
@@ -382,21 +387,34 @@ class TestAlgorithm18(DroneAlgorithm):
         super().__init__(drone_client)
 
     def _main(self):
-        self.drone_client.connect()
-        self.drone_client.takeoff()
 
-        waypoints = [Waypoint(position=self.drone_client.get_current_location(),
-                              angle=self.drone_client.get_heading(),
+        waypoints = [Waypoint(position=LocationGlobalRelative(START_LAT, START_LON, 6),
+                              angle=INITIAL_ANGLE,
                               movement_action=MovementAction.MOVEMENT)]
 
-        self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+        def search_thread():
+            self.drone_client.connect()
+            self.drone_client.takeoff()
 
-        self.drone_client.log_and_print("Wating 30 seconds...")
+            self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
 
-        time.sleep(30)
+            self.drone_client.log_and_print("Waiting 100 seconds...")
+            time.sleep(100)
+            self.drone_client.log_and_print('Finished waiting')
 
-        self.drone_client.land()
-        self.drone_client.disconnect()
+            self.drone_client.land()
+            self.drone_client.disconnect()
+
+        thread = threading.Thread(target=search_thread)
+        thread.start()
+
+        while thread.is_alive():
+            try:
+                self.drone_client.log_and_print(f'alt: {self.drone_client.get_altitude()}')
+                self.drone_client.log_and_print(f'battery: {self.drone_client.get_battery_voltage()}')
+                time.sleep(0.5)
+            except:
+                pass
 
 
 class TestAlgorithm19(DroneAlgorithm):
@@ -461,7 +479,8 @@ class TestAlgorithm21(DroneAlgorithm):
         super().__init__(drone_client)
         self.detection_model = ColorImageDetectionModel(None)
         self.video_source = PiCameraSource()
-        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(), image_detection=self.detection_model)
+        self.gui = MonitorGUI(drone_client=self.drone_client, video_saver=MP4VideoSaver(),
+                              image_detection=self.detection_model)
         self.servo = ServoMotor()
 
     def _main(self):
@@ -513,3 +532,38 @@ class TestAlgorithm23(DroneAlgorithm):
         servo.open_payload()
         time.sleep(1)
         servo.close_payload()
+
+
+class TestAlgorithm24(DroneAlgorithm):
+    def __init__(self, drone_client: DroneClient):
+        super().__init__(drone_client)
+
+    def _main(self):
+
+        waypoints = [Waypoint(position=LocationGlobalRelative(START_LAT, START_LON, 6),
+                              angle=INITIAL_ANGLE,
+                              movement_action=MovementAction.MOVEMENT)]
+
+        def search_thread():
+            self.drone_client.connect()
+            self.drone_client.takeoff()
+
+            for i in range(100):
+                self.drone_client.follow_path(waypoints, None, None, safe=True, detect=False, stop_on_detect=False)
+
+                self.drone_client.log_and_print(f"Waiting, iteration: {i}")
+                time.sleep(1)
+
+            self.drone_client.land()
+            self.drone_client.disconnect()
+
+        thread = threading.Thread(target=search_thread)
+        thread.start()
+
+        while thread.is_alive():
+            try:
+                self.drone_client.log_and_print(f'alt: {self.drone_client.get_altitude()}')
+                self.drone_client.log_and_print(f'battery: {self.drone_client.get_battery_voltage()}')
+                time.sleep(0.5)
+            except:
+                pass

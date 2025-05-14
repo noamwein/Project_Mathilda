@@ -24,7 +24,7 @@ HIGH_RESOLUTION = (1920, 1080)
 RESOLUTION = HIGH_RESOLUTION
 
 # Drone Algorithm
-START_LAT = 31.76953 # Southwest corner of the search area.
+START_LAT = 31.76960 # Southwest corner of the search area.
 START_LON = 35.19831 # Southwest corner of the search area.
 LONG_SEGMENT = 3
 SHORT_SEGMENT = 2
@@ -39,13 +39,24 @@ MAXIMUM_DISTANCE = 12
 KILL_SWITCH_CHANNEL = '8'
 KILL_SWITCH_MODE = 'ALTHOLD'
 
-PIXEL_THRESHOLD = 10
 YAW_PIXEL_THRESHOLD = 250
-YAW_FACTOR = 0.0035
-SPEED_FACTOR = 0.001
 ANGLE_TOLERANCE = 200
 ERROR_TOLERANCE_RADIUS = 150
 MAX_SPEED = 1
+
+# PID gains
+KP_V = 0.0005
+KI_V = 0.0
+KD_V = 0.0
+
+KP_YAW = 0.0175
+KI_YAW = 0.0
+KD_YAW = 0.0
+
+# Miss threshold for resetting stale PID
+MISS_LIMIT = 0
+YAW_INTEGRAL_MAX = 10
+VEL_INTEGRAL_MAX = 10
 
 # Servo
 SERVO_PIN = 3

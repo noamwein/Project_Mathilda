@@ -90,12 +90,15 @@ class MainDroneAlgorithm(DroneAlgorithm):
         waypoints = self.generate_path()
         return self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
 
-    def connect_and_takeoff_with_preview(self):
-        def connect_and_takeoff():
+    def search_with_preview(self, search, stop_on_detect):
+        def search_thread():
             self.drone_client.connect()
             self.drone_client.takeoff()
 
-        thread = threading.Thread(target=connect_and_takeoff)
+            if search:
+                self.perform_search_pattern(stop_on_detect=stop_on_detect)
+
+        thread = threading.Thread(target=search_thread)
         thread.start()
 
         while thread.is_alive():
@@ -110,16 +113,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.servo.drop()
 
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
-        self.connect_and_takeoff_with_preview()
-
-        if search:
-            target_found = self.perform_search_pattern(stop_on_detect=stop_on_detect)
-        else:
-            target_found = True
-
-        if not target_found:
-            self.drone_client.log_and_print("Failed to find target. Landing...")
-            return
+        self.search_with_preview(search=search, stop_on_detect=stop_on_detect)
 
         self.drone_client.log_and_print("Finished search! Continuing mission...")
         if only_search:

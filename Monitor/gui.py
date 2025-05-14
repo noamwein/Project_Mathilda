@@ -42,6 +42,42 @@ def get_bandwidth(prev):
     return (upload, download), up_speed, down_speed
 
 
+def resize_and_pad(frame: np.ndarray, target_width: int, target_height: int) -> np.ndarray:
+    """
+    Resize an image to fit into a target frame while maintaining aspect ratio,
+    and pad with black pixels to match the exact target size.
+
+    Parameters:
+        frame (np.ndarray): The input image.
+        target_width (int): Target frame width.
+        target_height (int): Target frame height.
+
+    Returns:
+        np.ndarray: The resized and padded image.
+    """
+    original_height, original_width = frame.shape[:2]
+
+    # Compute the scaling factor to fit the image into the target frame
+    scale = min(target_width / original_width, target_height / original_height)
+
+    # Resize image while maintaining aspect ratio
+    new_width = int(original_width * scale)
+    new_height = int(original_height * scale)
+    resized_frame = cv2.resize(frame, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+    # Create a black canvas of target size
+    padded_frame = np.zeros((target_height, target_width, 3), dtype=np.uint8)
+
+    # Compute top-left corner to place the resized image
+    x_offset = (target_width - new_width) // 2
+    y_offset = (target_height - new_height) // 2
+
+    # Place the resized image onto the canvas
+    padded_frame[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = resized_frame
+
+    return padded_frame
+
+
 class MonitorGUI(GUI):
     def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: ServoMotor = None,
                  enable_display=True):
@@ -55,10 +91,12 @@ class MonitorGUI(GUI):
         root.destroy()
         margin = 50
 
+        self.frame_dims = (screen_width // 2 - margin, screen_height - 2 * margin)
+
         # Create a named window
         cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
         # Resize to screen size minus margin
-        # cv2.resizeWindow("Video", screen_width // 2 - margin, screen_height - margin * 2)
+        cv2.resizeWindow("Video", self.frame_dims[0], self.frame_dims[1])
 
         # Move to top-left corner
         cv2.moveWindow("Video", screen_width // 2, margin)
@@ -84,10 +122,10 @@ class MonitorGUI(GUI):
         self.draw_cross(processed_frame)
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
-            self.draw_bounding_box(frame, bbox)
-        self.draw_bombs(processed_frame)
-        self.draw_drone_illus(processed_frame)
-        # self.get_monitor(processed_frame)
+            self.draw_bounding_box(processed_frame, bbox)
+        processed_frame = self.get_monitor(processed_frame)
+        processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
+                                         target_width=self.frame_dims[0])
         return processed_frame
 
 
@@ -129,7 +167,6 @@ class MonitorGUI(GUI):
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
-            '',
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
@@ -138,7 +175,7 @@ class MonitorGUI(GUI):
         ])
         return self.add_side_panel(frame, monitor_text)
 
-    def add_side_panel(self, frame, text, font_size=40, padding=10, margin_y=20):
+    def add_side_panel(self, frame, text, font_size=50, padding=20):
         """
         Adds a side panel to the right of the frame and draws text on it.
         Returns the new extended frame.
@@ -163,7 +200,7 @@ class MonitorGUI(GUI):
                 except:
                     pass
         if font is None:
-            font = ImageFont.load_default()
+            font = ImageFont.load_default(size=font_size)
 
         # Measure text
         lines = text.split('\n')
@@ -184,7 +221,7 @@ class MonitorGUI(GUI):
         draw = ImageDraw.Draw(full_img)
 
         # Draw text in panel
-        y = margin_y
+        y = padding
         for i, line in enumerate(lines):
             draw.text(
                 (frame.shape[1] + padding, y),
@@ -192,7 +229,7 @@ class MonitorGUI(GUI):
                 font=font,
                 fill=(0, 0, 0)
             )
-            y += line_heights[i] + 5
+            y += line_heights[i] + 2 * padding
 
         return cv2.cvtColor(np.array(full_img), cv2.COLOR_RGB2BGR)
 
@@ -306,6 +343,8 @@ class MonitorGUI(GUI):
         self.video_saver.save_and_close()
         # destroy all OpenCV windows
         cv2.destroyAllWindows()
+        self.video_saver = None
+        self.enable_display = False
 
 
 def main():
@@ -313,9 +352,8 @@ def main():
     # gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
     #                  image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
-    while True:
-    # for i in range(100):
+                     image_detection=ColorImageDetectionModel(None))
+    for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)
     gui.close()
