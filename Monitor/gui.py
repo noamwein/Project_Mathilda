@@ -127,7 +127,7 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(processed_frame, bbox)
-        # self.draw_bombs(processed_frame)
+        self.draw_bombs(processed_frame)
         # self.draw_drone_illus(processed_frame)
         processed_frame = self.get_monitor(processed_frame)
         processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],

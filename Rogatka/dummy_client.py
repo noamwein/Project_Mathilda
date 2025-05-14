@@ -95,5 +95,12 @@ class DummyClient(DroneClient):
 
     def get_velocity(self):
         pass
+    
     def get_yaw(self):
+        pass
+    
+    def get_roll(self):
+        pass
+    
+    def get_pitch(self):
         pass
