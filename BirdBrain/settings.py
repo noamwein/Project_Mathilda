@@ -26,8 +26,8 @@ RESOLUTION = HIGH_RESOLUTION
 # Drone Algorithm
 START_LAT = 31.76960 # Southwest corner of the search area.
 START_LON = 35.19831 # Southwest corner of the search area.
-LONG_SEGMENT = 3
-SHORT_SEGMENT = 2
+LONG_SEGMENT = 4
+SHORT_SEGMENT = 3
 TURN_ANGLE = 90
 STEPS = 2  # number of snake segments
 INITIAL_ANGLE = 0
