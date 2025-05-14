@@ -5,10 +5,9 @@ import time
 
 import RPi.GPIO as GPIO
 
-from BirdBrain.interfaces import Servo
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
-
+from BirdBrain.interfaces import Servo
 from BirdBrain.settings import (COOLDOWN_TIME,
                                 SERVO_PIN)
 
