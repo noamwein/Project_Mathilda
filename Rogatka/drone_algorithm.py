@@ -132,10 +132,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
                 self.drone_client.log_and_print("Found target position in frame!")
                 if self.drone_client.is_on_target(target_position):
-                    if self.drone_client.has_stopped():
-                        self.assassinate()
-                    else:
-                        self.drone_client.stop_movement()
+                    self.assassinate()
                 else:
                     self.drone_client.pid(target_position, only_rotate=only_rotate)
 
