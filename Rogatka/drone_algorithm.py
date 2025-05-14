@@ -116,14 +116,14 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.drone_client.log_and_print('DROPPING PAYLOAD!!')
 
     def re_search(self):
-        self.log_and_print("Re-Searching target...")
+        self.drone_client.log_and_print("Re-Searching target...")
         for _ in range(360 / 5):
-            self.rotate(5)
+            self.drone_client.rotate(5)
             frame = self.source.get_current_frame()
             if self.gui is not None:
                 self.gui.draw_gui(frame)
             if self.img_detection.detect_target(frame):
-                self.log_and_print("Re-Found target!!")
+                self.drone_client.log_and_print("Re-Found target!!")
                 return True
             time.sleep(0.02)  # small pause
         return False
