@@ -201,8 +201,8 @@ class MonitorGUI(GUI):
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
-            f'PITCH:    {pitch}'
-            f'ROLL:     {roll}'
+            f'PITCH:    {pitch}',
+            f'ROLL:     {roll}',
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
