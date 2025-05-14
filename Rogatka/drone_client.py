@@ -25,16 +25,15 @@ import numpy as np
 from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KILL_SWITCH_CHANNEL,
                                 KILL_SWITCH_MODE,
-                                PIXEL_THRESHOLD,
-                                YAW_FACTOR,
-                                SPEED_FACTOR,
                                 ANGLE_TOLERANCE,
                                 ERROR_TOLERANCE_RADIUS,
                                 MAX_SPEED,
                                 YAW_PIXEL_THRESHOLD,
                                 KP_V, KI_V, KD_V,
                                 KP_YAW, KI_YAW, KD_YAW,
-                                MISS_LIMIT)
+                                MISS_LIMIT,
+                                YAW_INTEGRAL_MAX,
+                                VEL_INTEGRAL_MAX)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -352,7 +351,7 @@ class BasicClient(DroneClient):
             self.state = State.ROTATION
 
     @require_guided
-    def pid(self, target_position, speed=0.5, only_rotate=False):
+    def pid(self, target_position, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
@@ -368,16 +367,12 @@ class BasicClient(DroneClient):
 
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
-        if distance < PIXEL_THRESHOLD:
-            self.log_and_print("Already at the target position!")
-            return
-
         # Rotate stepwise (1°) until within tolerance
         if distance > YAW_PIXEL_THRESHOLD:
             rotation_step = 5  # max degrees per rotation call
             if abs(target_x) > ANGLE_TOLERANCE:
                 # Rotate one degree toward the target
-                rotation_direction = -np.sign(target_y) * rotation_step * target_x * YAW_FACTOR
+                rotation_direction = -np.sign(target_y) * rotation_step * target_x * KP_YAW
                 self.rotate(rotation_direction, speed_factor=0.1)
                 return
 
@@ -385,8 +380,8 @@ class BasicClient(DroneClient):
             return
 
         # Scale by the desired speed
-        velocity_x = target_x * speed * SPEED_FACTOR
-        velocity_y = -target_y * speed * SPEED_FACTOR  # Image y is upside-down
+        velocity_x = target_x * KP_V
+        velocity_y = -target_y * KP_V  # Image y is upside-down
 
         v_norm = math.hypot(velocity_x, velocity_y)
         if v_norm > MAX_SPEED:  # make sure speed is not too high
@@ -397,7 +392,7 @@ class BasicClient(DroneClient):
         self.set_speed(velocity_x, velocity_y, 0.0)
 
     @require_guided
-    def full_pid(self, target_position, speed=0.5, only_rotate=False):
+    def full_pid(self, target_position, only_rotate=False):
         """
         Moves the drone towards the target position at a constant speed.
 
@@ -417,32 +412,40 @@ class BasicClient(DroneClient):
         if self._prev_time is None or dt > 1:
             self.log_and_print("Resetting PID...")
             self._prev_time = now
+            self._integral_vx = 0.0
+            self._prev_error_vx = 0.0
+            self._integral_vy = 0.0
+            self._prev_error_vy = 0.0
+            self._integral_yaw = 0.0
+            self._prev_error_yaw = 0.0
+            # Counters for missed control
+            self._yaw_miss = 0
+            self._vel_miss = 0
             return
         self._prev_time = now
 
         # Yaw PID compute
-        angle_err = math.degrees(math.atan2(target_x, target_y))
+        angle_err = target_x
         self._integral_yaw += angle_err * dt
         deriv_yaw = (angle_err - self._prev_error_yaw) / dt if dt > 0 else 0.0
         self._prev_error_yaw = angle_err
 
         # Calculate the distance to the target
         distance = math.hypot(target_x, target_y)
-        if distance < PIXEL_THRESHOLD:
-            self.log_and_print("Already at the target position!")
-            return
-
         # Rotate stepwise (1°) until within tolerance
         if distance > YAW_PIXEL_THRESHOLD:
-            rotation_step = 5  # max degrees per rotation call
-            if abs(target_x) > ANGLE_TOLERANCE:
-                # reset velocity miss
-                self._vel_miss = 0
+            if abs(angle_err) > ANGLE_TOLERANCE:
+                self._vel_miss += 1
+                if self._vel_miss > MISS_LIMIT:
+                    self._integral_vx = 0.0
+                    self._prev_error_vx = 0.0
+                    self._integral_vy = 0.0
+                    self._prev_error_vy = 0.0
+                    self._vel_miss = 0
                 # reset yaw miss
                 self._yaw_miss = 0
                 # PID-based rotation, limited per-step
-                raw_cmd = KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw
-                rot = max(min(raw_cmd, rotation_step), -rotation_step)
+                rot = -np.sign(target_y) * ( KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw )
                 self.rotate(rot, speed_factor=0.1)
                 return
 
@@ -483,8 +486,6 @@ class BasicClient(DroneClient):
         vy = -vy  # invert image Y
 
         # apply speed factor and cap
-        vx *= speed
-        vy *= speed
         v_norm = math.hypot(vx, vy)
         if v_norm > MAX_SPEED:
             vx /= v_norm
