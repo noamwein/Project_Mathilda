@@ -220,10 +220,6 @@ class BasicClient(DroneClient):
     def get_roll(self):
         return self.vehicle.attitude.roll
 
-    def get_center_position(self):
-        return (CENTERED_X, CENTERED_Y)
-    
-    
     @require_guided
     def move_forward(self, distance):
         """
