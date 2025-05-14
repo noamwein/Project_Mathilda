@@ -11,12 +11,11 @@ from PySide6.QtWidgets import QPushButton, QGridLayout
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
 
 from Rogatka.drone_algorithm import MainDroneAlgorithm
-from Rogatka.drone_client import drone_client
+from Rogatka.drone_client import BasicClient
 from EagleEye.sources.video_source import PiCameraSource
 from video_saver import MP4VideoSaver
 from EagleEye.image_detection_models import ColorImageDetectionModel
 from Rogatka.servo_motor import ServoMotor
-from Rogatka.drone_client import BasicClient
 from BirdBrain.settings import INITIAL_ALTITUDE
 
 class ControlPanel(MonitorPanel):
