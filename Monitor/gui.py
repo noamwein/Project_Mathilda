@@ -187,7 +187,7 @@ class MonitorGUI(GUI):
             pass
 
         try:
-            pitch = f'{self.drone_client.get_pitch():.2f} deg'
+            pitch = f'{math.degrees(self.drone_client.get_pitch()):.2f} deg'
         except Exception:
             pass
 
@@ -198,7 +198,7 @@ class MonitorGUI(GUI):
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
-            f'CENTER: {self.get_center_pos()}'
+            f'CENTER: {self.get_center_pos()}',
             f'PITCH: {pitch}'
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
