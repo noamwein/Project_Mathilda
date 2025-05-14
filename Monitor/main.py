@@ -78,11 +78,22 @@ class MainWindow(QMainWindow):
             img_detection=self.image_detection,
             source=self.video_source,
             drone_client=self.drone_client,
-            servo=self.servo,
-            gui=None # TODO remove
+            servo=self.servo
         )
 
         ########################
+
+        # Detection thread
+        def _detect():
+            while True:
+                frame = self.video_source.get_current_frame()
+                self.image_detection.locate_target(frame)
+
+        thread = threading.Thread(target=_detect)
+        thread.start()
+
+        ########################
+
 
 
 

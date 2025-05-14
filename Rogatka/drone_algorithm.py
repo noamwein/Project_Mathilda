@@ -26,12 +26,11 @@ from BirdBrain.settings import (START_LAT,
 
 class MainDroneAlgorithm(DroneAlgorithm):
     def __init__(self, img_detection: ImageDetection, source: Source,
-                 drone_client: DroneClient, servo: ServoMotor, gui: GUI):
+                 drone_client: DroneClient, servo: ServoMotor):
         super().__init__(drone_client)
         self.source = source
         self.img_detection = img_detection
         self.servo = servo
-        self.gui = gui
         self.last_relative_pos = None
         
     def generate_new_path(self) -> List[Waypoint]:
@@ -131,24 +130,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def perform_search_pattern(self, stop_on_detect=True):
         waypoints = self.generate_new_path()
-        return self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
-
-    def search_with_preview(self, search, stop_on_detect):
-        def search_thread():
-            self.drone_client.connect()
-            self.drone_client.takeoff()
-
-            if search:
-                self.perform_search_pattern(stop_on_detect=stop_on_detect)
-
-        thread = threading.Thread(target=search_thread)
-        thread.start()
-
-        while thread.is_alive():
-            frame = self.source.get_current_frame()
-            self.img_detection.locate_target(frame)
-            if self.gui is not None:
-                self.gui.draw_gui(frame)
+        return self.drone_client.follow_path(waypoints, self.img_detection, stop_on_detect=stop_on_detect)
 
     def assassinate(self):
         # self.drone_client.assassinate()
@@ -159,17 +141,17 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.drone_client.log_and_print("Re-Searching target...")
         for _ in range(72):
             self.drone_client.rotate(direction * 10, speed_factor=0.8)
-            frame = self.source.get_current_frame()
-            if self.gui is not None:
-                self.gui.draw_gui(frame)
-            if self.img_detection.detect_target(frame):
+            if self.img_detection.image_detection_data['position'] != (None, None):
                 self.drone_client.log_and_print("Re-Found target!!")
                 return True
             time.sleep(0.02)  # small pause
         return False
 
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
-        self.search_with_preview(search=search, stop_on_detect=stop_on_detect)
+        self.drone_client.takeoff()
+
+        if search:
+            self.perform_search_pattern(stop_on_detect=stop_on_detect)
 
         self.drone_client.log_and_print("Finished search! Continuing mission...")
         if only_search:
@@ -177,42 +159,33 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
         failed_frames = 0
 
-        try:
-            while not self.drone_client.mission_completed():
-                frame = self.source.get_current_frame()
-                target_position = self.img_detection.locate_target(
-                    frame)  # position is in pixels relative to the desired target point
-                if self.gui is not None:
-                    self.gui.draw_gui(frame)
+        while not self.drone_client.mission_completed():
+            target_position = self.img_detection.image_detection_data['position']
+            if target_position == (None, None):
+                failed_frames += 1
+                if failed_frames >= RE_SEARCH_LIMIT:
+                    if self.last_relative_pos is not None:
+                        direction = 1 if self.last_relative_pos[0] > 0 else -1
+                    else:
+                        direction = 1
+                    res = self.re_search(direction=direction)
+                    if not res:
+                        self.drone_client.log_and_print("Failed to relocate target position! Aborting mission...")
+                        break
+                continue
 
-                if target_position == (None, None):
-                    failed_frames += 1
-                    if failed_frames >= RE_SEARCH_LIMIT:
-                        if self.last_relative_pos is not None:
-                            direction = 1 if self.last_relative_pos[0] > 0 else -1
-                        else:
-                            direction = 1
-                        res = self.re_search(direction=direction)
-                        if not res:
-                            self.drone_client.log_and_print("Failed to relocate target position! Aborting mission...")
-                            break
-                    continue
+            failed_frames = 0
+            center_position = self.drone_client.get_center_position()
+            relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
+            self.last_relative_pos = relative_position
 
-                failed_frames = 0
-                center_position = self.drone_client.get_center_position()
-                relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
-                self.last_relative_pos = relative_position
+            self.drone_client.log_and_print("Found target position in frame!")
+            if self.drone_client.is_on_target(relative_position):
+                self.assassinate()
+            else:
+                self.drone_client.pid(relative_position, only_rotate=only_rotate)
 
-                self.drone_client.log_and_print("Found target position in frame!")
-                if self.drone_client.is_on_target(relative_position):
-                    self.assassinate()
-                else:
-                    self.drone_client.pid(relative_position, only_rotate=only_rotate)
-
-        finally:
-            self.gui.video_saver.save_and_close()
         self.drone_client.land()
-        self.drone_client.disconnect()
 
     def just_rotate(self):
         self.drone_client.connect()
