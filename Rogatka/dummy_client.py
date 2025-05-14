@@ -9,6 +9,9 @@ class DummyClient(DroneClient):
     def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
         pass
 
+    def get_center_position(self):
+        return 0, 0
+
     def set_speed(self, velocity_x: float, velocity_y: float, velocity_z: float):
         pass
 
