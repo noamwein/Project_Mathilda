@@ -86,3 +86,11 @@ class DummyClient(DroneClient):
 
     def get_battery_voltage(self):
         return 14.4
+
+    def get_state(self):
+        pass
+
+    def get_velocity(self):
+        pass
+    def get_yaw(self):
+        pass
