@@ -48,7 +48,7 @@ DROP_RADIUS = 150
 MAX_SPEED = 1
 
 # PID gains
-KP_V = 0.0013
+KP_V = 0.0015
 KI_V = 0.0
 KD_V = -0.0002
 
