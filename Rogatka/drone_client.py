@@ -91,8 +91,9 @@ class BasicClient(DroneClient):
     def get_center_position(self):
         pitch = self.get_pitch()
         dy = pitch * PIXELS_PER_DEGREE
-        print('center position:', CENTERED_X, CENTERED_Y + dy)
-        return CENTERED_X, CENTERED_Y + dy
+        center_x, center_y = round(CENTERED_X), round(CENTERED_Y + dy)
+        print('center position:', center_x, center_y)
+        return center_x, center_y
 
     def check_if_mode_guided(self) -> bool:
         if self.vehicle is None:
