@@ -1,7 +1,7 @@
 import sys, os
 
+# allow importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
-sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir,os.pathdir)))
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QLabel
 from PySide6.QtCore import Qt, QTimer
@@ -19,8 +19,20 @@ import cv2
 import numpy as np
 import datetime
 
+import logging
+
 from EagleEye.sources.picamera_source import PiCameraSource
 # from EagleEye.sources.camera_source import CameraSource
+
+from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
+
+from Rogatka.drone_client import BasicClient
+
+from Rogatka.servo_motor import ServoMotor
+
+from Rogatka.drone_algorithm import MainDroneAlgorithm
+
+from BirdBrain.settings import *
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -30,7 +42,45 @@ class MainWindow(QMainWindow):
         # Setup live video
         self.video_source = PiCameraSource()
         # self.video_source = CameraSource()
+
         ########################
+
+        # Setup Image detection
+        self.image_detection = ColorImageDetectionModel(None)
+
+        ########################
+
+        # Connect to drone
+        self.drone_client = BasicClient(
+            connection_string='/dev/ttyACM0',  # serial port
+            initial_altitude=INITIAL_ALTITUDE,             # initial altitude
+            max_altitude=10,              # max altitude
+            min_battery_percent=20,              # min battery percent
+            logger=logging.getLogger(__name__)
+        )
+
+        self.drone_client.connect()
+
+        ########################
+
+        # Setup servo
+        self.servo = ServoMotor()
+
+        ########################
+
+        # Setup algorithm
+
+        self.algorithm = MainDroneAlgorithm(
+            img_detection=self.image_detection,
+            source=self.video_source,
+            drone_client=self.drone_client,
+            servo=self.servo
+        )
+
+        ########################
+
+
+
 
 
 
@@ -106,7 +156,7 @@ class MainWindow(QMainWindow):
         # instantiate each panel
         term = InHouseTerminal(parent=self)
         ctrl = ControlPanel(parent=self)
-        vid = VideoMonitor(parent=self)
+        vid = VideoMonitor(parent=self, image_detection=self.image_detection, drone_client=self.drone_client)
         tel = TelemetryPanel(parent=self)
         mp = MapPanel(parent=self)
         bm = BombsPanel(parent=self)

@@ -8,12 +8,12 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 #allow importing from grandparent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
 from Rogatka.drone_algorithm import MainDroneAlgorithm
-from BirdBrain.interfaces import DroneClient, ImageDetectionm, Source, Servo
+from BirdBrain.interfaces import DroneClient, ImageDetection, Source, Servo
 from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from BirdBrain.settings import INITIAL_ALTITUDE
 
 class ControlPanel(MonitorPanel):
-    def __init__(self,drone_client: DroneClient ,video_source: Source, detection_model: ImageDetectionm, servo: Servo):
+    def __init__(self,drone_client: DroneClient ,video_source: Source, detection_model: ImageDetection, servo: Servo):
         self.drone_client = drone_client
         self.video_source = video_source
         self.detection_model = detection_model

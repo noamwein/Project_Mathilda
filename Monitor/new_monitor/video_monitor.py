@@ -8,9 +8,16 @@ from BirdBrain.settings import (DROP_RADIUS,
                                 YAW_TOLERANCE_THRESHOLD,
                                 YAW_TOLERANCE_RADIUS,
                                 CENTERED_X, CENTERED_Y)
+from BirdBrain.interfaces import ImageDetection, DroneClient
 
 
 class VideoMonitor(MonitorPanel):
+    def __init__(self, parent=None, image_detection : ImageDetection = None, drone_client: DroneClient = None):
+        super().__init__(self, parent=parent)
+        self.image_detection = image_detection
+        self.drone_client = drone_client
+
+
     def setup_ui(self):
         self.label = QLabel()
         layout = QVBoxLayout(self)
@@ -33,9 +40,9 @@ class VideoMonitor(MonitorPanel):
     def _draw_overlay(self, frame):
         processed_frame = frame.copy()
         self._draw_shapes(processed_frame)
-        # bbox = self.image_detection.image_detection_data.get('bbox')
-        # if bbox:
-        #     self._draw_bounding_box(processed_frame, bbox)
+        bbox = self.image_detection.image_detection_data.get('bbox')
+        if bbox:
+            self._draw_bounding_box(processed_frame, bbox)
         return processed_frame
 
     def _draw_shapes(self, frame):
@@ -56,16 +63,16 @@ class VideoMonitor(MonitorPanel):
         cv2.line(frame, (center_x - YAW_TOLERANCE_THRESHOLD, 0),
                  (center_x - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
 
-    # def _draw_bounding_box(self, frame, bbox):
-    #     x_min, x_max, y_min, y_max = bbox
-    #     x_circle = (x_min + x_max) // 2
-    #     y_circle = (y_min + y_max) // 2
-    #     cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
-    #     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+    def _draw_bounding_box(self, frame, bbox):
+        x_min, x_max, y_min, y_max = bbox
+        x_circle = (x_min + x_max) // 2
+        y_circle = (y_min + y_max) // 2
+        cv2.circle(frame, (x_circle, y_circle), 5, (255, 0, 0), -1)
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
 
     def _get_center_pos(self):
         try:
-            return self.drone_client.get_center_position() # TODO add drone client
+            return self.drone_client.get_center_position()
         except:
             return CENTERED_X, CENTERED_Y
 
