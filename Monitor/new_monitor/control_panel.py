@@ -5,7 +5,7 @@ from .base import MonitorPanel
 from PySide6.QtWidgets import QPushButton, QGridLayout
 
 # # allow importing from parent directory
-# sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
+sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 # print(sys.path)
 #allow importing from grandparent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
