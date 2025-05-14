@@ -120,7 +120,7 @@ class MonitorGUI(GUI):
         self.draw_cross(processed_frame)
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
-            self.draw_bounding_box(frame, bbox)
+            self.draw_bounding_box(processed_frame, bbox)
         processed_frame = self.get_monitor(processed_frame)
         processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
                                          target_width=self.frame_dims[0])
