@@ -12,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 
 from Rogatka.drone_algorithm import MainDroneAlgorithm
 from Rogatka.drone_client import BasicClient
-from EagleEye.sources.video_source import PiCameraSource
+from EagleEye.sources.picamera_source import PiCameraSource
 from video_saver import MP4VideoSaver
 from EagleEye.image_detection_models import ColorImageDetectionModel
 from Rogatka.servo_motor import ServoMotor
