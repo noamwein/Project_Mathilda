@@ -123,6 +123,7 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(processed_frame, bbox)
+        self.draw_bombs(processed_frame)
         processed_frame = self.get_monitor(processed_frame)
         processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
                                          target_width=self.frame_dims[0])
@@ -352,7 +353,7 @@ def main():
     # gui = MonitorGUI(drone_client=DummyClient(), video_saver=PiVideoSaver(),
     #                  image_detection=ColorImageDetectionModel(None), servo=ServoMotor())
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
-                     image_detection=ColorImageDetectionModel(None))
+                     image_detection=ColorImageDetectionModel(None),servo=ServoMotor())
     for _ in range(1000):
         frame = source.get_current_frame()
         gui.draw_gui(frame)
