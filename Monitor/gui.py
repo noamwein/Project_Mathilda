@@ -169,7 +169,7 @@ class MonitorGUI(GUI):
     def get_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
-        roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
+        yaw = roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
 
         try:
             altitude = f'{self.drone_client.get_altitude():.2f} m'
@@ -196,18 +196,22 @@ class MonitorGUI(GUI):
         except Exception:
             pass
 
+        try:
+            yaw = f'{math.degrees(self.drone_client.get_yaw()):.2f} deg'
+        except Exception:
+            pass
 
         monitor_text = '\n'.join([
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
-            f'PITCH:    {pitch}',
             f'ROLL:     {roll}',
+            f'PITCH:    {pitch}',
+            f'YAW:      {yaw}',
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
             f'CENTER:   {self.get_center_pos()}',
-            f'yaw: {math.degrees(self.drone_client.get_yaw())}',
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
@@ -322,7 +326,7 @@ class MonitorGUI(GUI):
         velocity=(0,0)
         try:
             yaw=math.degrees(self.drone_client.get_yaw())
-        except:
+        except Exception:
             yaw=0
         # Constants
         arrow_length = 50  # pixels
