@@ -195,11 +195,11 @@ class MonitorGUI(GUI):
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
+            f'PITCH:    {pitch}'
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
-            f'CENTER: {self.get_center_pos()}',
-            f'PITCH: {pitch}'
+            f'CENTER:   {self.get_center_pos()}',
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
