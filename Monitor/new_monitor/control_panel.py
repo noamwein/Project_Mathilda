@@ -13,7 +13,8 @@ from EagleEye.image_detection_models.color_detection_model import ColorImageDete
 from BirdBrain.settings import INITIAL_ALTITUDE
 
 class ControlPanel(MonitorPanel):
-    def __init__(self,drone_client: DroneClient ,video_source: Source, detection_model: ImageDetection, servo: Servo):
+    def __init__(self, drone_client: DroneClient, video_source: Source, detection_model: ImageDetection, servo: Servo, parent=None):
+        super().__init__(parent=parent)
         self.drone_client = drone_client
         self.video_source = video_source
         self.detection_model = detection_model
