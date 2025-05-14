@@ -320,7 +320,10 @@ class MonitorGUI(GUI):
         # yaw=self.drone_client.get_yaw()
         mode='a'
         velocity=(0,0)
-        yaw=math.degrees(self.drone_client.get_yaw())
+        try:
+            yaw=math.degrees(self.drone_client.get_yaw())
+        except:
+            yaw=0
         # Constants
         arrow_length = 50  # pixels
         color = (0, 255, 0)  # Green arrow
