@@ -117,7 +117,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def re_search(self):
         self.drone_client.log_and_print("Re-Searching target...")
-        for _ in range(360 / 5):
+        for _ in range(360 // 5):
             self.drone_client.rotate(5)
             frame = self.source.get_current_frame()
             if self.gui is not None:
