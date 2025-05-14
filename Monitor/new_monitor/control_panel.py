@@ -25,7 +25,7 @@ class ControlPanel(MonitorPanel):
         self.video_source = video_source
         self.detection_model = detection_model
         self.servo=servo
-
+        
     def setup_ui(self):
         # Four buttons in 2x2 grid: Start, Reboot, Load Bombs, Exit
         self.start_btn = QPushButton("Start")
