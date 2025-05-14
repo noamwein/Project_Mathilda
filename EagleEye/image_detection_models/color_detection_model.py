@@ -67,6 +67,10 @@ class ColorImageDetectionModel(ImageDetection):
         # Rust color range (reddish-brown/orange-brown)
         # lower_color = np.array([5, 100, 50])
         # upper_color = np.array([20, 255, 200])
+        
+        # Rust color range (Light Grayish-Blue)
+        # lower_color = np.array([85, 10, 120])
+        # upper_color = np.array([115, 50, 200])
 
         mask = cv2.inRange(hsv, lower_color, upper_color)
 

@@ -31,7 +31,45 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.img_detection = img_detection
         self.servo = servo
         self.gui = gui
+        
+    def generate_new_path(self) -> List[Waypoint]:
+        initial_alt = self.drone_client.get_initial_altitude()
+        waypoints: List[Waypoint] = [
+            Waypoint(
+                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                angle=INITIAL_ANGLE,
+                movement_action=MovementAction.MOVEMENT
+            ),
+            Waypoint(
+                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                angle=INITIAL_ANGLE,
+                movement_action=MovementAction.ROTATION
+            )
+        ]
+        lengths = [SHORT_SEGMENT / 2, LONG_SEGMENT / 2, SHORT_SEGMENT, LONG_SEGMENT, SHORT_SEGMENT,
+                   LONG_SEGMENT / 2, SHORT_SEGMENT / 2]
+        for length in lengths:
+            last = waypoints[-1]
+            # Move short segment
+            waypoints.append(
+                Waypoint(
+                    position=calculate_target_location(last.position, last.angle, length),
+                    angle=last.angle,
+                    movement_action=MovementAction.MOVEMENT
+                )
+            )
 
+            turn_angle = (last.angle + RIGHT_ANGLE) % 360
+            waypoints.append(
+                Waypoint(
+                    position=waypoints[-1].position,
+                    angle=turn_angle,
+                    movement_action=MovementAction.ROTATION
+                )
+            )
+
+        return waypoints[:-1]  # remove last right rotation
+    
     def generate_path(self, steps=STEPS) -> List[Waypoint]:
         initial_alt = self.drone_client.get_initial_altitude()
         waypoints: List[Waypoint] = [
@@ -90,7 +128,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         return waypoints
 
     def perform_search_pattern(self, stop_on_detect=True):
-        waypoints = self.generate_path()
+        waypoints = self.generate_new_path()
         return self.drone_client.follow_path(waypoints, self.source, self.img_detection, stop_on_detect=stop_on_detect)
 
     def search_with_preview(self, search, stop_on_detect):
@@ -117,8 +155,8 @@ class MainDroneAlgorithm(DroneAlgorithm):
 
     def re_search(self):
         self.drone_client.log_and_print("Re-Searching target...")
-        for _ in range(360 / 5):
-            self.drone_client.rotate(5)
+        for _ in range(72):
+            self.drone_client.rotate(10, speed_factor=0.8)
             frame = self.source.get_current_frame()
             if self.gui is not None:
                 self.gui.draw_gui(frame)
