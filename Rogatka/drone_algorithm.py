@@ -17,7 +17,10 @@ from BirdBrain.settings import (START_LAT,
                                 STEPS,
                                 INITIAL_ANGLE,
                                 RIGHT_ANGLE,
-                                LEFT_ANGLE, CENTERED_X, CENTERED_Y)
+                                LEFT_ANGLE,
+                                CENTERED_X,
+                                CENTERED_Y,
+                                RE_SEARCH_LIMIT)
 
 
 class MainDroneAlgorithm(DroneAlgorithm):
@@ -112,12 +115,27 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.servo.drop()
         self.drone_client.log_and_print('DROPPING PAYLOAD!!')
 
+    def re_search(self):
+        self.log_and_print("Re-Searching target...")
+        for _ in range(360 / 5):
+            self.rotate(5)
+            frame = self.source.get_current_frame()
+            if self.gui is not None:
+                self.gui.draw_gui(frame)
+            if self.img_detection.detect_target(frame):
+                self.log_and_print("Re-Found target!!")
+                return True
+            time.sleep(0.02)  # small pause
+        return False
+
     def _main(self, search=True, only_search=False, stop_on_detect=True, only_rotate=False):
         self.search_with_preview(search=search, stop_on_detect=stop_on_detect)
 
         self.drone_client.log_and_print("Finished search! Continuing mission...")
         if only_search:
             return
+
+        failed_frames = 0
 
         try:
             while not self.drone_client.mission_completed():
@@ -128,7 +146,15 @@ class MainDroneAlgorithm(DroneAlgorithm):
                     self.gui.draw_gui(frame)
 
                 if target_position == (None, None):
+                    failed_frames += 1
+                    if failed_frames >= RE_SEARCH_LIMIT:
+                        res = self.re_search()
+                        if not res:
+                            self.drone_client.log_and_print("Failed to relocate target position! Aborting mission...")
+                            break
                     continue
+                else:
+                    failed_frames = 0
 
                 center_position = self.drone_client.get_center_position()
                 relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
