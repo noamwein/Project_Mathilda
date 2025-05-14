@@ -207,7 +207,7 @@ class MonitorGUI(GUI):
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
             f'CENTER:   {self.get_center_pos()}',
-            f'yaw: {self.drone_client.get_yaw()}',
+            f'yaw: {math.degrees(self.drone_client.get_yaw())}',
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
@@ -320,7 +320,7 @@ class MonitorGUI(GUI):
         # yaw=self.drone_client.get_yaw()
         mode='a'
         velocity=(0,0)
-        yaw=self.drone_client.get_yaw()
+        yaw=math.degrees(self.drone_client.get_yaw())
         # Constants
         arrow_length = 50  # pixels
         color = (0, 255, 0)  # Green arrow
