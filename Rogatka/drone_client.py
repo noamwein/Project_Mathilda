@@ -15,6 +15,7 @@ from datetime import datetime
 from typing import Tuple, List
 import math
 import logging
+from collections import deque
 
 import enum
 
@@ -58,13 +59,19 @@ class BasicClient(DroneClient):
 
         # PID state
         self._prev_time = None
-        self._integral_vx = 0.0
+        # Previous errors
         self._prev_error_vx = 0.0
-        self._integral_vy = 0.0
         self._prev_error_vy = 0.0
-        self._integral_yaw = 0.0
         self._prev_error_yaw = 0.0
-        # Counters for missed control
+        # Integral histories (for sliding window)
+        self._yaw_history = deque(maxlen=YAW_INTEGRAL_MAX)
+        self._vx_history = deque(maxlen=VEL_INTEGRAL_MAX)
+        self._vy_history = deque(maxlen=VEL_INTEGRAL_MAX)
+        # Integral sums
+        self._integral_yaw = 0.0
+        self._integral_vx = 0.0
+        self._integral_vy = 0.0
+        # Miss counters
         self._yaw_miss = 0
         self._vel_miss = 0
 
@@ -408,75 +415,94 @@ class BasicClient(DroneClient):
 
         # Initialize and compute dt
         now = time.time()
+        dt = 0
+        if self._prev_time is None:
+            self._prev_time = now
+            return
         dt = now - self._prev_time
-        if self._prev_time is None or dt > 1:
+        if dt > 1:
             self.log_and_print("Resetting PID...")
             self._prev_time = now
-            self._integral_vx = 0.0
+            self._yaw_history.clear()
+            self._vx_history.clear()
+            self._vy_history.clear()
+            self._prev_error_yaw = 0.0
             self._prev_error_vx = 0.0
-            self._integral_vy = 0.0
             self._prev_error_vy = 0.0
             self._integral_yaw = 0.0
-            self._prev_error_yaw = 0.0
-            # Counters for missed control
+            self._integral_vx = 0.0
+            self._integral_vy = 0.0
             self._yaw_miss = 0
             self._vel_miss = 0
             return
         self._prev_time = now
 
-        # Yaw PID compute
+        # Compute yaw error (px)
         angle_err = target_x
-        self._integral_yaw += angle_err * dt
+        # Update yaw integral sliding window
+        inc_yaw = angle_err * dt
+        self._yaw_history.append(inc_yaw)
+        self._integral_yaw = sum(self._yaw_history)
+        # Derivative
         deriv_yaw = (angle_err - self._prev_error_yaw) / dt if dt > 0 else 0.0
         self._prev_error_yaw = angle_err
 
-        # Calculate the distance to the target
+        # Distance
         distance = math.hypot(target_x, target_y)
-        # Rotate stepwise (1°) until within tolerance
+        # Rotate stepwise
         if distance > YAW_PIXEL_THRESHOLD:
             if abs(angle_err) > ANGLE_TOLERANCE:
+                # velocity missed
                 self._vel_miss += 1
                 if self._vel_miss > MISS_LIMIT:
-                    self._integral_vx = 0.0
+                    self._vx_history.clear()
+                    self._vy_history.clear()
                     self._prev_error_vx = 0.0
-                    self._integral_vy = 0.0
                     self._prev_error_vy = 0.0
+                    self._integral_vx = 0.0
+                    self._integral_vy = 0.0
                     self._vel_miss = 0
                 # reset yaw miss
                 self._yaw_miss = 0
-                # PID-based rotation, limited per-step
-                rot = -np.sign(target_y) * ( KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw )
+                # PID-based rotation
+                rot = -np.sign(target_y) * (KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw)
                 self.rotate(rot, speed_factor=0.1)
                 return
-
         # yaw missed
         self._yaw_miss += 1
         if self._yaw_miss > MISS_LIMIT:
+            self._yaw_history.clear()
             self._integral_yaw = 0.0
             self._prev_error_yaw = 0.0
             self._yaw_miss = 0
 
         if only_rotate:
-            # count vel miss
             self._vel_miss += 1
             if self._vel_miss > MISS_LIMIT:
-                self._integral_vx = 0.0
+                self._vx_history.clear()
+                self._vy_history.clear()
                 self._prev_error_vx = 0.0
-                self._integral_vy = 0.0
                 self._prev_error_vy = 0.0
+                self._integral_vx = 0.0
+                self._integral_vy = 0.0
                 self._vel_miss = 0
             return
 
         # Velocity PID compute
         err_vx = target_x
         err_vy = target_y
-        self._integral_vx += err_vx * dt
-        self._integral_vy += err_vy * dt
+        # Update sliding windows
+        inc_vx = err_vx * dt
+        inc_vy = err_vy * dt
+        self._vx_history.append(inc_vx)
+        self._vy_history.append(inc_vy)
+        self._integral_vx = sum(self._vx_history)
+        self._integral_vy = sum(self._vy_history)
+        # Derivatives
         deriv_vx = (err_vx - self._prev_error_vx) / dt if dt > 0 else 0.0
         deriv_vy = (err_vy - self._prev_error_vy) / dt if dt > 0 else 0.0
         self._prev_error_vx = err_vx
         self._prev_error_vy = err_vy
-
         # reset vel miss
         self._vel_miss = 0
 
@@ -485,14 +511,13 @@ class BasicClient(DroneClient):
         vy = KP_V * err_vy + KI_V * self._integral_vy + KD_V * deriv_vy
         vy = -vy  # invert image Y
 
-        # apply speed factor and cap
+        # cap speed
         v_norm = math.hypot(vx, vy)
         if v_norm > MAX_SPEED:
             vx /= v_norm
             vy /= v_norm
 
         self.set_speed(vx, vy, 0.0)
-
 
     @require_guided
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
