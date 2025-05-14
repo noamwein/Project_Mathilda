@@ -122,8 +122,9 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(frame, bbox)
+        processed_frame = self.get_monitor(processed_frame)
         if not self.running_on_pi:
-            processed_frame = resize_and_pad(frame, target_height=self.frame_dims[1], target_width=self.frame_dims[0])
+            processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1], target_width=self.frame_dims[0])
         return processed_frame
 
     def draw_cross(self, frame):
