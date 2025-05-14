@@ -282,14 +282,12 @@ class MonitorGUI(GUI):
 
         # Path to bomb icon image
         bomb_image_path = r"assets\bomb.png"
+        bomb_image_path = r"../Monitor/assetsbomb.png"
         icon_size = 40  # Width/height of each bomb icon
         margin = 10  # Space between icons and edges
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
-            #print current working directory
-            print(f"Current working directory: {os.getcwd()}")
-            print()
             print(f"Bomb image not found: {bomb_image_path}")
             return
 
