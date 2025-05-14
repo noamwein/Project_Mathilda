@@ -281,8 +281,8 @@ class MonitorGUI(GUI):
             return
 
         # Path to bomb icon image
-        bomb_image_path = r"assets\bomb.png"
-        bomb_image_path = r"../Monitor/assetsbomb.png"
+        bomb_image_path = os.path.abspath(os.path.join("..", "Monitor", "assets", "bomb.png"))
+
         icon_size = 40  # Width/height of each bomb icon
         margin = 10  # Space between icons and edges
 
