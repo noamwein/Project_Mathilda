@@ -205,8 +205,8 @@ class MonitorGUI(GUI):
         line_widths = [bbox[2] - bbox[0] for bbox in line_sizes]
         line_heights = [bbox[3] - bbox[1] for bbox in line_sizes]
 
-        panel_width = max(line_widths) + 2 * padding
-        panel_width = self.frame_dims[0] - frame.shape[0]
+        min_panel_width = max(line_widths) + 2 * padding
+        panel_width = max(self.frame_dims[0] - frame.shape[1], min_panel_width)
 
         # Create new extended frame
         new_width = frame.shape[1] + panel_width
