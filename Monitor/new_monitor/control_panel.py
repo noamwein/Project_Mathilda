@@ -14,7 +14,7 @@ from Rogatka.drone_algorithm import MainDroneAlgorithm
 from Rogatka.drone_client import BasicClient
 from EagleEye.sources.picamera_source import PiCameraSource
 from video_saver import MP4VideoSaver
-from EagleEye.image_detection_models import ColorImageDetectionModel
+from EagleEye.image_detection_models.color_detection_model import ColorImageDetectionModel
 from Rogatka.servo_motor import ServoMotor
 from BirdBrain.settings import INITIAL_ALTITUDE
 
