@@ -25,9 +25,9 @@ class VideoMonitor(MonitorPanel):
             return
         processed_frame = self._draw_overlay(frame)
         final_frame = _resize_and_pad(processed_frame, self.width(), self.height())
-        h, w, ch = processed_frame.shape
+        h, w, ch = final_frame.shape
         bytes_per_line = ch * w
-        qt_img = QImage(processed_frame.data, w, h, bytes_per_line, QImage.Format_BGR888)
+        qt_img = QImage(final_frame.data, w, h, bytes_per_line, QImage.Format_BGR888)
         self.label.setPixmap(QPixmap.fromImage(qt_img))
 
     def _draw_overlay(self, frame):
