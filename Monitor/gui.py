@@ -209,7 +209,7 @@ class MonitorGUI(GUI):
         panel_width = max(self.frame_dims[0] - frame.shape[1], min_panel_width)
 
         # Create new extended frame
-        new_width = frame.shape[1] + panel_width
+        new_width = self.frame_dims[0]
         new_frame = np.zeros((frame.shape[0], new_width, 3), dtype=np.uint8)
         new_frame[:, :frame.shape[1]] = frame  # copy original frame
         new_frame[:, frame.shape[1]:] = (255, 255, 255)  # fill side panel
@@ -240,7 +240,7 @@ class MonitorGUI(GUI):
 
 
 def main():
-    source = CameraSource()
+    source = CameraSource(rotation=270)
     gui = MonitorGUI(drone_client=DummyClient(), video_saver=MP4VideoSaver(),
                      image_detection=ColorImageDetectionModel(None))
     for _ in range(1000):
