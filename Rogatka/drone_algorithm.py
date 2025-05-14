@@ -130,11 +130,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
                 if target_position == (None, None):
                     continue
 
-                try:
-                    center_position = self.drone_client.get_center_position()
-                except:
-                    center_position = CENTERED_X, CENTERED_Y
-                    print('could not get center')
+                center_position = self.drone_client.get_center_position()
                 relative_position = target_position[0] - center_position[0], target_position[1] - center_position[1]
 
                 self.drone_client.log_and_print("Found target position in frame!")

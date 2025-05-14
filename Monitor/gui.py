@@ -20,7 +20,7 @@ from Rogatka.dummy_client import DummyClient
 from Monitor.video_saver import MP4VideoSaver
 from Rogatka.dummy_servo import DummyServo
 from BirdBrain.interfaces import GUI, Servo
-from BirdBrain.settings import DROP_RADIUS, YAW_TOLERANCE_THRESHOLD, YAW_TOLERANCE_RADIUS
+from BirdBrain.settings import DROP_RADIUS, YAW_TOLERANCE_THRESHOLD, YAW_TOLERANCE_RADIUS, CENTERED_X, CENTERED_Y
 from Rogatka.drone_client import State
 
 CLOSE_WINDOW_KEY = 27  # escape
@@ -138,7 +138,12 @@ class MonitorGUI(GUI):
         cross_color = (0, 0, 255)  # Red
         drop_color = (17, 250, 231)  # Yellow
         yaw_color = (219, 204, 101)  # Light Blue
-        center_x, center_y = self.drone_client.get_center_position()
+        try:
+            center_x, center_y = self.drone_client.get_center_position()
+            print(center_x, center_y)
+        except:
+            center_x, center_y = CENTERED_X, CENTERED_Y
+            print('could not get center')
         # Draw cross
         cv2.line(frame, (center_x - 80, center_y), (center_x + 80, center_y), cross_color, 6)
         cv2.line(frame, (center_x, center_y - 80), (center_x, center_y + 80), cross_color, 6)
