@@ -34,7 +34,7 @@ from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KP_YAW, KI_YAW, KD_YAW,
                                 MISS_LIMIT,
                                 YAW_INTEGRAL_MAX,
-                                VEL_INTEGRAL_MAX)
+                                VEL_INTEGRAL_MAX, CENTERED_X, CENTERED_Y)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -207,6 +207,16 @@ class BasicClient(DroneClient):
     
     def get_yaw(self):
         return self.vehicle.attitude.yaw
+        
+    def get_pitch(self):
+        return self.vehicle.attitude.pitch
+    
+    def get_roll(self):
+        return self.vehicle.attitude.roll
+
+    def get_center_position(self):
+        return (CENTERED_X, CENTERED_Y)
+    
     
     @require_guided
     def move_forward(self, distance):
