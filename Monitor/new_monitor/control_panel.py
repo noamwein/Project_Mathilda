@@ -26,7 +26,9 @@ class ControlPanel(MonitorPanel):
     def setup_ui(self):
         # Four buttons in 2x2 grid: Start, Reboot, Load Bombs, Exit
         self.start_btn = QPushButton("Start Mission")
-        self.start_btn.setCheckable(True)
+        self.confirm_btn = QPushButton("Confirm")
+        self.confirm_btn.setVisible(False)
+        self.confirm_btn.setEnabled(False)
         self.exit_btn = QPushButton("Exit")
 
         self.connect_btn = QPushButton("Connect")
@@ -43,6 +45,7 @@ class ControlPanel(MonitorPanel):
 
         layout = QGridLayout(self)
         layout.addWidget(self.start_btn, 0, 0)
+        layout.addWidget(self.confirm_btn, 0, 0)
         layout.addWidget(self.exit_btn, 0, 1)
         layout.addWidget(self.connect_btn, 1, 0)
         layout.addWidget(self.safety_btn, 1, 1)
@@ -56,6 +59,7 @@ class ControlPanel(MonitorPanel):
     def connect_signals(self):
         self.start_btn.clicked.connect(self.action_start)
         self.reboot_btn.clicked.connect(self.action_reboot)
+        self.confirm_btn.clicked.connect(self.action_confirm)
         self.exit_btn.clicked.connect(self.action_exit)
         self.land_btn.clicked.connect(self.action_land)
         self.drop_bombs_btn.clicked.connect(self.action_drop_bombs)
@@ -72,6 +76,15 @@ class ControlPanel(MonitorPanel):
     def action_load_bombs(self):
         self.drone_client.log_and_print("Load bombs triggered")
         self.servo.load_bombs()
+
+    def action_confirm(self):
+        # Write newline to stdin
+        try:
+            fd = sys.stdin.fileno()
+            os.write(fd, b"")
+        except Exception:
+            pass
+        print("Confirm pressed: newline sent to stdin")
 
     def action_safety(self):
         self.drone_client.log_and_print("Safety triggered")
@@ -96,12 +109,14 @@ class ControlPanel(MonitorPanel):
         self.drone_client.land()
 
     def action_start(self):
-        self.start_btn.setChecked(True)
         self.start_btn.setEnabled(False)
+        self.start_btn.setVisible(False)
         self.drone_client.log_and_print("Starting Mission...")
         thread3 = threading.Thread(target=self.main_algorithm.main)
         thread3.daemon = True
         thread3.start()
+        self.confirm_btn.setEnabled(True)
+        self.confirm_btn.setVisible(True)
 
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
