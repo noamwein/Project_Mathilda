@@ -359,6 +359,7 @@ def apply_global_styles(app):
             border: 2px solid #D32F2F;
             border-radius: 8px;
             padding: 10px 18px;
+            font-family: "Segoe UI", Arial, sans-serif;
             font-size: 18px;
             font-weight: bold;
         }
