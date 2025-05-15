@@ -40,8 +40,7 @@ class TelemetryPanel(MonitorPanel):
     
 
     def update_data(self, data):
-        text = '\n'.join(f"{k}: {v}" for k, v in data.telemetry.items())
-        self.label.setText(text)
+
         altitude = data.telemetry.get('altitude', 0)
         vehicle_mode = data.telemetry.get('vehicle_mode', 'Unknown')
         battery_voltage = data.telemetry.get('battery_voltage', 0)
@@ -66,5 +65,5 @@ class TelemetryPanel(MonitorPanel):
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])
-        self.label.setText(f"{text}\n\n{monitor_text}")
+        self.label.setText(monitor_text)
         self.label.setStyleSheet("font-size: 12px;")
