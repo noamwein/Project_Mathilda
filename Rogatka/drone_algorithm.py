@@ -21,7 +21,7 @@ from BirdBrain.settings import (START_LAT,
                                 LEFT_ANGLE,
                                 CENTERED_X,
                                 CENTERED_Y,
-                                RE_SEARCH_LIMIT)
+                                RE_SEARCH_LIMIT, INITIAL_ALTITUDE)
 
 
 class MainDroneAlgorithm(DroneAlgorithm):
@@ -35,15 +35,14 @@ class MainDroneAlgorithm(DroneAlgorithm):
         self.last_relative_pos = None
         
     def generate_new_path(self) -> List[Waypoint]:
-        initial_alt = self.drone_client.get_initial_altitude()
         waypoints: List[Waypoint] = [
             Waypoint(
-                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                position=LocationGlobalRelative(START_LAT, START_LON, INITIAL_ALTITUDE),
                 angle=INITIAL_ANGLE,
                 movement_action=MovementAction.MOVEMENT
             ),
             Waypoint(
-                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                position=LocationGlobalRelative(START_LAT, START_LON, INITIAL_ALTITUDE),
                 angle=INITIAL_ANGLE,
                 movement_action=MovementAction.ROTATION
             )
@@ -73,15 +72,14 @@ class MainDroneAlgorithm(DroneAlgorithm):
         return waypoints[:-1]  # remove last right rotation
     
     def generate_path(self, steps=STEPS) -> List[Waypoint]:
-        initial_alt = self.drone_client.get_initial_altitude()
         waypoints: List[Waypoint] = [
             Waypoint(
-                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                position=LocationGlobalRelative(START_LAT, START_LON, INITIAL_ALTITUDE),
                 angle=INITIAL_ANGLE,
                 movement_action=MovementAction.MOVEMENT
             ),
             Waypoint(
-                position=LocationGlobalRelative(START_LAT, START_LON, initial_alt),
+                position=LocationGlobalRelative(START_LAT, START_LON, INITIAL_ALTITUDE),
                 angle=INITIAL_ANGLE,
                 movement_action=MovementAction.ROTATION
             )

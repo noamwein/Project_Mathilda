@@ -120,10 +120,6 @@ class DroneClient(ABC):
         pass
 
     @abstractmethod
-    def get_initial_altitude(self):
-        pass
-
-    @abstractmethod
     def pid(self, target_position):
         pass
 
@@ -190,6 +186,7 @@ class DroneClient(ABC):
     @abstractmethod
     def get_state(self):
         pass
+
     @abstractmethod
     def get_velocity(self):
         pass
@@ -230,6 +227,7 @@ class DroneAlgorithm(ABC):
             self.drone_client.land()
             self.drone_client.disconnect()
 
+
 class Servo(ABC):
     def __init__(self):
         pass
@@ -246,6 +244,7 @@ class Servo(ABC):
     def get_bombs_left(self):
         pass
 
+
 class VideoSaver(ABC):
     @abstractmethod
     def write_frame(self, frame):
@@ -257,7 +256,8 @@ class VideoSaver(ABC):
 
 
 class GUI(ABC):
-    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection, servo: Servo,
+    def __init__(self, drone_client: DroneClient, video_saver: VideoSaver, image_detection: ImageDetection,
+                 servo: Servo,
                  enable_display=True):
         self.drone_client = drone_client
         self.video_saver = video_saver
@@ -276,3 +276,11 @@ class GUI(ABC):
         if self.enable_display:
             # destroy all OpenCV windows
             cv2.destroyAllWindows()
+
+
+class Mapper(ABC):
+    def __init__(self, locations: List[LocationGlobalRelative]):
+        self.locations = locations
+
+    def get_map(self, current_loc: LocationGlobalRelative):
+        pass

@@ -19,7 +19,6 @@ def main(video_path, image_path, display):
         video_source,
         BasicClient(
             connection_string='tcp:127.0.0.1:5763',
-            initial_altitude=5,
             max_altitude=10,
             min_battery_percent=20,
             logger=logging.getLogger(__name__))

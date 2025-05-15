@@ -34,7 +34,7 @@ from BirdBrain.settings import (MAXIMUM_DISTANCE,
                                 KP_YAW, KI_YAW, KD_YAW,
                                 MISS_LIMIT,
                                 YAW_INTEGRAL_MAX,
-                                VEL_INTEGRAL_MAX, CENTERED_X, CENTERED_Y, PIXELS_PER_RAD)
+                                VEL_INTEGRAL_MAX, CENTERED_X, CENTERED_Y, PIXELS_PER_RAD, INITIAL_ALTITUDE)
 
 class State(enum.Enum):
     TAKEOFF = 0
@@ -46,10 +46,9 @@ class State(enum.Enum):
 
 
 class BasicClient(DroneClient):
-    def __init__(self, connection_string: str, initial_altitude: float, max_altitude: float, min_battery_percent: float,
+    def __init__(self, connection_string: str, max_altitude: float, min_battery_percent: float,
                  logger: logging.Logger):
         self.connection_string = connection_string
-        self.initial_altitude = initial_altitude
         self.max_altitude = max_altitude
         self.min_battery_percent = min_battery_percent
         self.vehicle = None
@@ -179,25 +178,22 @@ class BasicClient(DroneClient):
 
         self.log_and_print("Armed!")
 
-        self.vehicle.simple_takeoff(self.initial_altitude)
+        self.vehicle.simple_takeoff(INITIAL_ALTITUDE)
 
         while True:
             altitude = self.vehicle.location.global_relative_frame.alt
             self.log_and_print(f"Alt is: {altitude}")
-            if altitude >= 0.95 * self.initial_altitude:
+            if altitude >= 0.95 * INITIAL_ALTITUDE:
                 break
             time.sleep(0.1)
 
-        # self.vehicle.wait_simple_takeoff(self.initial_altitude)
+        # self.vehicle.wait_simple_takeoff(INITIAL_ALTITUDE)
 
         self.log_and_print("In the air!!")
 
     def get_altitude(self):
         altitude = self.vehicle.location.global_relative_frame.alt
         return altitude
-
-    def get_initial_altitude(self):
-        return self.initial_altitude
 
     def get_current_location(self):
         return self.vehicle.location.global_relative_frame

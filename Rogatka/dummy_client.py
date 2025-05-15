@@ -6,6 +6,12 @@ from BirdBrain.interfaces import Waypoint, Source, ImageDetection
 
 
 class DummyClient(DroneClient):
+    def get_pitch(self):
+        return 0
+
+    def get_roll(self):
+        return 0
+
     def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
         pass
 
@@ -38,9 +44,6 @@ class DummyClient(DroneClient):
 
     def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection):
         pass
-
-    def get_initial_altitude(self):
-        return 5
 
     def pid(self, target_position):
         pass
