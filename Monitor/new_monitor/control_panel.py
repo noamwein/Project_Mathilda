@@ -71,11 +71,21 @@ class ControlPanel(MonitorPanel):
 
     def action_drop_bombs(self):
         self.drone_client.log_and_print("Drop bombs triggered")
-        self.servo.drop()
+        def _drop():
+            self.servo.drop()
+
+        thread = threading.Thread(target=_drop)
+        thread.daemon = True
+        thread.start()
 
     def action_load_bombs(self):
         self.drone_client.log_and_print("Load bombs triggered")
-        self.servo.load_bombs()
+        def _load():
+            self.servo.load_bombs()
+
+        thread = threading.Thread(target=_load)
+        thread.daemon = True
+        thread.start()
 
     def action_confirm(self):
         # Write newline to stdin
@@ -88,7 +98,12 @@ class ControlPanel(MonitorPanel):
 
     def action_safety(self):
         self.drone_client.log_and_print("Safety triggered")
-        self.drone_client.set_safety_button(safety=False)
+        def _safety():
+            self.drone_client.set_safety_button(safety=False)
+
+        thread = threading.Thread(target=_safety)
+        thread.daemon = True
+        thread.start()
 
     def action_connect(self):
         self.drone_client.log_and_print("Connect triggered")
@@ -115,7 +130,12 @@ class ControlPanel(MonitorPanel):
 
     def action_land(self):
         self.drone_client.log_and_print("Land triggered")
-        self.drone_client.land()
+        def _land():
+            self.drone_client.land()
+
+        thread = threading.Thread(target=_land)
+        thread.daemon = True
+        thread.start()
 
     def action_start(self):
         self.start_btn.setEnabled(False)
@@ -129,7 +149,12 @@ class ControlPanel(MonitorPanel):
 
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
-        self.drone_client.reboot_pixhawk()
+        def _drop():
+            self.drone_client.reboot_pixhawk()
+
+        thread = threading.Thread(target=_drop)
+        thread.daemon = True
+        thread.start()
 
     def action_exit(self):
         self.drone_client.log_and_print("Exit triggered")
