@@ -74,6 +74,9 @@ class BasicClient(DroneClient):
         self._yaw_miss = 0
         self._vel_miss = 0
 
+        # Arm confirm
+        self.arm_confirmed = False
+
         # Set up logging to file
         log_folder = "../../Flight Logs"
         os.makedirs(log_folder, exist_ok=True)
@@ -162,6 +165,9 @@ class BasicClient(DroneClient):
         time.sleep(2)    # 2 seconds gives the baro time to settle
         self.log_and_print("Baro zeroed—ready to arm.")
 
+    def confirm_arm(self):
+        self.arm_confirmed = True
+
     @require_guided
     def takeoff(self):
         self.log_and_print("Taking off...")
@@ -170,7 +176,10 @@ class BasicClient(DroneClient):
         self.vehicle.armed = True
         self.vehicle.flush()
         time.sleep(3)
-        input('Confirm armed [Enter]: ')
+        self.arm_confirmed = False
+        self.log_and_print('Confirm armed: ')
+        while not self.arm_confirmed:
+            time.sleep(0.2)
 
         # while not self.vehicle.armed:
         #     print('Waiting for arm...')
