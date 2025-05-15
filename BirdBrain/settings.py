@@ -63,7 +63,7 @@ VEL_INTEGRAL_MAX = 10
 
 # Servo
 SERVO_PIN = 3
-COOLDOWN_TIME=2 #time between drops
+COOLDOWN_TIME = 3 #time between drops
 
 # Utils
 METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
