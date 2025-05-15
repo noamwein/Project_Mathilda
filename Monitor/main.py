@@ -54,7 +54,6 @@ class MainWindow(QMainWindow):
         # Connect to drone
         self.drone_client = BasicClient(
             connection_string='/dev/ttyACM0',  # serial port
-            initial_altitude=INITIAL_ALTITUDE,             # initial altitude
             max_altitude=10,              # max altitude
             min_battery_percent=20,              # min battery percent
             logger=logging.getLogger(__name__)
