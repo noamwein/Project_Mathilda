@@ -51,7 +51,7 @@ class ControlPanel(MonitorPanel):
         layout.addWidget(self.reboot_btn, 3, 0)
         layout.addWidget(self.land_btn, 3, 1)
         layout.addWidget(self.drop_bombs_btn, 4, 0)
-        layout.addWidget(self.load_bombs_btn, 4, )
+        layout.addWidget(self.load_bombs_btn, 4, 1)
 
     def connect_signals(self):
         self.start_btn.clicked.connect(self.action_start)
