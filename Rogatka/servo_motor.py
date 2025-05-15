@@ -26,8 +26,8 @@ class ServoMotor(Servo):
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
-        self.index = 0
         self.angles = [107, 119, 145]
+        self.index = len(self.angles)
         self.last_dropped = 0
         self.set_angle(0)
 
@@ -94,6 +94,7 @@ class ServoMotor(Servo):
         self.open_payload()
         time.sleep(1)
         self.close_payload()
+        self.index = 0
         
 def test():
     servo = ServoMotor()
