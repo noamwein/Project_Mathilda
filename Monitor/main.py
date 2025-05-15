@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
         content_h = H - title_h
         # Row stretch weights: 2,2,1 => total 5
         row1_h = int(content_h * 2 / 5)
-        row2_h = int(content_h * 2 / 5) * 0.8
+        row2_h = int(content_h * 2 / 5) * 0.5
         row3_h = content_h - row1_h - row2_h
         # Column weights: 1,2,1 => total 4
         col0_w = int(W * 1 / 4)
@@ -202,8 +202,8 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(ctrl, 3, 0, 1, 1)
         self.layout.addWidget(vid, 1, 1, 3, 1)
         self.layout.addWidget(tel, 1, 2, 1, 1)
-        self.layout.addWidget(mp, 2, 2, 1, 1)
-        self.layout.addWidget(bm, 3, 2, 1, 1)
+        self.layout.addWidget(bm, 2, 2, 1, 1)
+        self.layout.addWidget(mp, 3, 2, 1, 1)
 
     def _on_timer(self):
         # initialize recorder when first frame
