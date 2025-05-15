@@ -99,7 +99,7 @@ def main():
     time.sleep(3)
     for i in range(3):
         print(i + 1)
-        servo.drop()
+        servo.set_angle(SERVO_ANGLES[i])
         time.sleep(3)
 
 
