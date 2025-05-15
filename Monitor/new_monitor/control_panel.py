@@ -1,5 +1,7 @@
 import sys
 import os
+import time
+
 from .base import MonitorPanel
 from PySide6.QtWidgets import QPushButton, QGridLayout, QApplication
 # allow importing from parent directory
@@ -51,7 +53,6 @@ class ControlPanel(MonitorPanel):
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
         self.drone_client.reboot_pixhawk()
-        
 
     def action_load(self):
         self.drone_client.log_and_print("Load Bombs triggered")
