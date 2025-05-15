@@ -40,6 +40,9 @@ class MainWindow(QMainWindow):
         self._stdout_last_pos = 0
         self._old_stdout = sys.stdout
         sys.stdout = self._stdout_buffer
+        # Also redirect stderr to the same buffer
+        self._old_stderr = sys.stderr
+        sys.stderr = self._stdout_buffer
 
         ########################
         # Setup live video
