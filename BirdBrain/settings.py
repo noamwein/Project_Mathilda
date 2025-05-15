@@ -69,7 +69,6 @@ COOLDOWN_TIME = 3 #time between drops
 METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
 
 # Servo
-SERVO_ANGLES = [105, 125, 145]
 CLOSE_ANGLE = 0
 OPEN_ANGLE = 150
-
+SERVO_ANGLES = [105, 125, OPEN_ANGLE]
