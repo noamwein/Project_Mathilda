@@ -214,7 +214,10 @@ class DroneClient(ABC):
     @abstractmethod
     def reboot_pixhawk(self):
         pass
-
+    
+    @abstractmethod
+    def disable_safety(self):
+        pass
 
 class DroneAlgorithm(ABC):
     def __init__(self, drone_client: DroneClient):

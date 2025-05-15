@@ -673,6 +673,16 @@ class BasicClient(DroneClient):
 
         self.vehicle.reboot()
 
+    def disable_safety(self):
+        print("[INFO] Sending MAV_CMD_DO_SET_MODE to disable safety...")
+
+        self.vehicle._master.mav.command_long_send(
+            self.vehicle._master.target_system,
+            self.vehicle._master.target_component,
+            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+            0,
+            1, 0, 0, 0, 0, 0, 0  # param1=1 to arm, 0 to disarm
+        )
 def calculate_direction(target_position: Tuple[int, int]):
     """
     Calculate the yaw angle needed to align a pixel to the positive y-axis.
@@ -696,3 +706,5 @@ def calculate_direction(target_position: Tuple[int, int]):
 
 def is_aligned(target_position: Tuple[int, int], error_tolerence=5) -> bool:
     return (abs(target_position[0]) < error_tolerence) and (target_position[1] >= 0)
+
+
