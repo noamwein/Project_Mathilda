@@ -26,7 +26,7 @@ class ControlPanel(MonitorPanel):
     def setup_ui(self):
         # Four buttons in 2x2 grid: Start, Reboot, Load Bombs, Exit
         self.start_btn = QPushButton("Start Mission")
-        self.confirm_btn = QPushButton("Confirm")
+        self.confirm_btn = QPushButton("Confirm Arm")
         self.confirm_btn.setVisible(False)
         self.confirm_btn.setEnabled(False)
         self.exit_btn = QPushButton("Exit")
@@ -89,12 +89,7 @@ class ControlPanel(MonitorPanel):
 
     def action_confirm(self):
         # Write newline to stdin
-        try:
-            fd = sys.stdin.fileno()
-            os.write(fd, b"")
-        except Exception:
-            pass
-        print("Confirm pressed: newline sent to stdin")
+        self.drone_client.confirm_arm()
 
     def action_safety(self):
         self.drone_client.log_and_print("Safety triggered")

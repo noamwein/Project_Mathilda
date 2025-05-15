@@ -219,6 +219,10 @@ class DroneClient(ABC):
     def set_safety_button(self):
         pass
 
+    @abstractmethod
+    def confirm_arm(self):
+        pass
+
 class DroneAlgorithm(ABC):
     def __init__(self, drone_client: DroneClient):
         self.drone_client = drone_client
