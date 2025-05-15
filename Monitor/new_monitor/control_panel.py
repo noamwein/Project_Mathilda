@@ -25,22 +25,75 @@ class ControlPanel(MonitorPanel):
         
     def setup_ui(self):
         # Four buttons in 2x2 grid: Start, Reboot, Load Bombs, Exit
-        self.start_btn = QPushButton("Start")
+        self.start_btn = QPushButton("Start Mission")
         self.start_btn.setCheckable(True)
-        self.reboot_btn = QPushButton("Reboot")
-        self.load_btn = QPushButton("Load Bombs")
         self.exit_btn = QPushButton("Exit")
+
+        self.connect_btn = QPushButton("Connect")
+        self.safety_btn = QPushButton("Safety Switch")
+
+        self.arm_btn = QPushButton("Arm")
+        self.disarm_btn = QPushButton("Disarm")
+
+        self.reboot_btn = QPushButton("Reboot")
+        self.land_btn = QPushButton("Land")
+
+        self.drop_bombs_btn = QPushButton("Drop Bomb")
+        self.load_bombs_btn = QPushButton("Load Bombs")
+
         layout = QGridLayout(self)
         layout.addWidget(self.start_btn, 0, 0)
-        layout.addWidget(self.reboot_btn, 0, 1)
-        layout.addWidget(self.load_btn, 1, 0)
-        layout.addWidget(self.exit_btn, 1, 1)
+        layout.addWidget(self.exit_btn, 0, 1)
+        layout.addWidget(self.connect_btn, 1, 0)
+        layout.addWidget(self.safety_btn, 1, 1)
+        layout.addWidget(self.arm_btn, 2, 0)
+        layout.addWidget(self.disarm_btn, 2, 1)
+        layout.addWidget(self.reboot_btn, 3, 0)
+        layout.addWidget(self.land_btn, 3, 1)
+        layout.addWidget(self.drop_bombs_btn, 4, 0)
+        layout.addWidget(self.load_bombs_btn, 4, )
 
     def connect_signals(self):
         self.start_btn.clicked.connect(self.action_start)
         self.reboot_btn.clicked.connect(self.action_reboot)
-        self.load_btn.clicked.connect(self.action_load)
         self.exit_btn.clicked.connect(self.action_exit)
+        self.land_btn.clicked.connect(self.action_land)
+        self.drop_bombs_btn.clicked.connect(self.action_drop_bombs)
+        self.load_bombs_btn.clicked.connect(self.action_load_bombs)
+        self.connect_btn.clicked.connect(self.action_connect)
+        self.arm_btn.clicked.connect(self.action_arm)
+        self.disarm_btn.clicked.connect(self.action_disarm)
+        self.safety_btn.clicked.connect(self.action_safety)
+
+    def action_drop_bombs(self):
+        self.drone_client.log_and_print("Drop bombs triggered")
+        self.servo.drop()
+
+    def action_load_bombs(self):
+        self.drone_client.log_and_print("Load bombs triggered")
+        self.servo.load_bombs()
+
+    def action_safety(self):
+        self.drone_client.log_and_print("Safety triggered")
+        self.drone_client.disable_safety()
+
+    def action_connect(self):
+        self.drone_client.log_and_print("Connect triggered")
+        self.drone_client.connect()
+
+    def action_arm(self):
+        self.drone_client.log_and_print("Arm triggered")
+        self.drone_client.vehicle.armed = True
+        self.drone_client.vehicle.flush()
+
+    def action_disarm(self):
+        self.drone_client.log_and_print("Disarm triggered")
+        self.drone_client.vehicle.armed = False
+        self.drone_client.vehicle.flush()
+
+    def action_land(self):
+        self.drone_client.log_and_print("Land triggered")
+        self.drone_client.land()
 
     def action_start(self):
         self.start_btn.setChecked(True)
@@ -53,10 +106,6 @@ class ControlPanel(MonitorPanel):
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
         self.drone_client.reboot_pixhawk()
-
-    def action_load(self):
-        self.drone_client.log_and_print("Load Bombs triggered")
-        self.servo.load_bombs()
 
     def action_exit(self):
         self.drone_client.log_and_print("Exit triggered")
