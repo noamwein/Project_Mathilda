@@ -73,8 +73,9 @@ class ImageDetection(ABC):
 
 def require_guided(func):
     def wrapper(self: DroneClient, *args, **kwargs):
-        while not self.check_if_mode_guided():
+        if not self.check_if_mode_guided():
             print('Waiting for guided...')
+        while not self.check_if_mode_guided():
             time.sleep(0.5)
         func(self, *args, **kwargs)
 
