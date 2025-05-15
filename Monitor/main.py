@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         return None
 
     def _get_bombs(self):
-        return 2
+        return self.servo.get_bombs_left() if self.servo else 0
 
     def push_update(self, data: MonitorData):
         for panel in self.findChildren(MonitorPanel):
