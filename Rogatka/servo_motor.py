@@ -28,7 +28,6 @@ class ServoMotor(Servo):
         self.angles = SERVO_ANGLES
         self.index = len(self.angles)
         self.last_dropped = 0
-        self.set_angle(CLOSE_ANGLE)
 
     def set_angle(self, angle):
         """
