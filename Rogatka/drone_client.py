@@ -563,6 +563,7 @@ class BasicClient(DroneClient):
                             if stop_on_detect:
                                 self.stop_movement()
                                 return True
+                        time.sleep(0.02)  # small pause
                     current_location = self.vehicle.location.global_relative_frame
                     distance_to_target = get_distance_meters(current_location, wp.position)
 
