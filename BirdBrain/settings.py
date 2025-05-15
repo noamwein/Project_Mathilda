@@ -70,5 +70,5 @@ METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
 
 # Servo
 CLOSE_ANGLE = 0
-OPEN_ANGLE = 180
+OPEN_ANGLE = 160
 SERVO_ANGLES = [115, 125, OPEN_ANGLE]
