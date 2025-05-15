@@ -43,7 +43,6 @@ class TelemetryPanel(MonitorPanel):
         altitude = data.telemetry.get('ALTITUDE', 0)
         vehicle_mode = data.telemetry.get('MODE', 'Unknown')
         battery_voltage = data.telemetry.get('BATTERY', 0)
-        print(f"Battery voltage: {battery_voltage}")
         roll = data.telemetry.get('ROLL', 0)
         pitch = data.telemetry.get('PITCH', 0)
         yaw = data.telemetry.get('YAW', 0)
