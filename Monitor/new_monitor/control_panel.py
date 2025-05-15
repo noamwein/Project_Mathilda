@@ -92,7 +92,16 @@ class ControlPanel(MonitorPanel):
 
     def action_connect(self):
         self.drone_client.log_and_print("Connect triggered")
-        self.drone_client.connect()
+
+        def _connect():
+            try:
+                self.drone_client.connect()
+            except Exception as e:
+                self.drone_client.log_and_print(f"Encountered error in connection: \n{e}\nTry again in a few seconds")
+
+        thread = threading.Thread(target=_connect)
+        thread.daemon = True
+        thread.start()
 
     def action_arm(self):
         self.drone_client.log_and_print("Arm triggered")
