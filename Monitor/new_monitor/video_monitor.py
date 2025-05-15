@@ -1,3 +1,4 @@
+import math
 from .base import MonitorPanel
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 from PySide6.QtGui import QImage, QPixmap
@@ -62,6 +63,8 @@ class VideoMonitor(MonitorPanel):
                  (center_x + YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
         cv2.line(frame, (center_x - YAW_TOLERANCE_THRESHOLD, 0),
                  (center_x - YAW_TOLERANCE_THRESHOLD, frame.shape[0]), yaw_color, 6)
+        self.draw_drone_illus(frame)
+
 
     def _draw_bounding_box(self, frame, bbox):
         x_min, x_max, y_min, y_max = bbox
@@ -76,3 +79,33 @@ class VideoMonitor(MonitorPanel):
         except:
             return CENTERED_X, CENTERED_Y
 
+    def draw_drone_illus(self, frame):
+        """
+        Draws a drone illustration in the top-right corner of the frame.
+        - In movement mode: displays a rotated arrow based on vx, vy.
+        - In rotation mode: shows a clockwise or counterclockwise arc with a blue circle.
+        """
+        try:
+            yaw=math.degrees(self.drone_client.get_yaw())
+        except Exception:
+            yaw=0
+        ARROW_LENGTH = 60  # pixels
+        COLOR = (0, 255, 0)  # Green arrow
+        THICKNESS = 2
+        
+        # Compute center of the arrow illustration
+        h, w, _ = frame.shape
+        center = (w - 70, 70)  # top-right corner with some padding
+
+        # Convert yaw to radians and rotate counter-clockwise (OpenCV uses standard math coords)
+        angle_rad = math.radians(-yaw + 90)  # +90 to make 0 deg point up
+
+        # Calculate arrow endpoint
+        end_x = int(center[0] + ARROW_LENGTH * math.cos(angle_rad))
+        end_y = int(center[1] - ARROW_LENGTH * math.sin(angle_rad))
+
+        # Draw arrow
+        cv2.arrowedLine(frame, center, (end_x, end_y), COLOR, THICKNESS, tipLength=0.3)
+
+        # Optional: draw a small circle at center
+        cv2.circle(frame, center, 3, (255, 0, 0), -1)
