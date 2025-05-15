@@ -127,8 +127,8 @@ class MonitorGUI(GUI):
         bbox = self.image_detection.image_detection_data.get('bbox')
         if bbox:
             self.draw_bounding_box(processed_frame, bbox)
-        # self.draw_bombs(processed_frame)
-        # self.draw_drone_illus(processed_frame)
+        self.draw_bombs(processed_frame)
+        self.draw_drone_illus(processed_frame)
         processed_frame = self.get_monitor(processed_frame)
         processed_frame = resize_and_pad(processed_frame, target_height=self.frame_dims[1],
                                          target_width=self.frame_dims[0])
@@ -169,7 +169,7 @@ class MonitorGUI(GUI):
     def get_monitor(self, frame):
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
-        roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
+        yaw = roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
 
         try:
             altitude = f'{self.drone_client.get_altitude():.2f} m'
@@ -196,13 +196,18 @@ class MonitorGUI(GUI):
         except Exception:
             pass
 
+        try:
+            yaw = f'{math.degrees(self.drone_client.get_yaw()):.2f} deg'
+        except Exception:
+            pass
 
         monitor_text = '\n'.join([
             f'ALTITUDE: {altitude}',
             f'MODE:     {vehicle_mode}',
             f'BATTERY:  {battery_voltage}',
-            f'PITCH:    {pitch}',
             f'ROLL:     {roll}',
+            f'PITCH:    {pitch}',
+            f'YAW:      {yaw}',
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
@@ -281,9 +286,10 @@ class MonitorGUI(GUI):
             return
 
         # Path to bomb icon image
-        bomb_image_path = r"assets\bomb.png"
-        icon_size = 40  # Width/height of each bomb icon
-        margin = 10  # Space between icons and edges
+        bomb_image_path = os.path.abspath(os.path.join("..", "Monitor", "assets", "new_bomb_no_back.png"))
+
+        icon_size = 120  # Width/height of each bomb icon
+        margin = 5  # Space between icons and edges
 
         # Load and resize the bomb image
         if not os.path.exists(bomb_image_path):
@@ -318,9 +324,12 @@ class MonitorGUI(GUI):
         # yaw=self.drone_client.get_yaw()
         mode='a'
         velocity=(0,0)
-        yaw=60
+        try:
+            yaw=math.degrees(self.drone_client.get_yaw())
+        except Exception:
+            yaw=0
         # Constants
-        arrow_length = 50  # pixels
+        arrow_length = 60  # pixels
         color = (0, 255, 0)  # Green arrow
         thickness = 2
         

@@ -6,12 +6,6 @@ from BirdBrain.interfaces import Waypoint, Source, ImageDetection
 
 
 class DummyClient(DroneClient):
-    def get_pitch(self):
-        return 0
-
-    def get_roll(self):
-        return 0
-
     def set_speed_for_duration(self, velocity_x: float, velocity_y: float, velocity_z: float, duration_seconds: int):
         pass
 
@@ -97,6 +91,13 @@ class DummyClient(DroneClient):
         pass
 
     def get_velocity(self):
-        pass
+        return (0,0)
+    
     def get_yaw(self):
-        pass
+        return 0
+    
+    def get_roll(self):
+        return 0
+    
+    def get_pitch(self):
+        return 0

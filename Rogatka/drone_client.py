@@ -537,7 +537,7 @@ class BasicClient(DroneClient):
         self.set_speed(vx, vy, 0.0)
 
     @require_guided
-    def follow_path(self, waypoints: List[Waypoint], source_obj: Source, detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
+    def follow_path(self, waypoints: List[Waypoint], detection_obj: ImageDetection, safe=False, detect=True, stop_on_detect=True):
         """
         Follow a series of waypoints at a constant speed.
 
@@ -558,8 +558,7 @@ class BasicClient(DroneClient):
 
                 while True:
                     if detect:
-                        frame = source_obj.get_current_frame()
-                        if detection_obj.detect_target(frame):
+                        if detection_obj.image_detection_data['position'] != (None, None):
                             self.log_and_print("Found target!!")
                             if stop_on_detect:
                                 self.stop_movement()
@@ -580,8 +579,7 @@ class BasicClient(DroneClient):
                 if detect:
                     start = time.time()
                     while time.time() - start < 0.5:
-                        frame = source_obj.get_current_frame()
-                        if detection_obj.detect_target(frame):
+                        if detection_obj.image_detection_data['position'] != (None, None):
                             self.log_and_print("Found target!!")
                             if stop_on_detect:
                                 self.stop_movement()
@@ -653,6 +651,25 @@ class BasicClient(DroneClient):
 
     def get_battery_voltage(self):
         return self.vehicle.battery.voltage
+
+    def reboot_pixhawk(self):
+        """
+        Sends a soft reboot command to the Pixhawk via MAVLink.
+        Requires the script to be run with appropriate permissions.
+        """
+        print("Sending reboot command to Pixhawk...")
+
+        # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN = 246
+        # param1 = 1 → reboot autopilot (but not autopilot+companion computer)
+        self.vehicle._master.mav.command_long_send(
+            self.vehicle._master.target_system,
+            self.vehicle._master.target_component,
+            mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
+            0,  # confirmation
+            1,  # param1: 1=reboot autopilot
+            0, 0, 0, 0, 0, 0  # unused params
+        )
+        self.log_and_print("Reboot command sent. Waiting for reboot...")
 
 def calculate_direction(target_position: Tuple[int, int]):
     """
