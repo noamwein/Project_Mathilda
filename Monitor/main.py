@@ -170,8 +170,8 @@ class MainWindow(QMainWindow):
         # Save size metrics for panels
         self.panel_sizes = {
             'terminal': (col0_w, row1_h + row2_h),
-            'controls': (col0_w, row3_h),
-            'video': (col1_w, content_h),
+            'controls': (col0_w, row3_h * 0.8),
+            'video': (col1_w, content_h * 0.9),
             'telemetry': (col2_w, row1_h),
             'map': (col2_w, row2_h * 2),
             'bombs': (col2_w, row3_h)
