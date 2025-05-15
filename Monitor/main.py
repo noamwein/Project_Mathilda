@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, io
 
 # allow importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, Q
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QImage
 from new_monitor.data_model import MonitorData
-import new_monitor
 from new_monitor.base import MonitorPanel
 from new_monitor.in_house_terminal import InHouseTerminal
 from new_monitor.control_panel import ControlPanel
@@ -33,11 +32,14 @@ from Rogatka.servo_motor import ServoMotor
 
 from Rogatka.drone_algorithm import MainDroneAlgorithm
 
-from BirdBrain.settings import *
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self._stdout_buffer = io.StringIO()
+        self._stdout_last_pos = 0
+        self._old_stdout = sys.stdout
+        sys.stdout = self._stdout_buffer
 
         ########################
         # Setup live video
@@ -233,7 +235,14 @@ class MainWindow(QMainWindow):
         self.push_update(data)
 
     def _get_stdout(self):
-        return ["Line A", "Line B"]
+        # Return buffered stdout since last call
+        txt = self._stdout_buffer.getvalue()
+        if not txt:
+            return []
+        new_txt = txt[self._stdout_last_pos:]
+        self._stdout_last_pos = len(txt)
+        lines = new_txt.splitlines()
+        return lines
 
     def _get_frame(self):
         frame = self.video_source.get_current_frame()
