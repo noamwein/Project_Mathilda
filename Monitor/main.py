@@ -240,7 +240,8 @@ class MainWindow(QMainWindow):
     def _get_gps_location(self):
         try:
             return self.drone_client.get_current_location()
-        return None
+        except:
+            return None
 
     def _get_stdout(self):
         # Return buffered stdout since last call
