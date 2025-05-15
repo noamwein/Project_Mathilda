@@ -274,7 +274,9 @@ class MainWindow(QMainWindow):
             battery_voltage = f'{self.drone_client.get_battery_voltage():.2f} V'
         except Exception:
             pass
-
+        
+        print(f"Battery voltage: {battery_voltage}")    
+        
         try:
             pitch = f'{math.degrees(self.drone_client.get_pitch()):.2f} deg'
         except Exception:
