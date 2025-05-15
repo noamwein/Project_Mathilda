@@ -9,7 +9,7 @@ THRESHOLD_TEMPERATURE = 75
 FRAME_WIDTH = 640  # Display frame width (resized window)
 FRAME_HEIGHT = 480  # Display frame height (resized window)
 CENTERED_X = 1080 // 2  # x's pixel of the dropped object
-CENTERED_Y = 1400  # y's pixel of the dropped object
+CENTERED_Y = 1500  # y's pixel of the dropped object
 ## Human
 MAX_BBOX_WIDTH = 1000
 MAX_BBOX_HEIGHT = 1000
