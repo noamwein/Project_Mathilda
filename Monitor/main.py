@@ -198,8 +198,8 @@ class MainWindow(QMainWindow):
         bm.setFixedSize(*self.panel_sizes['bombs'])
 
         # place panels: row, col, rowspan, colspan
-        self.layout.addWidget(term, 1, 0, 2, 1)
-        self.layout.addWidget(ctrl, 3, 0, 1, 1)
+        self.layout.addWidget(term, 1, 0, 1, 1)
+        self.layout.addWidget(ctrl, 3, 0, 2, 1)
         self.layout.addWidget(vid, 1, 1, 3, 1)
         self.layout.addWidget(tel, 1, 2, 1, 1)
         self.layout.addWidget(bm, 2, 2, 1, 1)
