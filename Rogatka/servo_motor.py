@@ -45,9 +45,13 @@ class ServoMotor(Servo):
         """
         Drop the payload by setting the servo to 90 degrees.
         """
-        print('DROPPING NUMBER', self.index)
-        if self.index >= len(self.angles) or time.time() - self.last_dropped < COOLDOWN_TIME:
+        if self.index >= len(self.angles):
+            print('dropped all bombs')
             return
+        if time.time() - self.last_dropped < COOLDOWN_TIME:
+            print('waiting for previous drop')
+            return
+        print('DROPPING NUMBER', self.index)
         self.set_angle(self.angles[self.index])
         self.index += 1
         self.last_dropped = time.time()
