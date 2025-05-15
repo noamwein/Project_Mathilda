@@ -173,7 +173,6 @@ class TestAlgorithm8(DroneAlgorithm):
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client,
-                                        gui=None,
                                         servo=None)
 
     def _main(self):
@@ -196,7 +195,7 @@ class TestAlgorithm9(DroneAlgorithm):
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client,
-                                        servo=None, gui=None)
+                                        servo=None)
 
     def _main(self):
         self.drone_client.connect()
@@ -219,7 +218,7 @@ class TestAlgorithm10(DroneAlgorithm):
         self.drone = MainDroneAlgorithm(img_detection=None,
                                         source=None,
                                         drone_client=drone_client,
-                                        servo=None, gui=None)
+                                        servo=None)
 
     def _main(self):
         self.drone_client.connect()
@@ -279,7 +278,7 @@ class TestAlgorithm12(DroneAlgorithm):
         servo = ServoMotor()
         gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(img_detection=detection_model, source=video_source,
-                                        drone_client=drone_client, servo=servo, gui=gui)
+                                        drone_client=drone_client, servo=servo)
 
     def _main(self):
         self.drone._main(only_search=True, stop_on_detect=False)
@@ -298,7 +297,7 @@ class TestAlgorithm13(DroneAlgorithm):
         servo = ServoMotor()
         gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
         self.drone = MainDroneAlgorithm(img_detection=detection_model, source=video_source,
-                                        drone_client=drone_client, servo=servo, gui=gui)
+                                        drone_client=drone_client, servo=servo)
 
     def _main(self):
         self.drone._main(only_search=True)
@@ -341,7 +340,7 @@ class TestAlgorithm15(DroneAlgorithm):
         video_source = PiCameraSource()
         servo = ServoMotor()
         gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
-        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
+        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo)
 
     def _main(self):
         self.drone._main(search=False, only_rotate=True)
@@ -359,7 +358,7 @@ class TestAlgorithm16(DroneAlgorithm):
         video_source = PiCameraSource()
         servo = ServoMotor()
         gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model, servo=servo)
-        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
+        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo)
 
     def _main(self):
         self.drone._main(search=False)
@@ -376,7 +375,7 @@ class TestAlgorithm17(DroneAlgorithm):
         video_source = PiCameraSource()
         servo = ServoMotor()
         gui = MonitorGUI(drone_client=drone_client, video_saver=MP4VideoSaver(), image_detection=detection_model)
-        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo, gui)
+        self.drone = MainDroneAlgorithm(detection_model, video_source, drone_client, servo)
 
     def _main(self):
         self.drone.main()

@@ -48,7 +48,7 @@ DROP_RADIUS = 150
 MAX_SPEED = 1
 
 # PID gains
-KP_V = 0.0015
+KP_V = 0.00075
 KI_V = 0.0
 KD_V = -0.0002
 
@@ -62,9 +62,13 @@ YAW_INTEGRAL_MAX = 10
 VEL_INTEGRAL_MAX = 10
 
 # Servo
-SERVO_PIN = 3
-COOLDOWN_TIME=2 #time between drops
+SERVO_PIN = 11
+COOLDOWN_TIME = 3 #time between drops
 
 # Utils
 METERS_PER_DEGREE = 111319.5  # Approx. meters per one degree latitude
 
+# Servo
+CLOSE_ANGLE = 0
+OPEN_ANGLE = 160
+SERVO_ANGLES = [115, 125, OPEN_ANGLE]

@@ -74,6 +74,9 @@ class BasicClient(DroneClient):
         self._yaw_miss = 0
         self._vel_miss = 0
 
+        # Arm confirm
+        self.arm_confirmed = False
+
         # Set up logging to file
         log_folder = "../../Flight Logs"
         os.makedirs(log_folder, exist_ok=True)
@@ -162,6 +165,9 @@ class BasicClient(DroneClient):
         time.sleep(2)    # 2 seconds gives the baro time to settle
         self.log_and_print("Baro zeroed—ready to arm.")
 
+    def confirm_arm(self):
+        self.arm_confirmed = True
+
     @require_guided
     def takeoff(self):
         self.log_and_print("Taking off...")
@@ -170,7 +176,10 @@ class BasicClient(DroneClient):
         self.vehicle.armed = True
         self.vehicle.flush()
         time.sleep(3)
-        input('Confirm armed [Enter]: ')
+        self.arm_confirmed = False
+        self.log_and_print('Confirm armed: ')
+        while not self.arm_confirmed:
+            time.sleep(0.2)
 
         # while not self.vehicle.armed:
         #     print('Waiting for arm...')
@@ -437,6 +446,7 @@ class BasicClient(DroneClient):
             self._prev_time = now
             return
         dt = now - self._prev_time
+        self.log_and_print(f"fps: {1/dt}")
         if dt > 1:
             self.log_and_print("Resetting PID...")
             self._prev_time = now
@@ -467,7 +477,7 @@ class BasicClient(DroneClient):
         # Distance
         distance = math.hypot(target_x, target_y)
         # Rotate stepwise
-        if distance > YAW_TOLERANCE_RADIUS:
+        if distance > YAW_TOLERANCE_RADIUS and target_y < 0:
             if abs(angle_err) > YAW_TOLERANCE_THRESHOLD:
                 # velocity missed
                 self._vel_miss += 1
@@ -482,7 +492,7 @@ class BasicClient(DroneClient):
                 # reset yaw miss
                 self._yaw_miss = 0
                 # PID-based rotation
-                rot = -np.sign(target_y) * (KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw)
+                rot = KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw
                 self.rotate(rot, speed_factor=0.1)
                 return
         # yaw missed
@@ -563,6 +573,7 @@ class BasicClient(DroneClient):
                             if stop_on_detect:
                                 self.stop_movement()
                                 return True
+                        time.sleep(0.02)  # small pause
                     current_location = self.vehicle.location.global_relative_frame
                     distance_to_target = get_distance_meters(current_location, wp.position)
 

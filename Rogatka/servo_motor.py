@@ -5,11 +5,10 @@ import time
 
 import RPi.GPIO as GPIO
 
-
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 from BirdBrain.interfaces import Servo
 from BirdBrain.settings import (COOLDOWN_TIME,
-                                SERVO_PIN)
+                                SERVO_PIN, SERVO_ANGLES, CLOSE_ANGLE, OPEN_ANGLE)
 
 
 class ServoMotor(Servo):
@@ -26,37 +25,33 @@ class ServoMotor(Servo):
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
-        self.angles = [107, 119, 145]
+        self.angles = SERVO_ANGLES
         self.index = len(self.angles)
         self.last_dropped = 0
-        self.set_angle(0)
 
-    def set_angle(self, angle, direction='clockwise'):
+    def set_angle(self, angle):
         """
         Set the servo motor to a specific angle, rotating clockwise or counterclockwise.
         :param angle: Desired angle (0-180 degrees).
         :param direction: Direction of rotation ('clockwise' or 'counterclockwise').
         """
-        if direction == 'clockwise':
-            duty = angle / 18 + 2
-        elif direction == 'counterclockwise':
-            duty = (180 - angle) / 18 + 2
-        else:
-            raise ValueError("Invalid direction. Use 'clockwise' or 'counterclockwise'.")
-
-        GPIO.output(self.pin, True)
+        duty = angle / 18 + 2.5
         self.pwm.ChangeDutyCycle(duty)
-        time.sleep(1)
-        GPIO.output(self.pin, False)
+        time.sleep(0.1)
         self.pwm.ChangeDutyCycle(0)
+        time.sleep(1)
 
     def drop(self):
         """
         Drop the payload by setting the servo to 90 degrees.
         """
-        print('DROPPING NUMBER', self.index)
-        if self.index >= len(self.angles) or time.time() - self.last_dropped < COOLDOWN_TIME:
+        if self.index >= len(self.angles):
+            print('dropped all bombs')
             return
+        if time.time() - self.last_dropped < COOLDOWN_TIME:
+            print('waiting for previous drop')
+            return
+        print('DROPPING NUMBER', self.index)
         self.set_angle(self.angles[self.index])
         self.index += 1
         self.last_dropped = time.time()
@@ -72,13 +67,13 @@ class ServoMotor(Servo):
         """
         Open the servo motor.
         """
-        self.set_angle(self.angles[-1])
+        self.set_angle(OPEN_ANGLE)
 
     def close_payload(self):
         """
         Open the servo motor.
         """
-        self.set_angle(0)
+        self.set_angle(CLOSE_ANGLE)
 
     def get_bombs_left(self):
         """
@@ -92,38 +87,24 @@ class ServoMotor(Servo):
         :param bombs: List of angles for the bombs.
         """
         self.open_payload()
-        time.sleep(1)
+        time.sleep(3)
         self.close_payload()
         self.index = 0
-        
-def test():
+
+
+def main():
     servo = ServoMotor()
-    try:
-        while True:
-            servo.drop()
-            time.sleep(0.1)
-    finally:
-        servo.close()
+    print('open')
+    servo.open_payload()
+    time.sleep(3)
+    print('close')
+    servo.close_payload()
+    time.sleep(3)
+    for i in range(3):
+        print(i + 1)
+        servo.set_angle(SERVO_ANGLES[i])
+        time.sleep(3)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python main.py [open|close|test]")
-        sys.exit(1)
-
-    command = sys.argv[1].lower()
-
-    if command == "3":
-        test()
-    elif command in ["1", "2"]:
-        try:
-            servo = ServoMotor()
-            if command == "1":
-                servo.open_payload()
-            elif command == "2":
-                servo.close_payload()
-        finally:
-            servo.close()
-    else:
-        print(f"Unknown command: {command}")
-        sys.exit(1)
+    main()
