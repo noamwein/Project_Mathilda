@@ -158,6 +158,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         failed_frames = 0
 
         while not self.drone_client.mission_completed():
+            # TODO: wait for next frame
             target_position = self.img_detection.image_detection_data['position']
             if target_position == (None, None):
                 failed_frames += 1

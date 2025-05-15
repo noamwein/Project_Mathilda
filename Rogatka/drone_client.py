@@ -659,17 +659,19 @@ class BasicClient(DroneClient):
         """
         print("Sending reboot command to Pixhawk...")
 
-        # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN = 246
-        # param1 = 1 → reboot autopilot (but not autopilot+companion computer)
-        self.vehicle._master.mav.command_long_send(
-            self.vehicle._master.target_system,
-            self.vehicle._master.target_component,
-            mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
-            0,  # confirmation
-            1,  # param1: 1=reboot autopilot
-            0, 0, 0, 0, 0, 0  # unused params
-        )
-        self.log_and_print("Reboot command sent. Waiting for reboot...")
+        # # MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN = 246
+        # # param1 = 1 → reboot autopilot (but not autopilot+companion computer)
+        # self.vehicle._master.mav.command_long_send(
+        #     self.vehicle._master.target_system,
+        #     self.vehicle._master.target_component,
+        #     mavutil.mavlink.MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN,
+        #     0,  # confirmation
+        #     1,  # param1: 1=reboot autopilot
+        #     0, 0, 0, 0, 0, 0  # unused params
+        # )
+        # self.log_and_print("Reboot command sent. Waiting for reboot...")
+
+        self.vehicle.reboot()
 
 def calculate_direction(target_position: Tuple[int, int]):
     """
