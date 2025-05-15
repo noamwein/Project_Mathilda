@@ -3,7 +3,7 @@ import os
 import sys
 import time
 
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))

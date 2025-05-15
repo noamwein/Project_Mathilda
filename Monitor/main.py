@@ -139,13 +139,23 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
         self.layout = QGridLayout(container)
 
-        # Title at top
-        title = QLabel("Project Matilda")
+     # Title at top
+        title = QLabel("🚀 Project Matilda")
         title.setAlignment(Qt.AlignCenter)
-        font = title.font()
-        font.setPointSize(16)
-        font.setBold(True)
-        title.setFont(font)
+
+        # Apply modern font styling
+        title.setStyleSheet("""
+            QLabel {
+                font-size: 28px;
+                font-weight: 800;
+                color: #D32F2F;
+                background-color: #FFFFFF;
+                padding: 20px 0;
+                border-bottom: 2px solid #D32F2F;
+                letter-spacing: 1px;
+            }
+        """)
+
         self.layout.addWidget(title, 0, 0, 1, 3)
 
         # Column & row stretch for proportions
@@ -163,7 +173,7 @@ class MainWindow(QMainWindow):
             'controls': (col0_w, row3_h),
             'video': (col1_w, content_h),
             'telemetry': (col2_w, row1_h),
-            'map': (col2_w, row2_h),
+            'map': (col2_w, row2_h * 2),
             'bombs': (col2_w, row3_h)
         }
 
@@ -189,11 +199,11 @@ class MainWindow(QMainWindow):
         mp = MapPanel(parent=self, search_path=self.algorithm.generate_new_path())
         bm = BombsPanel(parent=self)
 
-        # Set fixed sizes
+        # # Set fixed sizes
         term.setFixedSize(*self.panel_sizes['terminal'])
         ctrl.setFixedSize(*self.panel_sizes['controls'])
         vid.setFixedSize(*self.panel_sizes['video'])
-        tel.setFixedSize(*self.panel_sizes['telemetry'])
+        # tel.setFixedSize(*self.panel_sizes['telemetry'])
         mp.setFixedSize(*self.panel_sizes['map'])
         bm.setFixedSize(*self.panel_sizes['bombs'])
 
@@ -202,8 +212,9 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(ctrl, 3, 0, 2, 1)
         self.layout.addWidget(vid, 1, 1, 3, 1)
         self.layout.addWidget(tel, 1, 2, 1, 1)
-        self.layout.addWidget(bm, 2, 2, 1, 1)
-        self.layout.addWidget(mp, 3, 2, 1, 1)
+
+        self.layout.addWidget(bm, 3, 2, 1, 1)
+        self.layout.addWidget(mp, 2, 2, 1, 1)
 
     def _on_timer(self):
         # initialize recorder when first frame
@@ -325,10 +336,65 @@ class MainWindow(QMainWindow):
         if self.drone_client:
             self.drone_client.disconnect()
         super().closeEvent(event)
+        
+def apply_global_styles(app):
+    app.setStyleSheet("""
+        QWidget {
+            background-color: #FFFFFF;
+            font-family: 'Segoe UI', sans-serif;
+            color: #212121;
+        }
 
+        QMainWindow {
+            background-color: #FFF5F5;
+        }
+
+        QLabel {
+            font-size: 16px;
+        }
+
+        QPushButton {
+            background-color: #D32F2F;
+            color: white;
+            border: 2px solid #D32F2F;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        QPushButton:hover {
+            background-color: white;
+            color: #D32F2F;
+            border: 2px solid #D32F2F;
+        }
+
+        QLineEdit, QTextEdit {
+            border: 1.5px solid #D32F2F;
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 16px;
+        }
+
+        QGroupBox {
+            border: 1.5px solid #D32F2F;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        QGroupBox:title {
+            subcontrol-origin: margin;
+            subcontrol-position: top center;
+            padding: 0 6px;
+            color: #D32F2F;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    """)
 if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
     app = QApplication(sys.argv)
+    apply_global_styles(app)
     window = MainWindow()
     window.showMaximized()
     sys.exit(app.exec())

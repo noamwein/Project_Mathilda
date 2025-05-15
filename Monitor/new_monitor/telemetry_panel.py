@@ -1,5 +1,7 @@
 from .base import MonitorPanel
 from PySide6.QtWidgets import QLabel, QVBoxLayout
+from PySide6.QtCore import Qt
+
 import psutil
 import subprocess
 import math
@@ -37,8 +39,6 @@ class TelemetryPanel(MonitorPanel):
 
         
         
-    
-
     def update_data(self, data):
         altitude = data.telemetry.get('ALTITUDE', 0)
         vehicle_mode = data.telemetry.get('MODE', 'Unknown')
@@ -46,23 +46,35 @@ class TelemetryPanel(MonitorPanel):
         roll = data.telemetry.get('ROLL', 0)
         pitch = data.telemetry.get('PITCH', 0)
         yaw = data.telemetry.get('YAW', 0)
-        center= data.telemetry.get('CENTER', (0, 0))
+        center = data.telemetry.get('CENTER', (0, 0))
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
-        
+
         monitor_text = '\n'.join([
-            f'ALTITUDE: {altitude}',
-            f'MODE:     {vehicle_mode}',
-            f'BATTERY:  {battery_voltage}',
-            f'ROLL:     {roll}',
-            f'PITCH:    {pitch}',
-            f'YAW:      {yaw}',
-            f'CPU TEMP: {get_cpu_temp():.2f} deg',
-            f'UPLOAD:   {upload_speed:.2f} KB/s',
-            f'DOWNLOAD: {download_speed:.2f} KB/s',
-            f'CENTER:   {center}',
-            # TODO: number of remaining bombs
-            # TODO: pi command sent to pixhawk
+        f"<div><span style='color:#D32F2F;'>ALTITUDE:</span> {altitude}</div>",
+        f"<div><span style='color:#D32F2F;'>MODE:    </span> {vehicle_mode}</div>",
+        f"<div><span style='color:#D32F2F;'>BATTERY: </span> {battery_voltage}</div>",
+        f"<div><span style='color:#D32F2F;'>ROLL:    </span> {roll}</div>",
+        f"<div><span style='color:#D32F2F;'>PITCH:   </span> {pitch}</div>",
+        f"<div><span style='color:#D32F2F;'>YAW:     </span> {yaw}</div>",
+        f"<div><span style='color:#D32F2F;'>CPU TEMP:</span> {get_cpu_temp():.2f} deg</div>",
+        f"<div><span style='color:#D32F2F;'>UPLOAD:  </span> {upload_speed:.2f} KB/s</div>",
+        f"<div><span style='color:#D32F2F;'>DOWNLOAD:</span> {download_speed:.2f} KB/s</div>",
+        f"<div><span style='color:#D32F2F;'>CENTER:  </span> {center}</div>",
         ])
+
+        # Wrap in <pre> for monospace and spacing
+        monitor_text = f"<pre>{monitor_text}</pre>"
+
+        # self.label.setTextFormat(Qt.RichText)
         self.label.setText(monitor_text)
-        self.label.setStyleSheet("font-family: 'DejaVu Sans Mono'; font-size: 12px;")
+        self.label.setStyleSheet("""
+        QLabel {
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        background-color: #FAFAFA;
+        border: 2px solid #D32F2F;
+        border-radius: 10px;
+        padding: 10px;
+        }
+        """)
