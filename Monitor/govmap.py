@@ -13,6 +13,7 @@ from dronekit import LocationGlobalRelative
 import sys
 import os
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
@@ -28,6 +29,27 @@ MAPS_PATH = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pard
 def get_map_path(loc: LocationGlobalRelative):
     filename = f'{loc.lat:.5f}-{loc.lon:.5f}'
     return os.path.join(MAPS_PATH, 'map_' + filename + '.png')
+
+
+def get_chromedriver():
+    try:
+        options = Options()
+        options.add_argument("--headless")
+        options.add_argument("--window-size=1920x1080")
+
+        driver = webdriver.Chrome(options=options)
+    except Exception:
+        options = Options()
+        options.add_argument('--headless')  # Optional
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+
+        # Set path to your chromedriver
+        service = Service('/usr/bin/chromedriver')
+
+        # Pass the service to Chrome
+        driver = webdriver.Chrome(service=service, options=options)
+    return driver
 
 
 class GovMapper(Mapper):
@@ -64,11 +86,7 @@ class GovMapper(Mapper):
         self.draw_all_stars()
 
     def download_map(self):
-        options = Options()
-        options.add_argument("--headless")
-        options.add_argument("--window-size=1920x1080")
-
-        driver = webdriver.Chrome(options=options)
+        driver = get_chromedriver()
         url = f"https://www.govmap.gov.il/?c={self.center_loc.lon},{self.center_loc.lat}&z={self.zoom}&b={self.basemap}"
         driver.get(url)
 
