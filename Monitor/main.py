@@ -89,8 +89,8 @@ class MainWindow(QMainWindow):
                 frame = self.video_source.get_current_frame()
                 self.image_detection.locate_target(frame)
 
-        thread = threading.Thread(target=_detect)
-        thread.start()
+        thread2 = threading.Thread(target=_detect)
+        thread2.start()
 
         ########################
 
@@ -173,9 +173,9 @@ class MainWindow(QMainWindow):
         term = InHouseTerminal(parent=self)
         ctrl = ControlPanel(parent=self,
                             drone_client=self.drone_client,
-                            video_source=self.video_source,
                             detection_model=self.image_detection,
-                            servo=self.servo)
+                            servo=self.servo,
+                            main_algorithm=self.algorithm)
         vid = VideoMonitor(parent=self,
                            image_detection=self.image_detection,
                            drone_client=self.drone_client)
@@ -259,6 +259,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.recorder:
             self.recorder.release()
+        if self.drone_client:
+            self.drone_client.disconnect()
         super().closeEvent(event)
 
 if __name__ == '__main__':
