@@ -1,7 +1,32 @@
 from .base import MonitorPanel
 from PySide6.QtWidgets import QLabel, QVBoxLayout
+import psutil
+import subprocess
+import math
+
+def get_cpu_temp():
+    try:
+        output = subprocess.check_output(["vcgencmd", "measure_temp"]).decode()
+        temp_str = output.strip().replace("temp=", "").replace("'C", "")
+        return float(temp_str)
+    except Exception:
+        return 0.0
+
+
+def get_bandwidth(prev):
+    counters = psutil.net_io_counters()
+    upload = counters.bytes_sent
+    download = counters.bytes_recv
+    up_speed = (upload - prev[0]) / 1024.0  # KB/s
+    down_speed = (download - prev[1]) / 1024.0
+    return (upload, download), up_speed, down_speed
 
 class TelemetryPanel(MonitorPanel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.prev_net = (0, 0)
+        
+        
     def setup_ui(self):
         self.label = QLabel()
         layout = QVBoxLayout(self)
@@ -10,6 +35,35 @@ class TelemetryPanel(MonitorPanel):
     def connect_signals(self):
         pass
 
+        
+        
+    
+
     def update_data(self, data):
         text = '\n'.join(f"{k}: {v}" for k, v in data.telemetry.items())
         self.label.setText(text)
+        altitude = data.telemetry.get('altitude', 0)
+        vehicle_mode = data.telemetry.get('vehicle_mode', 'Unknown')
+        battery_voltage = data.telemetry.get('battery_voltage', 0)
+        roll = data.telemetry.get('roll', 0)
+        pitch = data.telemetry.get('pitch', 0)
+        yaw = data.telemetry.get('yaw', 0)
+        net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
+        self.prev_net = net_now
+        
+        monitor_text = '\n'.join([
+            f'ALTITUDE: {altitude}',
+            f'MODE:     {vehicle_mode}',
+            f'BATTERY:  {battery_voltage}',
+            f'ROLL:     {roll}',
+            f'PITCH:    {pitch}',
+            f'YAW:      {yaw}',
+            f'CPU TEMP: {get_cpu_temp():.2f} deg',
+            f'UPLOAD:   {upload_speed:.2f} KB/s',
+            f'DOWNLOAD: {download_speed:.2f} KB/s',
+            f'CENTER:   {self.get_center_pos()}',
+            # TODO: number of remaining bombs
+            # TODO: pi command sent to pixhawk
+        ])
+        self.label.setText(f"{text}\n\n{monitor_text}")
+        self.label.setStyleSheet("font-size: 12px;")

@@ -1,5 +1,5 @@
 import sys, os
-
+import math
 # allow importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
@@ -239,8 +239,46 @@ class MainWindow(QMainWindow):
         return frame
 
     def _get_telemetry(self):
-        return {"ALT": 5.2, "SPD": 1.3}
+        yaw = roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
 
+        try:
+            altitude = f'{self.drone_client.get_altitude():.2f} m'
+        except Exception:
+            pass
+
+        try:
+            vehicle_mode = str(self.drone_client.get_vehicle_mode()).split(':')[1]
+        except Exception:
+            pass
+
+        try:
+            battery_voltage = f'{self.drone_client.get_battery_voltage():.2f} V'
+        except Exception:
+            pass
+
+        try:
+            pitch = f'{math.degrees(self.drone_client.get_pitch()):.2f} deg'
+        except Exception:
+            pass
+
+        try:
+            roll = f'{math.degrees(self.drone_client.get_roll()):.2f} deg'
+        except Exception:
+            pass
+
+        try:
+            yaw = f'{math.degrees(self.drone_client.get_yaw()):.2f} deg'
+        except Exception:
+            pass
+        return {
+            'ALTITUDE': altitude,
+            'MODE': vehicle_mode,
+            'BATTERY': battery_voltage,
+            'ROLL': roll,
+            'PITCH': pitch,
+            'YAW': yaw
+        }
+    
     def _get_map(self):
         return None
 
