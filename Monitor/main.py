@@ -64,6 +64,7 @@ class MainWindow(QMainWindow):
             pass
 
         thread = threading.Thread(target=_connect)
+        thread.daemon = True
         thread.start()
         ########################
 
@@ -90,6 +91,7 @@ class MainWindow(QMainWindow):
                 self.image_detection.locate_target(frame)
 
         thread2 = threading.Thread(target=_detect)
+        thread2.daemon = True
         thread2.start()
 
         ########################
