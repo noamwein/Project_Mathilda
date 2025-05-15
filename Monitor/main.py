@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         # Video recorder for GUI (initialized on first frame)
         self.recorder = None
         # Prepare recordings directory
-        self.recordings_dir = os.path.join(os.getcwd(), 'recordings')
+        self.recordings_dir = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'videos')
         os.makedirs(self.recordings_dir, exist_ok=True)
 
         # Ensure recorder cleanup on quit
