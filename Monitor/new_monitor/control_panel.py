@@ -53,15 +53,6 @@ class ControlPanel(MonitorPanel):
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
         self.drone_client.reboot_pixhawk()
-        def _reconnect():
-            time.sleep(10)
-            self.drone_client.log_and_print("Reconnection triggered")
-            self.drone_client.connect()
-
-        thread = threading.Thread(target=_reconnect)
-        thread.daemon = True
-        thread.start()
-        
 
     def action_load(self):
         self.drone_client.log_and_print("Load Bombs triggered")
