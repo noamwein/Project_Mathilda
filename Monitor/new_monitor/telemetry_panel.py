@@ -40,14 +40,14 @@ class TelemetryPanel(MonitorPanel):
     
 
     def update_data(self, data):
-        altitude = data.telemetry.get('altitude', 0)
-        vehicle_mode = data.telemetry.get('vehicle_mode', 'Unknown')
-        battery_voltage = data.telemetry.get('battery_voltage', 0)
+        altitude = data.telemetry.get('ALTITUDE', 0)
+        vehicle_mode = data.telemetry.get('MODE', 'Unknown')
+        battery_voltage = data.telemetry.get('BATTERY', 0)
         print(f"Battery voltage: {battery_voltage}")
-        roll = data.telemetry.get('roll', 0)
-        pitch = data.telemetry.get('pitch', 0)
-        yaw = data.telemetry.get('yaw', 0)
-        center= data.telemetry.get('center', (0, 0))
+        roll = data.telemetry.get('ROLL', 0)
+        pitch = data.telemetry.get('PITCH', 0)
+        yaw = data.telemetry.get('YAW', 0)
+        center= data.telemetry.get('CENTER', (0, 0))
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
         
