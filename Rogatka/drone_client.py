@@ -673,15 +673,16 @@ class BasicClient(DroneClient):
 
         self.vehicle.reboot()
 
-    def disable_safety(self):
-        print("[INFO] Sending MAV_CMD_DO_SET_MODE to disable safety...")
+    def set_safety_button(self, safety: bool):
+        self.log_and_print(f"[INFO] {'Enabling' if safety else 'Disabling'} safety switch...")
 
         self.vehicle._master.mav.command_long_send(
             self.vehicle._master.target_system,
             self.vehicle._master.target_component,
-            mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+            mavutil.mavlink.MAV_CMD_DO_SET_SAFETY,
             0,
-            1, 0, 0, 0, 0, 0, 0  # param1=1 to arm, 0 to disarm
+            int(safety),  # param1: safety enabled (1) or disabled (0)
+            0, 0, 0, 0, 0, 0
         )
 def calculate_direction(target_position: Tuple[int, int]):
     """

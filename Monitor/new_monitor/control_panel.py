@@ -75,7 +75,7 @@ class ControlPanel(MonitorPanel):
 
     def action_safety(self):
         self.drone_client.log_and_print("Safety triggered")
-        self.drone_client.disable_safety()
+        self.drone_client.set_safety_button(safety=False)
 
     def action_connect(self):
         self.drone_client.log_and_print("Connect triggered")
