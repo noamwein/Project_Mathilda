@@ -9,6 +9,7 @@ collections.MutableMapping = collections.abc.MutableMapping
 from dronekit import LocationGlobalRelative
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 
 # Define a strong-typed action enum
@@ -290,5 +291,6 @@ class Mapper(ABC):
     def __init__(self, locations: List[LocationGlobalRelative]):
         self.locations = locations
 
-    def get_map(self, current_loc: LocationGlobalRelative):
+    @abstractmethod
+    def get_map(self, current_loc: Optional[LocationGlobalRelative] = None):
         pass

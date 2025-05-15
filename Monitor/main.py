@@ -179,7 +179,7 @@ class MainWindow(QMainWindow):
                            image_detection=self.image_detection,
                            drone_client=self.drone_client)
         tel = TelemetryPanel(parent=self)
-        mp = MapPanel(parent=self)
+        mp = MapPanel(parent=self, search_path=self.algorithm.generate_new_path())
         bm = BombsPanel(parent=self)
 
         # Set fixed sizes
