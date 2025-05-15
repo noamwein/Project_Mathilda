@@ -26,7 +26,7 @@ class ServoMotor(Servo):
         GPIO.setup(self.pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pin, self.frequency)
         self.pwm.start(0)
-        self.angles = [100, 110, 130]
+        self.angles = [95, 105, 130]
         self.index = len(self.angles)
         self.last_dropped = 0
         self.set_angle(0)
