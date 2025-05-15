@@ -156,7 +156,7 @@ class GovMapper(Mapper):
         min_x, min_y, max_x, max_y = min(pixels_x) + width // 2, min(pixels_y) + height // 2, max(
             pixels_x) + width // 2, max(pixels_y) + height // 2
         center = (max_x + min_x) // 2, (max_y + min_y) // 2
-        new_width = np.array([max(max_x - min_x, 100), max(max_y - min_y, 100)])
+        new_width = np.array([max(max_x - min_x, 80), max(max_y - min_y, 80)]) + 20
         self.cv_image = self.cv_image[center[1] - new_width[1] // 2:center[1] + new_width[1] // 2,
                         center[0] - new_width[0] // 2:center[0] + new_width[0] // 2, ]
 
