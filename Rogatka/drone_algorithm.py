@@ -216,5 +216,4 @@ class MainDroneAlgorithm(DroneAlgorithm):
             time.sleep(5)
             self.drone_client.land()
         finally:
-            self.gui.close()
             self.drone_client.disconnect()

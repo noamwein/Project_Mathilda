@@ -183,7 +183,7 @@ class GovMapper(Mapper):
 
 
 def main():
-    path = MainDroneAlgorithm(None, None, None, None, None).generate_new_path()
+    path = MainDroneAlgorithm(None, None, None, None).generate_new_path()
     test_locations = [waypoint.position for waypoint in path if waypoint.movement_action is MovementAction.MOVEMENT]
     mapper = GovMapper(test_locations)
     while True:
