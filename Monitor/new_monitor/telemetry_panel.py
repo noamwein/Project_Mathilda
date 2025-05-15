@@ -48,6 +48,7 @@ class TelemetryPanel(MonitorPanel):
         roll = data.telemetry.get('roll', 0)
         pitch = data.telemetry.get('pitch', 0)
         yaw = data.telemetry.get('yaw', 0)
+        center= data.telemetry.get('center', (0, 0))
         net_now, upload_speed, download_speed = get_bandwidth(self.prev_net)
         self.prev_net = net_now
         
@@ -61,7 +62,7 @@ class TelemetryPanel(MonitorPanel):
             f'CPU TEMP: {get_cpu_temp():.2f} deg',
             f'UPLOAD:   {upload_speed:.2f} KB/s',
             f'DOWNLOAD: {download_speed:.2f} KB/s',
-            f'CENTER:   {self.get_center_pos()}',
+            f'CENTER:   {center}',
             # TODO: number of remaining bombs
             # TODO: pi command sent to pixhawk
         ])

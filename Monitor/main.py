@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
         return frame
 
     def _get_telemetry(self):
-        yaw = roll = pitch = battery_voltage = vehicle_mode = altitude = 'unknown'
+        yaw = roll = pitch = battery_voltage = vehicle_mode = altitude = center = 'unknown'
 
         try:
             altitude = f'{self.drone_client.get_altitude():.2f} m'
@@ -288,13 +288,19 @@ class MainWindow(QMainWindow):
             yaw = f'{math.degrees(self.drone_client.get_yaw()):.2f} deg'
         except Exception:
             pass
+        
+        try:
+            center = self.drone_client.get_center_position()
+        except Exception:
+            pass
         return {
             'ALTITUDE': altitude,
             'MODE': vehicle_mode,
             'BATTERY': battery_voltage,
             'ROLL': roll,
             'PITCH': pitch,
-            'YAW': yaw
+            'YAW': yaw,
+            'CENTER': center
         }
     
     def _get_map(self):
