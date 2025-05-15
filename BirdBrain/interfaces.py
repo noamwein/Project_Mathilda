@@ -216,7 +216,7 @@ class DroneClient(ABC):
         pass
     
     @abstractmethod
-    def disable_safety(self):
+    def set_safety_button(self):
         pass
 
 class DroneAlgorithm(ABC):
