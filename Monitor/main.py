@@ -237,6 +237,11 @@ class MainWindow(QMainWindow):
 
         self.push_update(data)
 
+    def _get_gps_location(self):
+        try:
+            return self.drone_client.get_current_location()
+        return None
+
     def _get_stdout(self):
         # Return buffered stdout since last call
         txt = self._stdout_buffer.getvalue()
