@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
         # Row stretch weights: 2,2,1 => total 5
         row1_h = int(content_h * 2 / 5)
         row2_h = int(content_h * 2 / 5) * 0.5
-        row3_h = content_h - row1_h - row2_h
+        row3_h = (content_h - row1_h - row2_h) * 0.8
         # Column weights: 1,2,1 => total 4
         col0_w = int(W * 1 / 4)
         col1_w = int(W * 2 / 4) * 0.9
