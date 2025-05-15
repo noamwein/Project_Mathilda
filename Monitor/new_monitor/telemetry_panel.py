@@ -40,8 +40,6 @@ class TelemetryPanel(MonitorPanel):
     
 
     def update_data(self, data):
-        text = '\n'.join(f"{k}: {v}" for k, v in data.telemetry.items())
-        self.label.setText(text)
         altitude = data.telemetry.get('altitude', 0)
         vehicle_mode = data.telemetry.get('vehicle_mode', 'Unknown')
         battery_voltage = data.telemetry.get('battery_voltage', 0)
