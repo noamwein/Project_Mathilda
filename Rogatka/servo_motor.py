@@ -87,7 +87,7 @@ class ServoMotor(Servo):
         :param bombs: List of angles for the bombs.
         """
         self.open_payload()
-        time.sleep(1)
+        time.sleep(3)
         self.close_payload()
         self.index = 0
 
