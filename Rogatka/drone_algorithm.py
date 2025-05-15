@@ -139,7 +139,7 @@ class MainDroneAlgorithm(DroneAlgorithm):
         prev_frame_index = 0
 
         self.drone_client.log_and_print("Re-Searching target...")
-        for _ in range(72):
+        for _ in range(720):
             self.drone_client.rotate(direction * 10, speed_factor=0.8)
 
             while self.source.frame_index == prev_frame_index:
