@@ -437,6 +437,7 @@ class BasicClient(DroneClient):
             self._prev_time = now
             return
         dt = now - self._prev_time
+        self.log_and_print(f"fps: {1/dt}")
         if dt > 1:
             self.log_and_print("Resetting PID...")
             self._prev_time = now
@@ -467,7 +468,7 @@ class BasicClient(DroneClient):
         # Distance
         distance = math.hypot(target_x, target_y)
         # Rotate stepwise
-        if distance > YAW_TOLERANCE_RADIUS:
+        if distance > YAW_TOLERANCE_RADIUS and target_y < 0:
             if abs(angle_err) > YAW_TOLERANCE_THRESHOLD:
                 # velocity missed
                 self._vel_miss += 1
@@ -482,7 +483,7 @@ class BasicClient(DroneClient):
                 # reset yaw miss
                 self._yaw_miss = 0
                 # PID-based rotation
-                rot = -np.sign(target_y) * (KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw)
+                rot = KP_YAW * angle_err + KI_YAW * self._integral_yaw + KD_YAW * deriv_yaw
                 self.rotate(rot, speed_factor=0.1)
                 return
         # yaw missed
