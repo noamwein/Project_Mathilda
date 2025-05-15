@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
             stdout_lines=self._get_stdout(),
             cv2_frame=self._get_frame(),
             telemetry=self._get_telemetry(),
-            map_image=self._get_map(),
+            gps_location=self._get_gps_location(),
             bombs_count=self._get_bombs()
         )
 
@@ -242,8 +242,11 @@ class MainWindow(QMainWindow):
     def _get_telemetry(self):
         return {"ALT": 5.2, "SPD": 1.3}
 
-    def _get_map(self):
-        return None
+    def _get_gps_location(self):
+        try:
+            return self.drone_client.get_current_location()
+        except:
+            return None
 
     def _get_bombs(self):
         return self.servo.get_bombs_left() if self.servo else 0
