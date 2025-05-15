@@ -66,4 +66,4 @@ class TelemetryPanel(MonitorPanel):
             # TODO: pi command sent to pixhawk
         ])
         self.label.setText(monitor_text)
-        self.label.setStyleSheet("font-size: 12px;")
+        self.label.setStyleSheet("font-family: 'DejaVu Sans Mono'; font-size: 12px;")
