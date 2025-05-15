@@ -60,15 +60,16 @@ class MainWindow(QMainWindow):
         )
 
         def _connect():
-            self.drone_client.connect()
+            # self.drone_client.connect()
+            pass
 
         thread = threading.Thread(target=_connect)
         thread.start()
         ########################
 
         # Setup servo
-        self.servo = ServoMotor()
-
+        # self.servo = ServoMotor()
+        self.servo = None
         ########################
 
         # Setup algorithm
