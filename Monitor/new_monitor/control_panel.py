@@ -45,6 +45,7 @@ class ControlPanel(MonitorPanel):
         self.start_btn.setEnabled(False)
         self.drone_client.log_and_print("Starting Mission...")
         thread3 = threading.Thread(target=self.main_algorithm.main)
+        thread3.daemon = True
         thread3.start()
 
     def action_reboot(self):

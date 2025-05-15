@@ -29,6 +29,7 @@ class Source(ABC):
     def __init__(self, rotation=0):
         """Initialize the source with a simple rotation setting: 0, 90, 180, or 270 degrees."""
         self.rotation = rotation
+        self.frame_index = 0
 
     @abstractmethod
     def _get_current_frame(self):
@@ -38,6 +39,7 @@ class Source(ABC):
     def get_current_frame(self):
         """Get the current frame, rotate it based on the rotation setting, and return it."""
         frame = self._get_current_frame()
+        self.frame_index += 1
 
         if frame is not None:
             # Apply the rotation

@@ -25,7 +25,8 @@ class MapPanel(MonitorPanel):
         pass
 
     def update_data(self, data):
-        frame = self.mapper.get_map()
+        current_location = data.gps_location
+        frame = self.mapper.get_map(current_location)
         final_frame = _resize_and_pad(frame, self.width(), self.height())
         h, w, ch = final_frame.shape
         bytes_per_line = ch * w
