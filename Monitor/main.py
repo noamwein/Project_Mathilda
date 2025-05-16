@@ -108,6 +108,7 @@ class MainWindow(QMainWindow):
 
         # Video recorder for GUI (initialized on first frame)
         self.recorder = None
+        self.enable_recording = False
         # Prepare recordings directory
         self.recordings_dir = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'videos')
         os.makedirs(self.recordings_dir, exist_ok=True)
@@ -184,6 +185,9 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self._on_timer)
         self.timer.start(100)
 
+    def set_recording_enable(self, enable: bool):
+        self.enable_recording = enable
+
     def _load_panels(self):
         # instantiate each panel
         term = InHouseTerminal(parent=self)
@@ -191,7 +195,8 @@ class MainWindow(QMainWindow):
                             drone_client=self.drone_client,
                             detection_model=self.image_detection,
                             servo=self.servo,
-                            main_algorithm=self.algorithm)
+                            main_algorithm=self.algorithm,
+                            set_recording_enable=self.set_recording_enable)
         vid = VideoMonitor(parent=self,
                            image_detection=self.image_detection,
                            drone_client=self.drone_client)
@@ -236,15 +241,16 @@ class MainWindow(QMainWindow):
         )
 
         # Capture GUI frame and record
-        pix = self.grab()
-        qimg = pix.toImage().convertToFormat(QImage.Format_RGB888)
-        h, w = qimg.height(), qimg.width()
-        ptr = qimg.bits()
-        # Use numpy.frombuffer on memoryview, no setsize
-        arr = np.frombuffer(ptr, np.uint8).reshape((h, w, 3))
-        # Convert RGB to BGR for OpenCV
-        frame = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
-        self.recorder.write(frame)
+        if self.enable_recording:
+            pix = self.grab()
+            qimg = pix.toImage().convertToFormat(QImage.Format_RGB888)
+            h, w = qimg.height(), qimg.width()
+            ptr = qimg.bits()
+            # Use numpy.frombuffer on memoryview, no setsize
+            arr = np.frombuffer(ptr, np.uint8).reshape((h, w, 3))
+            # Convert RGB to BGR for OpenCV
+            frame = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+            self.recorder.write(frame)
 
         self.push_update(data)
 

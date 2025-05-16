@@ -9,6 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.p
 #allow importing from grandparent directory
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir, os.path.pardir)))
 from BirdBrain.interfaces import DroneClient, ImageDetection, Servo, DroneAlgorithm
+from typing import Callable
 
 import threading
 
@@ -16,12 +17,13 @@ class ControlPanel(MonitorPanel):
     def __init__(self, drone_client: DroneClient,
                  detection_model: ImageDetection,
                  main_algorithm: DroneAlgorithm,
-                 servo: Servo, parent=None):
+                 servo: Servo, set_recording_enable: Callable[[bool], None], parent=None):
         super().__init__(parent=parent)
         self.drone_client = drone_client
         self.detection_model = detection_model
         self.main_algorithm = main_algorithm
-        self.servo=servo
+        self.servo = servo
+        self.set_recording_enable = set_recording_enable
         
     def setup_ui(self):
         # Four buttons in 2x2 grid: Start, Reboot, Load Bombs, Exit
@@ -141,6 +143,7 @@ class ControlPanel(MonitorPanel):
         thread3.start()
         self.confirm_btn.setEnabled(True)
         self.confirm_btn.setVisible(True)
+        self.set_recording_enable(True)
 
     def action_reboot(self):
         self.drone_client.log_and_print("Reboot triggered")
