@@ -40,7 +40,7 @@ class ControlPanel(MonitorPanel):
         self.disarm_btn = QPushButton("Disarm")
 
         self.reboot_btn = QPushButton("Reboot")
-        self.land_btn = QPushButton("Land")
+        self.stop_mission_btn = QPushButton("Stop Mission")
 
         self.drop_bombs_btn = QPushButton("Drop Bomb")
         self.load_bombs_btn = QPushButton("Load Bombs")
@@ -48,13 +48,13 @@ class ControlPanel(MonitorPanel):
         layout = QGridLayout(self)
         layout.addWidget(self.start_btn, 0, 0)
         layout.addWidget(self.confirm_btn, 0, 0)
-        layout.addWidget(self.exit_btn, 0, 1)
+        layout.addWidget(self.stop_mission_btn, 0, 1)
         layout.addWidget(self.connect_btn, 1, 0)
         layout.addWidget(self.safety_btn, 1, 1)
         layout.addWidget(self.arm_btn, 2, 0)
         layout.addWidget(self.disarm_btn, 2, 1)
         layout.addWidget(self.reboot_btn, 3, 0)
-        layout.addWidget(self.land_btn, 3, 1)
+        layout.addWidget(self.exit_btn, 3, 1)
         layout.addWidget(self.drop_bombs_btn, 4, 0)
         layout.addWidget(self.load_bombs_btn, 4, 1)
 
@@ -63,7 +63,7 @@ class ControlPanel(MonitorPanel):
         self.reboot_btn.clicked.connect(self.action_reboot)
         self.confirm_btn.clicked.connect(self.action_confirm)
         self.exit_btn.clicked.connect(self.action_exit)
-        self.land_btn.clicked.connect(self.action_land)
+        self.stop_mission_btn.clicked.connect(self.action_stop_mission)
         self.drop_bombs_btn.clicked.connect(self.action_drop_bombs)
         self.load_bombs_btn.clicked.connect(self.action_load_bombs)
         self.connect_btn.clicked.connect(self.action_connect)
@@ -125,14 +125,9 @@ class ControlPanel(MonitorPanel):
         self.drone_client.vehicle.armed = False
         self.drone_client.vehicle.flush()
 
-    def action_land(self):
-        self.drone_client.log_and_print("Land triggered")
-        def _land():
-            self.drone_client.land()
-
-        thread = threading.Thread(target=_land)
-        thread.daemon = True
-        thread.start()
+    def action_stop_mission(self):
+        self.drone_client.log_and_print("Stop mission triggered")
+        self.set_recording_enable(False)
 
     def action_start(self):
         self.start_btn.setEnabled(False)
