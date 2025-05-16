@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             timestamp = datetime.datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
             filename = os.path.join(self.recordings_dir, f'gui_{timestamp}.mp4')
-            self.recorder = cv2.VideoWriter(filename, fourcc, 10.0, (w, h))
+            self.recorder = cv2.VideoWriter(filename, fourcc, 5.0, (w, h))
 
         # build data payload and push
         data = MonitorData(
