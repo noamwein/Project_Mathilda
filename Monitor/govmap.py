@@ -18,7 +18,7 @@ from selenium.webdriver.chrome.options import Options
 
 sys.path.append(os.path.abspath(os.path.join(__file__, os.path.pardir, os.path.pardir)))
 
-from Rogatka.drone_algorithm import MainDroneAlgorithm
+# from Rogatka.drone_algorithm import MainDroneAlgorithm
 from BirdBrain.interfaces import MovementAction, Mapper
 from typing import List, Optional
 
@@ -169,7 +169,7 @@ class GovMapper(Mapper):
 
     def draw_on_map(self, loc: LocationGlobalRelative):
         x, y = self.gps_to_pixel(loc)
-        cv2.circle(self.tmp_cv_image, (x, y), 5, (0, 255, 0), -1)
+        cv2.circle(self.tmp_cv_image, (x, y), 10, (255, 0, 0), -1)
 
     def show_map(self):
         cv2.imshow("GPS", self.tmp_cv_image)
