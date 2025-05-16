@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         self.layout = QGridLayout(container)
 
      # Title at top
-        title = QLabel("🚀 Project Matilda")
+        title = QLabel("Project Matilda")
         title.setAlignment(Qt.AlignCenter)
 
         # Apply modern font styling
